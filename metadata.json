@@ -1,0 +1,6 @@
+{
+  "name": "NetworkJoin Pro - Investment & WebView Platform",
+  "description": "Smart investment amount and network earning platform with responsive dual layouts: desktop executive dashboard and native mobile app with smooth right-to-left slide animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
