@@ -275,8 +275,8 @@ export default function HomeScreen({
             <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3 border border-[#dfbe7e] shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-extrabold text-[#8a5b28] uppercase tracking-wider">JOINS</span>
-                <div className="w-6 h-6 rounded-lg bg-[#f0dfc8] text-[#55361e] flex items-center justify-center border border-[#dfc38d]">
-                  <Users className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#fadca0] via-[#ffecc3] to-[#fff4dc] text-[#55361e] flex items-center justify-center border-2 border-[#dfc38d] shadow-xs">
+                  <Users className="w-5 h-5 stroke-[2.5]" />
                 </div>
               </div>
               <span className="text-base font-black text-[#46280b] font-mono">
@@ -289,8 +289,8 @@ export default function HomeScreen({
             <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3 border border-[#dfbe7e] shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-extrabold text-[#8a5b28] uppercase tracking-wider">EARNED</span>
-                <div className="w-6 h-6 rounded-lg bg-[#f0dfc8] text-[#965c19] flex items-center justify-center border border-[#dfc38d]">
-                  <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#fadca0] via-[#ffecc3] to-[#fff4dc] text-[#965c19] flex items-center justify-center border-2 border-[#dfc38d] shadow-xs">
+                  <TrendingUp className="w-5 h-5 stroke-[2.5]" />
                 </div>
               </div>
               <span className="text-base font-black text-[#46280b] font-mono">
@@ -303,8 +303,8 @@ export default function HomeScreen({
             <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3 border border-[#dfbe7e] shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-extrabold text-[#8a5b28] uppercase tracking-wider">PAYOUT</span>
-                <div className="w-6 h-6 rounded-lg bg-[#f0dfc8] text-[#55361e] flex items-center justify-center border border-[#dfc38d]">
-                  <DollarSign className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#fadca0] via-[#ffecc3] to-[#fff4dc] text-[#55361e] flex items-center justify-center border-2 border-[#dfc38d] shadow-xs">
+                  <DollarSign className="w-5 h-5 stroke-[2.5]" />
                 </div>
               </div>
               <span className="text-base font-black text-[#46280b] font-mono">
@@ -317,8 +317,8 @@ export default function HomeScreen({
             <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3 border border-[#dfbe7e] shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-extrabold text-[#8a5b28] uppercase tracking-wider">ACTIVE</span>
-                <div className="w-6 h-6 rounded-lg bg-[#f0dfc8] text-[#965c19] flex items-center justify-center border border-[#dfc38d]">
-                  <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#fadca0] via-[#ffecc3] to-[#fff4dc] text-[#965c19] flex items-center justify-center border-2 border-[#dfc38d] shadow-xs">
+                  <Clock className="w-5 h-5 stroke-[2.5]" />
                 </div>
               </div>
               <span className="text-base font-black text-[#46280b] font-mono">

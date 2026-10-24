@@ -64,14 +64,14 @@ export default function MobileBottomNav({
                 {isActive ? (
                   <motion.div
                     layoutId="activeTabPill"
-                    className="w-10 h-7 rounded-full bg-gradient-to-r from-[#4e2e0f] to-[#3a1d06] flex items-center justify-center shadow-xs border border-[#be8832]/40"
+                    className="w-12 h-8 rounded-full bg-gradient-to-r from-[#4e2e0f] to-[#3a1d06] flex items-center justify-center shadow-xs border border-[#be8832]/40"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   >
-                    <Icon className="w-4 h-4 text-[#fed788]" />
+                    <Icon className="w-5.5 h-5.5 text-[#fed788] stroke-[2.2]" />
                   </motion.div>
                 ) : (
-                  <div className="w-10 h-7 flex items-center justify-center text-[#8f6841] group-hover:text-[#55361e] transition-colors">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-12 h-8 flex items-center justify-center text-[#8f6841] group-hover:text-[#55361e] transition-colors">
+                    <Icon className="w-5.5 h-5.5 stroke-[2]" />
                   </div>
                 )}
 

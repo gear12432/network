@@ -497,70 +497,8 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#894b0a]/20 rounded-full blur-[100px]" />
       </div>
 
-      {/* Main Full-Screen Content (No rigid box containers) */}
+      {/* Main Full-Screen Content (Clean layout without top box/tabs) */}
       <div className="relative z-10 w-full max-w-xl mx-auto flex-1 flex flex-col px-5 py-6 sm:px-8 sm:py-8">
-        {/* Brand Header - Clean without top-right Firebase badge */}
-        <div className="flex items-center justify-between pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#894b0a] via-[#d0872e] to-[#ffd485] p-[1.5px] flex items-center justify-center shadow-lg shadow-[#d0872e]/20">
-              <div className="w-full h-full bg-[#241407] rounded-[10px] flex items-center justify-center font-serif font-black text-xs text-[#ffd485]">
-                NP
-              </div>
-            </div>
-            <div>
-              <span className="font-serif font-black text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#ffe4ab] to-[#d0872e]">
-                NETWORK JOIN PRO
-              </span>
-              <span className="text-[10px] text-[#dfbe7e] block font-sans">
-                Financial Ecosystem
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Mode Switcher Tabs (Fluid Full-Screen Header) */}
-        <div className="flex items-center justify-center gap-8 my-3 border-b border-[#dfbe7e]/25 pb-3">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('login');
-              setLoginError(null);
-            }}
-            className={`flex items-center gap-2 pb-1.5 text-sm font-semibold transition-all relative ${
-              mode === 'login' ? 'text-[#ffd485]' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <LogIn className="w-4 h-4 text-[#d0872e]" />
-            <span>Login</span>
-            {mode === 'login' && (
-              <motion.div
-                layoutId="activeTabIndicator"
-                className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#d0872e]"
-              />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setSignupError(null);
-            }}
-            className={`flex items-center gap-2 pb-1.5 text-sm font-semibold transition-all relative ${
-              mode === 'signup' ? 'text-[#ffd485]' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <UserPlus className="w-4 h-4 text-[#d0872e]" />
-            <span>Sign Up</span>
-            {mode === 'signup' && (
-              <motion.div
-                layoutId="activeTabIndicator"
-                className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#d0872e]"
-              />
-            )}
-          </button>
-        </div>
-
         {/* =========================================================================
             VIEW 1: LOGIN (Full-screen, NO boxes, Smooth Floating Labels)
            ========================================================================= */}
@@ -1136,6 +1074,23 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 </div>
               </motion.div>
             )}
+
+            {/* Login link below Sign Up steps */}
+            <div className="text-center pt-6 pb-2">
+              <p className="text-xs sm:text-sm text-[#cfbc9e]">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setLoginError(null);
+                  }}
+                  className="text-[#ffd485] font-black underline hover:text-[#d0872e] cursor-pointer ml-1 text-sm tracking-wide transition-colors"
+                >
+                  Login
+                </button>
+              </p>
+            </div>
           </motion.div>
         )}
       </div>

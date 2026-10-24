@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  initializeFirestore,
   getFirestore,
   doc,
   setDoc,
@@ -16,29 +17,51 @@ import firebaseConfig from '@/firebase-applet-config.json';
 // Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firestore
-// Use named firestoreDatabaseId if configured
+// Helper to prevent long hangs on slow or intermittent network
+function withTimeout<T>(promise: Promise<T>, ms: number = 4000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
+// Initialize Firestore with auto-detect long polling to avoid 10-second backend connection timeout in sandboxed/iframe/webview environments
 let dbInstance: Firestore;
+const customDbId =
+  firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+    ? firebaseConfig.firestoreDatabaseId
+    : undefined;
+
 try {
-  if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-    dbInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-  } else {
+  dbInstance = initializeFirestore(
+    app,
+    {
+      experimentalAutoDetectLongPolling: true,
+    },
+    customDbId
+  );
+} catch {
+  // If already initialized, retrieve existing instance
+  try {
+    dbInstance = customDbId ? getFirestore(app, customDbId) : getFirestore(app);
+  } catch {
     dbInstance = getFirestore(app);
   }
-} catch {
-  dbInstance = getFirestore(app);
 }
 
 export const db = dbInstance;
 export { app };
 
-// Test connection on boot per Firebase skill guidelines
+// Test connection on boot with non-blocking timeout per Firebase skill
 export async function testConnection() {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    await withTimeout(getDocFromServer(doc(db, 'test', 'connection')), 3500);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase client is offline or initializing.');
+    if (error instanceof Error) {
+      // Gracefully log offline / pending status without throwing uncaught errors
+      console.warn('Firebase client offline or connecting in background:', error.message);
     }
   }
 }
@@ -70,17 +93,17 @@ export interface UserAccountData {
 // Generate unique Login UID e.g. "GK37643"
 export async function generateUniqueLoginUid(): Promise<string> {
   let attempts = 0;
-  while (attempts < 5) {
+  while (attempts < 3) {
     const randomDigits = Math.floor(10000 + Math.random() * 90000);
     const candidateUid = `GK${randomDigits}`;
     try {
       const docRef = doc(db, 'users', candidateUid);
-      const snapshot = await getDoc(docRef);
+      const snapshot = await withTimeout(getDoc(docRef), 2500);
       if (!snapshot.exists()) {
         return candidateUid;
       }
     } catch {
-      // If offline or network issue, return candidate UID directly
+      // If offline or network timeout, return candidate UID directly
       return candidateUid;
     }
     attempts++;
@@ -99,10 +122,10 @@ export async function saveUserToFirestore(userData: UserAccountData): Promise<{ 
       vipLevel: userData.vipLevel ?? 1,
       createdAt: userData.createdAt || new Date().toISOString(),
     };
-    await setDoc(docRef, payload);
+    await withTimeout(setDoc(docRef, payload), 4000);
     return { success: true };
   } catch (err: unknown) {
-    console.error('Error saving user to Firestore:', err);
+    console.warn('Warning saving user to Firestore (will rely on local storage):', err);
     const message = err instanceof Error ? err.message : 'Failed to save to Firestore';
     return { success: false, error: message };
   }
@@ -117,14 +140,14 @@ export async function findUserInFirestore(identifier: string): Promise<UserAccou
     // 1. First attempt direct document lookup by loginUid (case-insensitive check)
     const upperId = cleanId.toUpperCase();
     const docRef = doc(db, 'users', upperId);
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef), 3000);
     if (snap.exists()) {
       return snap.data() as UserAccountData;
     }
 
     // Direct match with verbatim string
     const docRefExact = doc(db, 'users', cleanId);
-    const snapExact = await getDoc(docRefExact);
+    const snapExact = await withTimeout(getDoc(docRefExact), 2000);
     if (snapExact.exists()) {
       return snapExact.data() as UserAccountData;
     }
@@ -132,21 +155,21 @@ export async function findUserInFirestore(identifier: string): Promise<UserAccou
     // 2. Query by email
     const usersRef = collection(db, 'users');
     const qEmail = query(usersRef, where('email', '==', cleanId.toLowerCase()));
-    const snapEmail = await getDocs(qEmail);
+    const snapEmail = await withTimeout(getDocs(qEmail), 3000);
     if (!snapEmail.empty) {
       return snapEmail.docs[0].data() as UserAccountData;
     }
 
     // 3. Query by mobile
     const qMobile = query(usersRef, where('mobile', '==', cleanId));
-    const snapMobile = await getDocs(qMobile);
+    const snapMobile = await withTimeout(getDocs(qMobile), 3000);
     if (!snapMobile.empty) {
       return snapMobile.docs[0].data() as UserAccountData;
     }
 
     return null;
   } catch (err) {
-    console.error('Error fetching user from Firestore:', err);
+    console.warn('Firestore lookup took too long or offline:', err);
     return null;
   }
 }

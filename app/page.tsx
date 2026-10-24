@@ -336,7 +336,43 @@ export default function InvestmentApp() {
 
   // 1. Initial Animated Splash Screen
   if (showSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+    return (
+      <SplashScreen
+        onComplete={() => {
+          if (typeof window !== 'undefined') {
+            try {
+              const saved = localStorage.getItem('network_join_pro_user');
+              if (saved) {
+                const user = JSON.parse(saved);
+                if (user && (user.loginUid || user.fullName)) {
+                  setCurrentUser(user);
+                  const initials =
+                    user.fullName
+                      ?.split(' ')
+                      .map((n: string) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase() || 'GK';
+
+                  setUserStats((prev) => ({
+                    ...prev,
+                    userName: user.fullName || prev.userName,
+                    userInitials: initials,
+                    loginUid: user.loginUid,
+                    email: user.email,
+                    mobile: user.mobile,
+                    walletBalance: user.balance ?? prev.walletBalance,
+                  }));
+                }
+              }
+            } catch {
+              // fallback
+            }
+          }
+          setShowSplash(false);
+        }}
+      />
+    );
   }
 
   // 2. Full-Screen Login & Multi-step Sign Up Screen if not logged in

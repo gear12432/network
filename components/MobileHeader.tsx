@@ -41,27 +41,27 @@ export default function MobileHeader({
         </div>
       </div>
 
-      {/* Right: Wallet pill (with Wallet icon instead of text), + Customer button, History, Notification Bell */}
+      {/* Right: Wallet pill (with enlarged Wallet icon), + Customer button, enlarged History, enlarged Notification Bell */}
       <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Wallet pill */}
         <div className="flex items-center bg-white/95 border border-[#dfbe7e] rounded-full px-2.5 py-1 text-[#55361e] shadow-2xs">
-          <Wallet className="w-3.5 h-3.5 text-[#8a5b28] mr-1 shrink-0" />
-          <span className="text-xs font-black text-[#46280b] mr-1.5 font-mono">
+          <Wallet className="w-5 h-5 text-[#8a5b28] mr-1.5 shrink-0 stroke-[2.2]" />
+          <span className="text-xs sm:text-sm font-black text-[#46280b] mr-1.5 font-mono">
             ₹{stats.walletBalance.toLocaleString('en-IN')}
           </span>
           <button
             onClick={onOpenDeposit}
-            className="w-4 h-4 rounded-full bg-[#4e2e0f] text-[#ffebbe] flex items-center justify-center hover:bg-[#3b220a] transition-colors shadow-xs active:scale-90 shrink-0"
+            className="w-5 h-5 rounded-full bg-[#4e2e0f] text-[#ffebbe] flex items-center justify-center hover:bg-[#3b220a] transition-colors shadow-xs active:scale-90 shrink-0 cursor-pointer"
             title="Add Money"
           >
-            <Plus className="w-3 h-3 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
           </button>
         </div>
 
         {/* + Customer button */}
         <button
           onClick={onOpenAddCustomer}
-          className="flex items-center gap-1 bg-[#4e2e0f] hover:bg-[#3b220a] active:scale-95 text-[#ffebbe] border border-[#d6a54d]/60 text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0"
+          className="flex items-center gap-1 bg-[#4e2e0f] hover:bg-[#3b220a] active:scale-95 text-[#ffebbe] border border-[#d6a54d]/60 text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
           title="Add New Customer"
         >
           <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -69,25 +69,25 @@ export default function MobileHeader({
           <span className="xs:hidden text-[11px]">+ Cust</span>
         </button>
 
-        {/* History / Clock button - Enlarged size */}
+        {/* History / Clock button - Enlarged size as marked in screenshot */}
         <button
           onClick={onOpenHistory}
-          className="w-8 h-8 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
           title="Transaction History"
           aria-label="Transaction History"
         >
-          <History className="w-4.5 h-4.5 stroke-[2.2]" />
+          <History className="w-5.5 h-5.5 stroke-[2.4]" />
         </button>
 
-        {/* Notification Bell Icon - Enlarged size */}
+        {/* Notification Bell Icon - Enlarged size as marked in screenshot */}
         <button
           onClick={onOpenNotifications}
-          className="relative w-8 h-8 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0"
+          className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
           title="Notifications & Updates"
           aria-label="Notifications & Updates"
         >
-          <Bell className="w-4.5 h-4.5 stroke-[2.2]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#b3781e] ring-1 ring-white" />
+          <Bell className="w-5.5 h-5.5 stroke-[2.4]" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#b3781e] ring-1.5 ring-white" />
         </button>
       </div>
     </header>
