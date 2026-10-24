@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:export": "cross-env NODE_ENV=production STATIC_EXPORT=true next build",
+    "build:export": "cross-env NODE_ENV=production STATIC_EXPORT=true next build && node scripts/prepare-github-pages.js",
     "predeploy": "npm run build:export",
     "deploy": "gh-pages -d out -t true",
     "start": "next start",
