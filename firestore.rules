@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Allow reading user for login validation
+      allow get: if true;
+      allow list: if true;
+      // Allow user creation during signup
+      allow create: if request.resource.data.loginUid == userId;
+      // Allow user updates
+      allow update: if true;
+      allow delete: if false;
+    }
+  }
+}

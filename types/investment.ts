@@ -58,6 +58,9 @@ export interface UserStats {
   userName: string;
   userInitials: string;
   isVip: boolean;
+  loginUid?: string;
+  email?: string;
+  mobile?: string;
 }
 
 export interface ReferralMember {

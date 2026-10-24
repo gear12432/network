@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered user account with full personal, KYC, and address details",
+      "type": "object",
+      "properties": {
+        "loginUid": {
+          "type": "string",
+          "description": "Unique login UID in GKXXXXX format (e.g. GK37643)"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "User full name"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Mobile phone number"
+        },
+        "email": {
+          "type": "string",
+          "description": "User Gmail or email address"
+        },
+        "password": {
+          "type": "string",
+          "description": "User account password"
+        },
+        "kycDetails": {
+          "type": "object",
+          "description": "KYC identification details"
+        },
+        "addressDetails": {
+          "type": "object",
+          "description": "User residential address details"
+        },
+        "balance": {
+          "type": "number",
+          "description": "Account balance in INR"
+        },
+        "vipLevel": {
+          "type": "number",
+          "description": "Current VIP tier level"
+        },
+        "status": {
+          "type": "string",
+          "description": "Account status (e.g. active)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of registration"
+        }
+      },
+      "required": ["loginUid", "fullName", "mobile", "email", "password", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of registered application users identified by login UID"
+    }
+  }
+}

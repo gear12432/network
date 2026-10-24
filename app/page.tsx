@@ -40,11 +40,41 @@ import FullKycContent from '@/components/modals/FullKycContent';
 import AddCustomerContent from '@/components/modals/AddCustomerContent';
 import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
+import SplashScreen from '@/components/SplashScreen';
+import AuthScreen from '@/components/screens/AuthScreen';
+import { UserAccountData, testConnection } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 
 export default function InvestmentApp() {
   // Main State
-  const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS);
+  const [userStats, setUserStats] = useState<UserStats>(() => {
+    if (typeof window === 'undefined') return INITIAL_USER_STATS;
+    try {
+      const saved = localStorage.getItem('network_join_pro_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        const initials =
+          u.fullName
+            ?.split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase() || 'GK';
+        return {
+          ...INITIAL_USER_STATS,
+          userName: u.fullName || INITIAL_USER_STATS.userName,
+          userInitials: initials,
+          loginUid: u.loginUid,
+          email: u.email,
+          mobile: u.mobile,
+          walletBalance: u.balance ?? INITIAL_USER_STATS.walletBalance,
+        };
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_USER_STATS;
+  });
   const [plans] = useState<InvestmentPlan[]>(INITIAL_PLANS);
   const [activeInvestments, setActiveInvestments] = useState<ActiveInvestment[]>(
     INITIAL_ACTIVE_INVESTMENTS
@@ -93,6 +123,59 @@ export default function InvestmentApp() {
 
   // Toast Notification Message
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Splash Screen & User Authentication State
+  const [showSplash, setShowSplash] = useState(true);
+  const [currentUser, setCurrentUser] = useState<UserAccountData | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = localStorage.getItem('network_join_pro_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthChecked] = useState(true);
+
+  // Validate Firestore connection per Skill
+  React.useEffect(() => {
+    testConnection();
+  }, []);
+
+  const handleLoginSuccess = (user: UserAccountData) => {
+    setCurrentUser(user);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('network_join_pro_user', JSON.stringify(user));
+    }
+
+    const initials =
+      user.fullName
+        ?.split(' ')
+        .map((n) => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase() || 'GK';
+
+    setUserStats((prev) => ({
+      ...prev,
+      userName: user.fullName || prev.userName,
+      userInitials: initials,
+      loginUid: user.loginUid,
+      email: user.email,
+      mobile: user.mobile,
+      walletBalance: user.balance ?? prev.walletBalance,
+    }));
+
+    showToast(`Welcome, ${user.fullName}! (Login Successful)`);
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('network_join_pro_user');
+    }
+    setCurrentUser(null);
+    showToast('Logged out successfully.');
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -251,6 +334,16 @@ export default function InvestmentApp() {
     setActiveModal('plan-detail');
   };
 
+  // 1. Initial Animated Splash Screen
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
+
+  // 2. Full-Screen Login & Multi-step Sign Up Screen if not logged in
+  if (isAuthChecked && !currentUser) {
+    return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#faf6ee] font-sans text-[#46280b] antialiased selection:bg-[#d9a54c] selection:text-[#2b1706]">
       {/* Toast Alert */}
@@ -358,6 +451,7 @@ export default function InvestmentApp() {
                   onOpenHistory={() => setActiveModal('history')}
                   onOpenWithdraw={() => setActiveModal('withdraw')}
                   onOpenDeposit={() => setActiveModal('deposit')}
+                  onLogout={handleLogout}
                 />
               )}
             </main>
@@ -436,6 +530,7 @@ export default function InvestmentApp() {
                 onOpenHistory={() => setActiveModal('history')}
                 onOpenWithdraw={() => setActiveModal('withdraw')}
                 onOpenDeposit={() => setActiveModal('deposit')}
+                onLogout={handleLogout}
               />
             )}
           </main>

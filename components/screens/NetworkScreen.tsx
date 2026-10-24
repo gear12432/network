@@ -18,11 +18,13 @@ import {
   HelpCircle,
   Clock,
   ArrowRight,
+  ArrowLeft,
   Coins,
   CheckCircle2,
   Star,
   Zap,
   Lock,
+  Wallet,
 } from 'lucide-react';
 import { UserStats, ReferralMember, ActiveInvestment } from '@/types/investment';
 import { triggerConfetti } from '@/lib/confetti';
@@ -336,7 +338,20 @@ export default function NetworkScreen({
 }: NetworkScreenProps) {
   const [activeModalTab, setActiveModalTab] = useState<TabType | null>(null);
   const [selectedVipTier, setSelectedVipTier] = useState<VipTierInfo | null>(VIP_TIERS[0]);
+  const [copiedCode, setCopiedCode] = useState(false);
   const vipScrollRef = useRef<HTMLDivElement>(null);
+
+  // Prevent background scrolling when full screen view is open
+  React.useEffect(() => {
+    if (activeModalTab) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeModalTab]);
 
   const scrollVip = (direction: 'left' | 'right') => {
     if (vipScrollRef.current) {
@@ -487,56 +502,57 @@ export default function NetworkScreen({
     <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-2.5">
       {/* =========================================================================
           1. TOP ACTION BUTTONS: ONLY 3 BUTTONS IN A SINGLE LINE (NO LOGO, NO TITLE TEXT, NO GAP)
+          All 3 buttons use #D0872E theme and borderless styling
           ========================================================================= */}
-      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] border border-[#d9ba7f] shadow-2xs">
+      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] shadow-xs">
         <button
           onClick={() => setActiveModalTab('BUY RULES')}
-          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-white bg-[#D0872E] hover:bg-[#b87324] active:scale-95 transition-all shadow-xs flex items-center justify-center gap-1"
         >
-          <HelpCircle className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <HelpCircle className="w-3.5 h-3.5 text-white/90 shrink-0" />
           <span className="truncate">BUY RULES</span>
         </button>
         <button
           onClick={() => setActiveModalTab('MY REWARDS')}
-          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-white bg-[#D0872E] hover:bg-[#b87324] active:scale-95 transition-all shadow-xs flex items-center justify-center gap-1"
         >
-          <Gift className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <Gift className="w-3.5 h-3.5 text-white/90 shrink-0" />
           <span className="truncate">MY REWARDS</span>
         </button>
         <button
           onClick={() => setActiveModalTab('MY PURCHASES')}
-          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-white bg-[#D0872E] hover:bg-[#b87324] active:scale-95 transition-all shadow-xs flex items-center justify-center gap-1"
         >
-          <Coins className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <Coins className="w-3.5 h-3.5 text-white/90 shrink-0" />
           <span className="truncate">MY PURCHASES</span>
         </button>
       </div>
 
       {/* =========================================================================
-          2. VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE (REDUCED PLAN HEIGHT)
+          2. VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE (BORDERLESS CLEAN BOX)
           ========================================================================= */}
-      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-2xl p-2.5 sm:p-3 border border-[#dfc38d] shadow-xs space-y-1.5">
+      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5">
           {/* Header with Title and Scroll Controllers */}
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-1.5">
-              <Crown className="w-3.5 h-3.5 text-[#b87d23] fill-[#b87d23]" />
+              <Crown className="w-3.5 h-3.5 text-[#D0872E] fill-[#D0872E]" />
               <h2 className="font-serif font-black text-[11px] sm:text-xs text-[#46280b] uppercase tracking-wide">
                 VIP 1 – VIP 10 PRIVILEGE TIERS
               </h2>
             </div>
             
-            {/* Scroll Navigation Arrows */}
+            {/* Scroll Navigation Arrows styled with #D0872E (borderless) */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => scrollVip('left')}
-                className="w-5 h-5 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
+                className="w-5 h-5 rounded-full bg-[#D0872E] hover:bg-[#b87324] active:scale-90 text-white flex items-center justify-center shadow-2xs transition-all"
                 aria-label="Scroll left"
               >
                 <ChevronLeft className="w-3 h-3" />
               </button>
               <button
                 onClick={() => scrollVip('right')}
-                className="w-5 h-5 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
+                className="w-5 h-5 rounded-full bg-[#D0872E] hover:bg-[#b87324] active:scale-90 text-white flex items-center justify-center shadow-2xs transition-all"
                 aria-label="Scroll right"
               >
                 <ChevronRight className="w-3 h-3" />
@@ -544,7 +560,7 @@ export default function NetworkScreen({
             </div>
           </div>
 
-          {/* Horizontally Scrollable VIP Cards Track (Reduced Height) */}
+          {/* Horizontally Scrollable VIP Cards Track (Borderless Cards) */}
           <div
             ref={vipScrollRef}
             className="flex gap-2.5 overflow-x-auto pb-2 pt-0.5 px-0.5 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#d9a54c]/70 scrollbar-track-transparent select-none"
@@ -559,10 +575,10 @@ export default function NetworkScreen({
                     setSelectedVipTier(tier);
                     setActiveModalTab('VIP LEVEL');
                   }}
-                  className={`shrink-0 w-[142px] sm:w-[152px] snap-start rounded-xl p-2 border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-between text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 ${
+                  className={`shrink-0 w-[142px] sm:w-[152px] snap-start rounded-xl p-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-between text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 ${
                     isCurrent
-                      ? 'border-[#c99130] bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] shadow-sm ring-1 ring-[#e5ab48]/40'
-                      : 'border-[#dfbe7e] bg-gradient-to-b from-[#fffefd] via-[#fdf9f0] to-[#f8edcf] shadow-2xs hover:border-[#caa050]'
+                      ? 'bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] shadow-sm ring-1 ring-[#D0872E]/50'
+                      : 'bg-gradient-to-b from-[#fffefd] via-[#fdf9f0] to-[#f8edcf] shadow-2xs'
                   }`}
                 >
                   {/* Top Status Pill */}
@@ -598,11 +614,11 @@ export default function NetworkScreen({
                     </p>
                   </div>
 
-                  {/* Key Stats Block: Rebate & Spend Target */}
-                  <div className="w-full my-1 bg-white/85 rounded-lg p-1 border border-[#e5cfab] space-y-0.5 shadow-2xs">
+                  {/* Key Stats Block: Rebate & Spend Target (borderless) */}
+                  <div className="w-full my-1 bg-white/85 rounded-lg p-1 space-y-0.5 shadow-2xs">
                     <div className="flex items-center justify-between text-[9px]">
                       <span className="text-slate-500 font-semibold">Rebate:</span>
-                      <span className="font-black text-[#965c19] bg-[#faecd4] px-1 py-0.2 rounded font-mono">
+                      <span className="font-black text-[#D0872E] bg-[#faecd4] px-1 py-0.2 rounded font-mono">
                         {tier.rebate}
                       </span>
                     </div>
@@ -619,18 +635,14 @@ export default function NetworkScreen({
                     ⚡ {tier.limit}
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Button styled with #D0872E (borderless) */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedVipTier(tier);
                       setActiveModalTab('VIP LEVEL');
                     }}
-                    className={`w-full py-1 px-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center gap-0.5 ${
-                      isCurrent
-                        ? 'bg-[#4e2e0f] text-[#ffebbe] hover:bg-[#3b220a]'
-                        : 'bg-gradient-to-r from-[#d9a54c] to-[#be8832] text-white hover:brightness-105'
-                    }`}
+                    className="w-full py-1 px-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center gap-0.5 bg-[#D0872E] hover:bg-[#b87324] text-white active:scale-95"
                   >
                     <span>{isCurrent ? 'My Privileges' : 'View Perks'}</span>
                     <ChevronRight className="w-2.5 h-2.5" />
@@ -643,7 +655,7 @@ export default function NetworkScreen({
           {/* Quick Helper Note */}
           <div className="flex items-center justify-between px-1 text-[9.5px] sm:text-[10px] font-semibold text-[#734a23]">
             <span className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#b3781e]" />
+              <Sparkles className="w-3 h-3 text-[#D0872E]" />
               Tap any VIP level (1 to 10) for full rebate & daily limits
             </span>
             <button
@@ -651,20 +663,18 @@ export default function NetworkScreen({
                 setSelectedVipTier(VIP_TIERS[0]);
                 setActiveModalTab('VIP LEVEL');
               }}
-              className="text-[#965c19] hover:underline font-bold"
+              className="text-[#D0872E] hover:underline font-bold"
             >
               All Levels ➔
             </button>
           </div>
         </div>
 
-
-
       {/* =========================================================================
-          3. ORNATE GOLDEN SCROLL BANNER
+          3. ORNATE GOLDEN SCROLL BANNER (BORDERLESS CLEAN BOX)
           Total Customer Count: 124,500 | Customers who Purchased: 22,100
           ========================================================================= */}
-      <div className="relative rounded-3xl border-2 border-[#d9a54c] bg-gradient-to-b from-[#fffefc] via-[#fffbf2] to-[#fcf3dc] p-4 sm:p-5 shadow-md overflow-hidden">
+      <div className="relative rounded-3xl bg-gradient-to-b from-[#fffefc] via-[#fffbf2] to-[#fcf3dc] p-4 sm:p-5 shadow-xs overflow-hidden">
         {/* Ornate Gold Filigree Corner Accents */}
         <div className="absolute top-1 left-1 text-[#caa050] text-xs select-none">✦</div>
         <div className="absolute top-1 right-1 text-[#caa050] text-xs select-none">✦</div>
@@ -672,8 +682,8 @@ export default function NetworkScreen({
         <div className="absolute bottom-1 right-1 text-[#caa050] text-xs select-none">✦</div>
 
         <div className="flex items-center gap-3 sm:gap-5">
-          {/* 3D Gold Bars & Coins Illustration */}
-          <div className="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-[#e7be68] via-[#ffd786] to-[#fff3cd] rounded-2xl border border-[#d6a54d] shadow-sm p-1">
+          {/* 3D Gold Bars & Coins Illustration (borderless) */}
+          <div className="shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-[#e7be68] via-[#ffd786] to-[#fff3cd] rounded-2xl shadow-xs p-1">
             <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-xs">
               {/* Stack of Gold Bars (Ingots) */}
               <polygon points="12,42 36,42 48,34 24,34" fill="#d49b30" stroke="#87560a" strokeWidth="0.8" />
@@ -695,7 +705,7 @@ export default function NetworkScreen({
           </div>
 
           {/* Metric 1 & Metric 2 with Divider */}
-          <div className="flex-1 grid grid-cols-2 gap-2 text-center divide-x divide-[#dfbe7e]">
+          <div className="flex-1 grid grid-cols-2 gap-2 text-center divide-x divide-[#dfbe7e]/30">
             {/* Left: Total Customer Count */}
             <div className="pr-2">
               <span className="block text-[10px] sm:text-[11px] font-bold text-slate-700 leading-tight">
@@ -719,7 +729,7 @@ export default function NetworkScreen({
         </div>
 
         {/* Time Period and Leaderboard Tip */}
-        <div className="mt-3 pt-2.5 border-t border-[#ebd19f] text-center space-y-0.5">
+        <div className="mt-3 pt-2 text-center space-y-0.5 opacity-90">
           <p className="text-[10px] sm:text-[11px] font-bold text-[#55381f]">
             Time Period: 17/10/2026 00:00:00 - 23/10/2026 23:59:59
           </p>
@@ -730,9 +740,9 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          4. TIME FILTER PILLS: This Week / Yesterday Earn / Last Week
+          4. TIME FILTER PILLS: This Week / Yesterday Earn / Last Week (BORDERLESS)
           ========================================================================= */}
-      <div className="bg-[#f0dfc8] p-1 rounded-2xl flex items-center justify-between gap-1 shadow-2xs border border-[#dec5a2]">
+      <div className="bg-[#f0dfc8] p-1 rounded-2xl flex items-center justify-between gap-1 shadow-2xs">
         {(['This Week', 'Yesterday Earn', 'Last Week'] as TimeFilter[]).map((filter) => {
           const isActive = timeFilter === filter;
           return (
@@ -741,7 +751,7 @@ export default function NetworkScreen({
               onClick={() => setTimeFilter(filter)}
               className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#b96b58] to-[#c77d69] text-white shadow-sm shadow-[#b96b58]/30 font-black'
+                  ? 'bg-[#D0872E] text-white shadow-sm shadow-[#D0872E]/35 font-black'
                   : 'text-[#5a3818] hover:bg-white/40'
               }`}
             >
@@ -752,9 +762,9 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
+          5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST (BORDERLESS)
           ========================================================================= */}
-      <div className="bg-gradient-to-b from-[#fdfbf6] via-[#f8f1df] to-[#f4e8cb] rounded-3xl p-4 sm:p-5 border border-[#dfc38d] shadow-sm">
+      <div className="bg-gradient-to-b from-[#fdfbf6] via-[#f8f1df] to-[#f4e8cb] rounded-3xl p-4 sm:p-5 shadow-xs">
         <h3 className="text-center font-bold text-xs sm:text-sm text-[#4c2d15] uppercase tracking-wide mb-4">
           TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
         </h3>
@@ -765,7 +775,7 @@ export default function NetworkScreen({
           <div className="flex flex-col items-center">
             {/* Avatar Frame with Silver Ring */}
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-3 border-slate-300 p-0.5 bg-gradient-to-tr from-slate-200 to-white shadow-md">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-slate-200 to-white shadow-md">
                 <img
                   src={rank2.avatar}
                   alt={rank2.id}
@@ -780,7 +790,7 @@ export default function NetworkScreen({
             </span>
 
             {/* Silver Marble Pedestal Column */}
-            <div className="w-full bg-gradient-to-b from-[#e3e8ee] via-[#cfd6df] to-[#b7c1cd] border-t-2 border-white rounded-t-xl py-3 px-1 text-center shadow-md">
+            <div className="w-full bg-gradient-to-b from-[#e3e8ee] via-[#cfd6df] to-[#b7c1cd] rounded-t-xl py-3 px-1 text-center shadow-md">
               <span className="block text-base sm:text-lg font-black text-[#303e51]">
                 {rank2.prize.toLocaleString()}
               </span>
@@ -799,7 +809,7 @@ export default function NetworkScreen({
                 <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-[#ffbe33] fill-[#ffbe33] stroke-[#966308]" />
               </div>
 
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-[#e9b854] p-0.5 bg-gradient-to-tr from-[#ffeaa7] via-[#f7cd6a] to-[#c78b27] shadow-xl">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-0.5 bg-gradient-to-tr from-[#ffeaa7] via-[#f7cd6a] to-[#c78b27] shadow-xl">
                 <img
                   src={rank1.avatar}
                   alt={rank1.id}
@@ -814,7 +824,7 @@ export default function NetworkScreen({
             </span>
 
             {/* Gold Marble Pedestal Column (Tallest) */}
-            <div className="w-full bg-gradient-to-b from-[#fff3d4] via-[#eed193] to-[#d6ad5e] border-t-3 border-[#fff9eb] rounded-t-2xl py-4 sm:py-5 px-1 text-center shadow-lg">
+            <div className="w-full bg-gradient-to-b from-[#fff3d4] via-[#eed193] to-[#d6ad5e] rounded-t-2xl py-4 sm:py-5 px-1 text-center shadow-lg">
               <span className="block text-lg sm:text-xl font-black text-[#503010]">
                 {rank1.prize.toLocaleString()}
               </span>
@@ -828,7 +838,7 @@ export default function NetworkScreen({
           <div className="flex flex-col items-center">
             {/* Avatar Frame with Bronze Ring */}
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-3 border-[#c98e6e] p-0.5 bg-gradient-to-tr from-[#f3cfbc] to-white shadow-md">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#f3cfbc] to-white shadow-md">
                 <img
                   src={rank3.avatar}
                   alt={rank3.id}
@@ -843,7 +853,7 @@ export default function NetworkScreen({
             </span>
 
             {/* Bronze Marble Pedestal Column */}
-            <div className="w-full bg-gradient-to-b from-[#fae2d5] via-[#e5bc9f] to-[#cf9877] border-t-2 border-white rounded-t-xl py-2.5 px-1 text-center shadow-md">
+            <div className="w-full bg-gradient-to-b from-[#fae2d5] via-[#e5bc9f] to-[#cf9877] rounded-t-xl py-2.5 px-1 text-center shadow-md">
               <span className="block text-base sm:text-lg font-black text-[#4b2713]">
                 {rank3.prize.toLocaleString()}
               </span>
@@ -856,23 +866,23 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          7. RANKED TABLE: Ranks 4 to 10+
+          7. RANKED TABLE: Ranks 4 to 10+ (BORDERLESS)
           Rank | Customer | Points | Prize
           ========================================================================= */}
       <div className="space-y-1.5">
         {/* Table Header Bar */}
-        <div className="bg-[#edd8ba] rounded-xl px-4 py-2 grid grid-cols-12 text-[11px] sm:text-xs font-bold text-[#55361e] border border-[#d6be9a]">
+        <div className="bg-[#edd8ba] rounded-xl px-4 py-2 grid grid-cols-12 text-[11px] sm:text-xs font-bold text-[#55361e] shadow-xs">
           <span className="col-span-2 text-center">Rank</span>
           <span className="col-span-4 text-center">Customer</span>
           <span className="col-span-3 text-center">Points</span>
           <span className="col-span-3 text-center">Prize</span>
         </div>
 
-        {/* Table Rows */}
+        {/* Table Rows (borderless) */}
         {leaderboardTable.map((item) => (
           <div
             key={item.id}
-            className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm border border-[#e8d1aa] shadow-2xs hover:bg-[#fff9ea] transition-colors"
+            className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm shadow-2xs hover:bg-[#fff9ea] transition-colors"
           >
             {/* Rank */}
             <span className="col-span-2 text-center font-black text-slate-800 text-sm sm:text-base">
@@ -884,7 +894,7 @@ export default function NetworkScreen({
               <img
                 src={item.avatar}
                 alt={item.id}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-[#cfa65f] shrink-0"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 shadow-2xs"
               />
               <span className="font-mono font-bold text-slate-900 text-xs truncate">
                 {item.id}
@@ -905,45 +915,81 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          MODALS FOR THE 4 TOP BUTTONS (VIP LEVEL, BUY RULES, MY REWARDS, MY PURCHASES)
+          FULL-SCREEN RIGHT-TO-LEFT MODAL SCREENS (BUY RULES, MY REWARDS, MY PURCHASES, VIP LEVEL)
           ========================================================================= */}
       <AnimatePresence>
         {activeModalTab && (
-          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', damping: 24, stiffness: 280 }}
-              className="bg-[#fefbf5] rounded-3xl p-5 sm:p-6 max-w-md w-full border border-[#d9ba7f] shadow-2xl relative max-h-[85vh] overflow-y-auto space-y-4 text-slate-900"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#dfbe7e]">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#b97d21]" />
-                  <h3 className="font-serif font-black text-lg text-[#503010]">
-                    {activeModalTab}
-                  </h3>
-                </div>
+          <motion.div
+            key={activeModalTab}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{
+              type: 'spring',
+              damping: 26,
+              stiffness: 260,
+              mass: 0.85,
+            }}
+            className="fixed inset-0 z-50 bg-gradient-to-b from-[#fdfbf6] via-[#faf5e9] to-[#f4ecd9] flex flex-col w-full h-full overflow-hidden shadow-2xl text-slate-900"
+          >
+            {/* Top Navigation Bar with Back Button and Close (borderless) */}
+            <header className="sticky top-0 z-20 bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                 <button
                   onClick={() => setActiveModalTab(null)}
-                  className="w-8 h-8 rounded-full bg-[#f1dfbe] hover:bg-[#e4cb9c] text-[#55361e] flex items-center justify-center transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-90 text-[#55361e] flex items-center justify-center transition-all shadow-2xs shrink-0"
+                  title="Go Back"
+                  aria-label="Go Back"
                 >
-                  <X className="w-4 h-4 stroke-[2.5]" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
                 </button>
+
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#f5e4bd] to-[#edd199] text-[#5c3710] flex items-center justify-center shadow-2xs shrink-0">
+                    {activeModalTab === 'BUY RULES' && <HelpCircle className="w-4 h-4 text-[#D0872E]" />}
+                    {activeModalTab === 'MY REWARDS' && <Gift className="w-4 h-4 text-[#D0872E]" />}
+                    {activeModalTab === 'MY PURCHASES' && <Coins className="w-4 h-4 text-[#D0872E]" />}
+                    {activeModalTab === 'VIP LEVEL' && <Crown className="w-4 h-4 text-[#D0872E]" />}
+                  </div>
+                  <div className="min-w-0 leading-tight">
+                    <h3 className="font-serif font-black text-sm sm:text-base text-[#46280b] tracking-wide truncate">
+                      {activeModalTab}
+                    </h3>
+                    <p className="text-[10px] sm:text-[11px] text-[#86592a] font-medium truncate">
+                      {activeModalTab === 'BUY RULES' && 'Commission policy & leaderboard rules'}
+                      {activeModalTab === 'MY REWARDS' && 'Referral bonuses, team rebates & claiming'}
+                      {activeModalTab === 'MY PURCHASES' && 'Your subscribed plans & daily returns'}
+                      {activeModalTab === 'VIP LEVEL' && 'All 10 tier requirements, perks & privileges'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* 1. VIP LEVEL CONTENT - ALL 10 VIP LEVELS */}
+              <button
+                onClick={() => setActiveModalTab(null)}
+                className="w-8 h-8 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#55361e] flex items-center justify-center transition-colors shadow-2xs shrink-0"
+                title="Close"
+                aria-label="Close"
+              >
+                <X className="w-4.5 h-4.5 stroke-[2.5]" />
+              </button>
+            </header>
+
+            {/* Full-Screen Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-xl mx-auto w-full space-y-4">
+              {/* =========================================================================
+                  1. VIP LEVEL FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  ========================================================================= */}
               {activeModalTab === 'VIP LEVEL' && (
-                <div className="space-y-3.5 text-xs leading-relaxed">
+                <div className="space-y-4 text-xs leading-relaxed">
                   {/* Current Active Status Card */}
-                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-3.5 rounded-2xl border border-[#d4a852] flex items-center justify-between shadow-2xs">
+                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-4 rounded-2xl flex items-center justify-between shadow-xs">
                     <div className="flex items-center gap-3">
-                      <VipBadgeIcon level={selectedVipTier?.level || 1} className="w-12 h-12 shrink-0 drop-shadow-xs" />
+                      <VipBadgeIcon level={selectedVipTier?.level || 1} className="w-14 h-14 shrink-0 drop-shadow-xs" />
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-bold text-[#7d521d] uppercase block">
-                            {selectedVipTier?.level === 1 ? 'Current Status' : 'Selected Level'}
+                            {selectedVipTier?.level === 1 ? 'Current Status' : 'Selected Tier'}
                           </span>
                           {selectedVipTier?.level === 1 && (
                             <span className="bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full">
@@ -951,19 +997,25 @@ export default function NetworkScreen({
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm font-black text-[#46280b]">
+                        <h4 className="text-base font-black text-[#46280b]">
                           {selectedVipTier?.title} • {selectedVipTier?.subtitle}
                         </h4>
-                        <p className="text-[10px] text-[#714b1c] font-semibold mt-0.5">
-                          Rebate: <strong>{selectedVipTier?.rebate}</strong> • Target: <strong>{selectedVipTier?.spend}</strong>
+                        <p className="text-[11px] text-[#714b1c] font-semibold mt-0.5">
+                          Daily Rebate: <strong>{selectedVipTier?.rebate}</strong> • Spend Target: <strong>{selectedVipTier?.spend}</strong>
+                        </p>
+                        <p className="text-[10px] text-[#8c5a29] mt-0.5">
+                          Withdrawal Limit: <strong>{selectedVipTier?.limit}</strong>
                         </p>
                       </div>
                     </div>
-                    <Crown className="w-6 h-6 text-[#b3781e] fill-[#b3781e] shrink-0" />
+                    <Crown className="w-7 h-7 text-[#D0872E] fill-[#D0872E] shrink-0" />
                   </div>
 
-                  {/* List of All 10 VIP Tiers */}
-                  <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                  {/* List of All 10 VIP Tiers (borderless) */}
+                  <div className="space-y-2.5">
+                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                      Explore All 10 VIP Privilege Tiers
+                    </h4>
                     {VIP_TIERS.map((v) => {
                       const isCurrent = v.level === 1;
                       const isSelected = selectedVipTier?.level === v.level;
@@ -971,17 +1023,17 @@ export default function NetworkScreen({
                         <div
                           key={v.level}
                           onClick={() => setSelectedVipTier(v)}
-                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+                          className={`p-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
                             isSelected
-                              ? 'bg-[#fffbf0] border-[#caa050] shadow-xs ring-1 ring-[#caa050]'
-                              : 'bg-white border-[#e6cb9d] hover:bg-[#fffcf7]'
+                              ? 'bg-[#fffbf0] shadow-md ring-2 ring-[#D0872E]/50'
+                              : 'bg-white shadow-2xs hover:bg-[#fffcf7]'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <VipBadgeIcon level={v.level} className="w-10 h-10 shrink-0" />
+                          <div className="flex items-center gap-3 min-w-0">
+                            <VipBadgeIcon level={v.level} className="w-11 h-11 shrink-0 drop-shadow-xs" />
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-serif font-black text-slate-900 text-xs sm:text-sm">
+                                <span className="font-serif font-black text-slate-900 text-sm">
                                   {v.title}
                                 </span>
                                 {isCurrent && (
@@ -990,20 +1042,20 @@ export default function NetworkScreen({
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10px] text-[#86592a] font-bold block truncate">
+                              <span className="text-[10.5px] text-[#86592a] font-bold block truncate">
                                 {v.subtitle}
                               </span>
-                              <span className="text-[9.5px] text-slate-500 block truncate">
-                                Min Target: <strong className="text-slate-800">{v.spend}</strong> • {v.limit}
+                              <span className="text-[10px] text-slate-500 block truncate">
+                                Target: <strong className="text-slate-800">{v.spend}</strong> • Limit: {v.limit}
                               </span>
-                              <p className="text-[9px] text-[#7d511f] font-medium italic mt-0.5 line-clamp-1">
+                              <p className="text-[9.5px] text-[#7d511f] font-medium italic mt-0.5 line-clamp-1">
                                 ✦ {v.perk}
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="font-black text-[#965c19] bg-[#faecd4] px-2 py-0.5 rounded-full text-[11px] font-mono block">
+                            <span className="font-black text-[#D0872E] bg-[#faecd4] px-2.5 py-1 rounded-full text-xs font-mono block shadow-2xs">
                               {v.rebate}
                             </span>
                             <span className="text-[9px] text-slate-400 mt-1 block">
@@ -1017,134 +1069,415 @@ export default function NetworkScreen({
                 </div>
               )}
 
-              {/* 2. BUY RULES CONTENT */}
+              {/* =========================================================================
+                  2. BUY RULES FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  ========================================================================= */}
               {activeModalTab === 'BUY RULES' && (
-                <div className="space-y-3 text-xs leading-relaxed text-slate-700">
-                  <div className="p-3 bg-[#fdf6e6] rounded-2xl border border-[#e4c99e] space-y-1.5">
-                    <h5 className="font-black text-[#503010]">1. Multi-Tier Commission Rules</h5>
-                    <p>
-                      • <strong>Level 1 (Direct Members):</strong> You earn <strong>10% instant commission</strong> on every plan your direct friends join.
+                <div className="space-y-3.5 text-xs leading-relaxed text-slate-700">
+                  {/* Hero Commission Header Card */}
+                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-4 rounded-2xl shadow-xs space-y-2 text-[#46280b]">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#D0872E]" />
+                      <h4 className="font-serif font-black text-sm uppercase tracking-wide">
+                        3-Tier Passive Commission Structure
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-[#6d451b] font-medium leading-relaxed">
+                      Earn automated direct and multi-level bonuses every time a member in your personal referral tree purchases a plan.
                     </p>
-                    <p>
-                      • <strong>Level 2 (Tier 2 Members):</strong> You earn <strong>5% commission</strong> whenever members invited by your tier 1 members purchase.
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#86592a] block">Level 1 Direct</span>
+                        <span className="text-base font-black text-[#46280b] font-mono">10%</span>
+                        <span className="text-[8.5px] text-emerald-700 block font-bold">Instant Payout</span>
+                      </div>
+                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#86592a] block">Level 2 Network</span>
+                        <span className="text-base font-black text-[#46280b] font-mono">5%</span>
+                        <span className="text-[8.5px] text-emerald-700 block font-bold">Automatic</span>
+                      </div>
+                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#86592a] block">Level 3 Team</span>
+                        <span className="text-base font-black text-[#46280b] font-mono">2%</span>
+                        <span className="text-[8.5px] text-emerald-700 block font-bold">Perpetual</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 1: Detailed Level 1 Rules */}
+                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#503010]">
+                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                        1
+                      </div>
+                      <h5 className="font-black text-xs">Level 1 (Direct Friends) — 10% Cash Commission</h5>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      Share your personal invite code or link. When your direct contact registers and joins any VIP investment plan, you receive <strong className="text-slate-900">10% of their investment amount</strong> credited immediately into your wallet.
                     </p>
-                    <p>
-                      • <strong>Level 3 (Tier 3 Members):</strong> You earn <strong>2% commission</strong> on indirect 3rd tier plan investments.
+                    <div className="bg-[#fef9ee] p-2.5 rounded-xl text-[10.5px] text-[#6d451b] shadow-2xs">
+                      <strong>Example:</strong> Friend invests ₹10,000 in a plan → You immediately get <strong>₹1,000 cash</strong> in your wallet.
+                    </div>
+                  </div>
+
+                  {/* Section 2: Level 2 & 3 Rules */}
+                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#503010]">
+                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                        2
+                      </div>
+                      <h5 className="font-black text-xs">Level 2 (5%) & Level 3 (2%) Indirect Rewards</h5>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      Your income does not stop at your direct friends. Whenever your friends invite their own contacts, you receive <strong className="text-slate-900">5% commission on Level 2</strong> and <strong className="text-slate-900">2% on Level 3</strong> without any limit on the number of members.
                     </p>
                   </div>
 
-                  <div className="p-3 bg-[#fdf6e6] rounded-2xl border border-[#e4c99e] space-y-1.5">
-                    <h5 className="font-black text-[#503010]">2. Leaderboard Points Calculation</h5>
-                    <p>• Every <strong>₹1 invested</strong> in a plan by you or your team yields <strong>1 Point</strong> on the leaderboard.</p>
-                    <p>• The leaderboard updates in real-time every 30 minutes.</p>
+                  {/* Section 3: Leaderboard Points System */}
+                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#503010]">
+                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                        3
+                      </div>
+                      <h5 className="font-black text-xs">Leaderboard Points Calculation</h5>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      • Every <strong className="text-slate-900">₹1 invested</strong> in a plan by you or your referral network generates <strong className="text-slate-900">1 Point</strong> on the leaderboard.
+                    </p>
+                    <p className="text-slate-600 text-[11px]">
+                      • The leaderboard updates in real-time every 30 minutes, allowing you to climb the podium ranks.
+                    </p>
                   </div>
 
-                  <div className="p-3 bg-[#fdf6e6] rounded-2xl border border-[#e4c99e] space-y-1.5">
-                    <h5 className="font-black text-[#503010]">3. Weekly Prize Settlement</h5>
-                    <p>• Settlement takes place every Sunday at <strong>23:59:59</strong>.</p>
-                    <p>• Top 10 champions receive direct cash bonuses credited to their Wallet balance.</p>
+                  {/* Section 4: Weekly Settlement */}
+                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#503010]">
+                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                        4
+                      </div>
+                      <h5 className="font-black text-xs">Weekly Sunday Settlement & Cash Payout</h5>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      • Settlement takes place every Sunday night at <strong className="text-slate-900">23:59:59</strong>.
+                    </p>
+                    <p className="text-slate-600 text-[11px]">
+                      • The Top 10 champions receive direct bonus cash prizes (up to ₹3,000) deposited directly into their wallet, withdrawable immediately.
+                    </p>
+                  </div>
+
+                  {/* Section 5: Payouts & Fair Play */}
+                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#503010]">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <h5 className="font-black text-xs">Instant Withdrawal & Fair Play Policy</h5>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      All commission earnings are completely unencumbered. You can withdraw directly to UPI or Bank transfer 24/7 with zero platform fees once KYC is active.
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* 3. MY REWARDS CONTENT */}
+              {/* =========================================================================
+                  3. MY REWARDS FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  ========================================================================= */}
               {activeModalTab === 'MY REWARDS' && (
-                <div className="space-y-3 text-xs">
-                  <div className="bg-gradient-to-r from-[#ffecc3] to-[#fadca0] p-4 rounded-2xl border border-[#d4a852] text-center space-y-1">
-                    <span className="text-[10px] font-bold text-[#7d521d] uppercase block">
-                      Total Referral Rewards
+                <div className="space-y-4 text-xs">
+                  {/* Hero Balance Card */}
+                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-5 rounded-2xl text-center space-y-1.5 shadow-xs">
+                    <span className="text-[10.5px] font-bold text-[#7d521d] uppercase tracking-wider block">
+                      Total Referral Rewards Earned
                     </span>
-                    <h3 className="text-2xl font-black text-[#46280b]">₹14,200</h3>
-                    <p className="text-[10px] text-[#7d521d] font-semibold">Credited to wallet & ready to withdraw</p>
+                    <h3 className="text-3xl font-black text-[#46280b] font-mono">₹14,200</h3>
+                    <p className="text-[11px] text-[#7d521d] font-semibold">
+                      Credited to wallet & available for instant withdrawal
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        onClick={() => {
+                          triggerConfetti();
+                          setActiveModalTab(null);
+                        }}
+                        className="w-full py-2.5 bg-[#D0872E] hover:bg-[#b87324] text-white font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5"
+                      >
+                        <Gift className="w-4 h-4 text-white/90" />
+                        <span>Claim All Rewards to Wallet</span>
+                      </button>
+                    </div>
                   </div>
 
+                  {/* Quick Share Code Box */}
+                  <div className="bg-white p-3.5 rounded-2xl shadow-2xs space-y-2">
+                    <span className="text-[10px] font-bold text-[#86592a] uppercase tracking-wider block">
+                      Your Referral Invite Code
+                    </span>
+                    <div className="flex items-center justify-between bg-[#fbf6ec] rounded-xl px-3 py-2 shadow-2xs">
+                      <span className="font-mono font-black text-base text-[#46280b] tracking-widest">
+                        VIP8899
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard?.writeText('VIP8899');
+                          setCopiedCode(true);
+                          setTimeout(() => setCopiedCode(false), 2000);
+                        }}
+                        className="flex items-center gap-1 text-xs font-bold px-3 py-1 bg-[#D0872E] hover:bg-[#b87324] text-white rounded-lg active:scale-90 transition-all shadow-xs"
+                      >
+                        {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedCode ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Multi-Tier Commissions Breakdown (borderless) */}
                   <div className="space-y-2">
-                    <div className="p-3 bg-white rounded-xl border border-[#e4c99e] flex items-center justify-between">
+                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                      Commissions by Referral Tier
+                    </h4>
+                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-800 block">Tier 1 Direct Commissions</span>
-                        <span className="text-[10px] text-slate-500">2 Active Members</span>
+                        <span className="font-bold text-slate-900 text-xs block">
+                          Tier 1 Direct Commissions (10%)
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          2 Active Direct Referral Members
+                        </span>
                       </div>
-                      <span className="font-mono font-bold text-emerald-700">₹9,800</span>
+                      <span className="font-mono font-black text-emerald-700 text-sm">
+                        ₹9,800
+                      </span>
                     </div>
 
-                    <div className="p-3 bg-white rounded-xl border border-[#e4c99e] flex items-center justify-between">
+                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-800 block">Tier 2 Network Commissions</span>
-                        <span className="text-[10px] text-slate-500">4 Indirect Members</span>
+                        <span className="font-bold text-slate-900 text-xs block">
+                          Tier 2 Network Commissions (5%)
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          4 Indirect Network Members
+                        </span>
                       </div>
-                      <span className="font-mono font-bold text-emerald-700">₹3,400</span>
+                      <span className="font-mono font-black text-emerald-700 text-sm">
+                        ₹3,400
+                      </span>
                     </div>
 
-                    <div className="p-3 bg-white rounded-xl border border-[#e4c99e] flex items-center justify-between">
+                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-800 block">Tier 3 Team Commissions</span>
-                        <span className="text-[10px] text-slate-500">8 Indirect Members</span>
+                        <span className="font-bold text-slate-900 text-xs block">
+                          Tier 3 Team Commissions (2%)
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          8 Extended Team Members
+                        </span>
                       </div>
-                      <span className="font-mono font-bold text-emerald-700">₹1,000</span>
+                      <span className="font-mono font-black text-emerald-700 text-sm">
+                        ₹1,000
+                      </span>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      triggerConfetti();
-                      setActiveModalTab(null);
-                    }}
-                    className="w-full py-2.5 bg-[#4e2e0f] hover:bg-[#3d240b] text-white font-bold rounded-xl shadow-md transition-all active:scale-95"
-                  >
-                    Claim All Rewards
-                  </button>
+                  {/* Recent Reward Activity History */}
+                  <div className="space-y-2">
+                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                      Recent Referral Income Ledger
+                    </h4>
+                    <div className="space-y-1.5">
+                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                        <div>
+                          <span className="font-bold text-slate-800 block">Direct Rebate: Member 2447951</span>
+                          <span className="text-[9.5px] text-slate-500">Today, 14:22 • Level 1 Bonus</span>
+                        </div>
+                        <span className="font-mono font-black text-emerald-700">+₹1,000</span>
+                      </div>
+                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                        <div>
+                          <span className="font-bold text-slate-800 block">VIP Milestone Bonus</span>
+                          <span className="text-[9.5px] text-slate-500">Yesterday • VIP 2 Promotion Gift</span>
+                        </div>
+                        <span className="font-mono font-black text-emerald-700">+₹500</span>
+                      </div>
+                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                        <div>
+                          <span className="font-bold text-slate-800 block">Tier 2 Rebate: Member 6475895</span>
+                          <span className="text-[9.5px] text-slate-500">2 days ago • Level 2 Bonus</span>
+                        </div>
+                        <span className="font-mono font-black text-emerald-700">+₹350</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* 4. MY PURCHASES CONTENT */}
+              {/* =========================================================================
+                  4. MY PURCHASES FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  ========================================================================= */}
               {activeModalTab === 'MY PURCHASES' && (
-                <div className="space-y-3 text-xs">
-                  {activeInvestments.length > 0 ? (
-                    <div className="space-y-2">
-                      {activeInvestments.map((inv) => (
+                <div className="space-y-4 text-xs">
+                  {/* Summary Metric Header */}
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] rounded-2xl shadow-xs text-center text-[#46280b]">
+                    <div className="p-1">
+                      <span className="text-[9px] font-bold text-[#86592a] block">Active Plans</span>
+                      <span className="text-base font-black font-mono">
+                        {activeInvestments.length > 0 ? activeInvestments.length : 2}
+                      </span>
+                    </div>
+                    <div className="p-1 border-x border-[#dfbe7e]/30">
+                      <span className="text-[9px] font-bold text-[#86592a] block">Daily Return</span>
+                      <span className="text-base font-black font-mono text-emerald-800">
+                        +₹{activeInvestments.length > 0
+                          ? activeInvestments.reduce((acc, i) => acc + i.dailyReturn, 0).toLocaleString('en-IN')
+                          : '1,250'}/d
+                      </span>
+                    </div>
+                    <div className="p-1">
+                      <span className="text-[9px] font-bold text-[#86592a] block">Total Accrued</span>
+                      <span className="text-base font-black font-mono">
+                        ₹{activeInvestments.length > 0
+                          ? activeInvestments.reduce((acc, i) => acc + (i.dailyReturn * i.daysCompleted), 0).toLocaleString('en-IN')
+                          : '6,250'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Active Purchases List (borderless) */}
+                  <div className="space-y-2.5">
+                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                      Your Active Subscribed VIP Plans
+                    </h4>
+
+                    {activeInvestments.length > 0 ? (
+                      activeInvestments.map((inv) => (
                         <div
                           key={inv.id}
-                          className="p-3 bg-white rounded-xl border border-[#e4c99e] flex items-center justify-between shadow-2xs"
+                          className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2 hover:bg-[#fffdf9] transition-all"
                         >
-                          <div>
-                            <h5 className="font-bold text-slate-900">{inv.planName}</h5>
-                            <span className="text-[10px] text-slate-500">
-                              Invested: ₹{inv.investedAmount.toLocaleString('en-IN')} • {inv.daysCompleted}/{inv.totalDays} Days
-                            </span>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
+                                {inv.planName}
+                              </h5>
+                              <span className="text-[10px] text-slate-500 font-medium">
+                                Invested: ₹{inv.investedAmount.toLocaleString('en-IN')} • Started {inv.startDate}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono font-black text-[#966308] text-sm block">
+                                +₹{inv.dailyReturn}/day
+                              </span>
+                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                                Running
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <span className="font-mono font-black text-[#966308] block">
-                              +₹{inv.dailyReturn}/day
-                            </span>
-                            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">
-                              Active
-                            </span>
+
+                          {/* Progress Bar */}
+                          <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
+                              <span>Duration Progress</span>
+                              <span className="font-mono font-bold text-[#55361e]">
+                                Day {inv.daysCompleted} of {inv.totalDays} Days
+                              </span>
+                            </div>
+                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full transition-all"
+                                style={{
+                                  width: `${Math.min(100, Math.round((inv.daysCompleted / inv.totalDays) * 100))}%`,
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center space-y-2 bg-white rounded-2xl border border-[#e4c99e]">
-                      <Gift className="w-8 h-8 text-[#b3781e] mx-auto" />
-                      <h5 className="font-bold text-slate-800">No active plans yet</h5>
-                      <p className="text-[11px] text-slate-500">Join a designer VIP investment plan to start receiving daily returns!</p>
-                      {onOpenPlans && (
-                        <button
-                          onClick={() => {
-                            setActiveModalTab(null);
-                            onOpenPlans();
-                          }}
-                          className="mt-2 py-2 px-4 bg-[#4e2e0f] text-white font-bold rounded-xl text-xs active:scale-95"
-                        >
-                          Explore Plans Now
-                        </button>
-                      )}
-                    </div>
+                      ))
+                    ) : (
+                      <>
+                        {/* Sample Active Plan 1 */}
+                        <div className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
+                                Banarasi Silk Weaver Fund
+                              </h5>
+                              <span className="text-[10px] text-slate-500 font-medium">
+                                Invested: ₹5,000 • Started 20 Oct 2026
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono font-black text-[#966308] text-sm block">
+                                +₹650/day
+                              </span>
+                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                                Running
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
+                              <span>Duration Progress</span>
+                              <span className="font-mono font-bold text-[#55361e]">
+                                Day 5 of 45 Days
+                              </span>
+                            </div>
+                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full w-[11%]" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Sample Active Plan 2 */}
+                        <div className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
+                                Kanjivaram Royal Brocade
+                              </h5>
+                              <span className="text-[10px] text-slate-500 font-medium">
+                                Invested: ₹3,000 • Started 18 Oct 2026
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono font-black text-[#966308] text-sm block">
+                                +₹600/day
+                              </span>
+                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                                Running
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
+                              <span>Duration Progress</span>
+                              <span className="font-mono font-bold text-[#55361e]">
+                                Day 7 of 30 Days
+                              </span>
+                            </div>
+                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full w-[23%]" />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Explore More CTA */}
+                  {onOpenPlans && (
+                    <button
+                      onClick={() => {
+                        setActiveModalTab(null);
+                        onOpenPlans();
+                      }}
+                      className="w-full py-3 bg-[#D0872E] hover:bg-[#b87324] text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      <Sparkles className="w-4 h-4 text-white/90" />
+                      <span>Browse More High-Yield Plans</span>
+                    </button>
                   )}
                 </div>
               )}
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

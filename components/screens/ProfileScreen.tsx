@@ -22,6 +22,7 @@ interface ProfileScreenProps {
   onOpenHistory: () => void;
   onOpenWithdraw: () => void;
   onOpenDeposit: () => void;
+  onLogout?: () => void;
 }
 
 export default function ProfileScreen({
@@ -29,6 +30,7 @@ export default function ProfileScreen({
   onOpenHistory,
   onOpenWithdraw,
   onOpenDeposit,
+  onLogout,
 }: ProfileScreenProps) {
   return (
     <div className="space-y-4 pb-20 sm:pb-8">
@@ -59,10 +61,12 @@ export default function ProfileScreen({
                 {stats.level}
               </span>
             </div>
-            <p className="text-xs text-[#8a5b28] font-mono mt-0.5">ID: 8829410 • Joined Oct 2026</p>
+            <p className="text-xs text-[#8a5b28] font-mono mt-0.5">
+              UID: <span className="font-bold text-[#b87324]">{stats.loginUid || 'GK37643'}</span> • Joined Oct 2026
+            </p>
             <div className="flex items-center gap-1 text-[11px] text-[#965c19] font-semibold mt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-[#b3781e]" />
-              <span>KYC Level 2 Verified</span>
+              <span>KYC Level 2 Verified • Firebase Cloud</span>
             </div>
           </div>
         </div>
@@ -144,11 +148,30 @@ export default function ProfileScreen({
           </div>
           <ChevronRight className="w-4 h-4 text-[#caa050]" />
         </div>
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-full flex items-center justify-between p-4 hover:bg-red-50/80 transition-colors text-left cursor-pointer group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-red-100/70 text-red-700 flex items-center justify-center border border-red-200 group-hover:bg-red-200">
+                <LogOut className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-serif font-black text-xs text-red-700 block">Log Out of Account</span>
+                <span className="text-[10px] text-red-600/80">Sign out and return to the login screen</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        )}
       </div>
 
       {/* App Version & Disclaimers */}
       <div className="text-center pt-2">
-        <p className="text-[10px] text-slate-400">NetworkJoin Pro v2.4.1 (Stable Build)</p>
+        <p className="text-[10px] text-slate-400">NetworkJoin Pro v2.5.0 (Firebase Cloud)</p>
         <p className="text-[10px] text-slate-400 mt-0.5">Encrypted with 256-bit SSL Certificate</p>
       </div>
     </div>
