@@ -348,16 +348,6 @@ export default function NetworkScreen({
   };
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('This Week');
-  const [copied, setCopied] = useState(false);
-
-  const referralLink = `https://networkjoin.pro/join?ref=${stats.referralCode}`;
-
-  const handleCopy = () => {
-    navigator.clipboard?.writeText(referralLink);
-    setCopied(true);
-    triggerConfetti();
-    setTimeout(() => setCopied(false), 2500);
-  };
 
   // Top 3 Data (Matches reference screenshot c2320729-fb66-42af-8277-90aa14e8526b_ef120a21.jpeg)
   const topThreeData: Record<TimeFilter, TopCustomer[]> = {
@@ -494,81 +484,38 @@ export default function NetworkScreen({
   const rank3 = currentTop.find((c) => c.rank === 3)!;
 
   return (
-    <div className="pb-24 sm:pb-12 max-w-xl mx-auto space-y-2.5">
+    <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-2.5">
       {/* =========================================================================
-          1. LUXURY GOLD TOP HEADER: DESIGNER BLOUSE VIP (COMPACT HEIGHT & REDUCED GAP)
+          1. TOP ACTION BUTTONS: ONLY 3 BUTTONS IN A SINGLE LINE (NO LOGO, NO TITLE TEXT, NO GAP)
           ========================================================================= */}
-      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-2xl p-2.5 sm:p-3 border border-[#dfc38d] shadow-xs relative overflow-hidden text-center">
-        {/* Subtle Palace Filigree Background Accents */}
-        <div className="absolute top-0 left-0 w-20 h-20 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-0 right-0 w-20 h-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
+      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] border border-[#d9ba7f] shadow-2xs">
+        <button
+          onClick={() => setActiveModalTab('BUY RULES')}
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+        >
+          <HelpCircle className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <span className="truncate">BUY RULES</span>
+        </button>
+        <button
+          onClick={() => setActiveModalTab('MY REWARDS')}
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+        >
+          <Gift className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <span className="truncate">MY REWARDS</span>
+        </button>
+        <button
+          onClick={() => setActiveModalTab('MY PURCHASES')}
+          className="py-1.5 px-1 rounded-lg text-center font-serif text-[10px] sm:text-[11px] font-bold text-[#55361e] bg-white/90 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
+        >
+          <Coins className="w-3.5 h-3.5 text-[#b3781e] shrink-0" />
+          <span className="truncate">MY PURCHASES</span>
+        </button>
+      </div>
 
-        {/* Blouse & Royal Hanger Emblem (Compact) */}
-        <div className="flex flex-col items-center justify-center mb-0.5">
-          <svg className="w-7 h-5 text-[#c98e3b]" viewBox="0 0 40 28" fill="none">
-            {/* Elegant Hanger Hook */}
-            <path
-              d="M20 3C22 3 23 5 21 7C19.5 8.5 19.5 10 20 11"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-            {/* Blouse Silhouette */}
-            <path
-              d="M20 11L9 16L12 25L17 25L18 20L22 20L23 25L28 25L31 16L20 11Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              fill="#f7ebd0"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M17 14.5C18 16 22 16 23 14.5"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          {/* Title: DESIGNER BLOUSE VIP */}
-          <div className="flex items-center justify-center gap-1.5 mt-0.5">
-            <h1 className="font-serif tracking-[0.2em] text-[#55361e] font-extrabold text-sm sm:text-base uppercase drop-shadow-2xs">
-              DESIGNER BLOUSE
-            </h1>
-            <span className="font-serif font-black text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#e5ab48] via-[#cb933b] to-[#996515] drop-shadow-xs">
-              VIP
-            </span>
-          </div>
-        </div>
-
-        {/* 3 Companion Action Buttons (Small, Sleek Height) */}
-        <div className="mt-1.5 grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] border border-[#d9ba7f] shadow-2xs">
-          <button
-            onClick={() => setActiveModalTab('BUY RULES')}
-            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
-          >
-            <HelpCircle className="w-3 h-3 text-[#b3781e] shrink-0" />
-            <span className="truncate">BUY RULES</span>
-          </button>
-          <button
-            onClick={() => setActiveModalTab('MY REWARDS')}
-            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
-          >
-            <Gift className="w-3 h-3 text-[#b3781e] shrink-0" />
-            <span className="truncate">MY REWARDS</span>
-          </button>
-          <button
-            onClick={() => setActiveModalTab('MY PURCHASES')}
-            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
-          >
-            <Coins className="w-3 h-3 text-[#b3781e] shrink-0" />
-            <span className="truncate">MY PURCHASES</span>
-          </button>
-        </div>
-
-        {/* =========================================================================
-            VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE (REDUCED PLAN HEIGHT)
-            ========================================================================= */}
-        <div className="mt-2.5 pt-2 border-t border-[#dfbe7e]/70 space-y-1.5">
+      {/* =========================================================================
+          2. VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE (REDUCED PLAN HEIGHT)
+          ========================================================================= */}
+      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-2xl p-2.5 sm:p-3 border border-[#dfc38d] shadow-xs space-y-1.5">
           {/* Header with Title and Scroll Controllers */}
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-1.5">
@@ -710,7 +657,6 @@ export default function NetworkScreen({
             </button>
           </div>
         </div>
-      </div>
 
 
 
@@ -910,14 +856,6 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          6. USER RANK STATUS BAR: Your Rank: -- | Points: 7
-          ========================================================================= */}
-      <div className="bg-[#f5e6ce] rounded-xl px-4 py-2 flex items-center justify-between text-xs sm:text-sm font-extrabold text-[#4c2d15] border border-[#ddc29b]">
-        <span>Your Rank: --</span>
-        <span className="font-mono">Points: 7</span>
-      </div>
-
-      {/* =========================================================================
           7. RANKED TABLE: Ranks 4 to 10+
           Rank | Customer | Points | Prize
           ========================================================================= */}
@@ -964,77 +902,6 @@ export default function NetworkScreen({
             </span>
           </div>
         ))}
-      </div>
-
-      {/* =========================================================================
-          8. REFERRAL INVITE & COMMISSIONS CARD (User's Personal Link)
-          ========================================================================= */}
-      <div className="bg-gradient-to-br from-[#f8ecd2] via-[#f7e6c4] to-[#f0d49f] rounded-3xl p-4 sm:p-5 border border-[#dfc38d] shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-[#b3781e]" />
-            <h4 className="font-serif font-black text-[#503010] text-sm sm:text-base">
-              Your Referral Program
-            </h4>
-          </div>
-          <span className="text-[10px] bg-[#503010] text-[#ffebbe] font-bold px-2 py-0.5 rounded-full">
-            VIP 10% Active
-          </span>
-        </div>
-
-        <p className="text-xs text-[#6e461f] leading-relaxed">
-          Invite direct members (Level 1: 10%), Tier 2 (5%), and Tier 3 (2%) to earn instant commissions on every plan purchased!
-        </p>
-
-        {/* Code Box & Copy Link */}
-        <div className="bg-white/90 rounded-2xl p-3 border border-[#dfc38d] flex items-center justify-between gap-2 shadow-2xs">
-          <div>
-            <span className="text-[10px] font-bold text-[#86592a] uppercase block">
-              Your Referral Code
-            </span>
-            <span className="text-base font-mono font-black text-[#46280b] tracking-widest">
-              {stats.referralCode}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 bg-[#4e2e0f] hover:bg-[#3d240b] active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-xl transition-all shadow-xs"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Link</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* 3 Tiers Quick Highlights */}
-        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-          <div className="bg-white/80 p-2.5 rounded-xl border border-[#e3c79a]">
-            <span className="text-[10px] font-bold text-[#8c5c2d] block uppercase">Level 1</span>
-            <span className="text-base font-black text-[#503010]">10%</span>
-            <span className="text-[10px] text-slate-600 block">Direct Joins</span>
-          </div>
-          <div className="bg-white/80 p-2.5 rounded-xl border border-[#e3c79a]">
-            <span className="text-[10px] font-bold text-[#8c5c2d] block uppercase">Level 2</span>
-            <span className="text-base font-black text-[#503010]">5%</span>
-            <span className="text-[10px] text-slate-600 block">Tier 2 Joins</span>
-          </div>
-          <div className="bg-white/80 p-2.5 rounded-xl border border-[#e3c79a]">
-            <span className="text-[10px] font-bold text-[#8c5c2d] block uppercase">Level 3</span>
-            <span className="text-base font-black text-[#503010]">2%</span>
-            <span className="text-[10px] text-slate-600 block">Tier 3 Joins</span>
-          </div>
-        </div>
       </div>
 
       {/* =========================================================================
