@@ -381,8 +381,8 @@ export default function InvestmentApp() {
             onOpenNotifications={() => setActiveModal('notifications')}
           />
 
-          {/* Main Mobile Scrollable Content */}
-          <main className="flex-1 p-3.5 pb-24 overflow-y-auto max-w-lg mx-auto w-full">
+          {/* Main Mobile Scrollable Content (Reduced top gap) */}
+          <main className="flex-1 px-3 pt-1.5 pb-24 overflow-y-auto max-w-lg mx-auto w-full">
             {activeTab === 'home' && (
               <HomeScreen
                 stats={userStats}

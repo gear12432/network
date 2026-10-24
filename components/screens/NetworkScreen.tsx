@@ -494,18 +494,18 @@ export default function NetworkScreen({
   const rank3 = currentTop.find((c) => c.rank === 3)!;
 
   return (
-    <div className="pb-24 sm:pb-12 max-w-xl mx-auto space-y-4">
+    <div className="pb-24 sm:pb-12 max-w-xl mx-auto space-y-2.5">
       {/* =========================================================================
-          1. LUXURY GOLD TOP HEADER: DESIGNER BLOUSE VIP
+          1. LUXURY GOLD TOP HEADER: DESIGNER BLOUSE VIP (COMPACT HEIGHT & REDUCED GAP)
           ========================================================================= */}
-      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-3xl p-4 sm:p-5 border border-[#dfc38d] shadow-sm relative overflow-hidden text-center">
+      <div className="bg-gradient-to-b from-[#fcf8ef] via-[#fffbf2] to-[#faf3e3] rounded-2xl p-2.5 sm:p-3 border border-[#dfc38d] shadow-xs relative overflow-hidden text-center">
         {/* Subtle Palace Filigree Background Accents */}
-        <div className="absolute top-0 left-0 w-24 h-24 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-0 right-0 w-24 h-24 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 w-20 h-20 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-20 h-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ecd6ab]/40 via-transparent to-transparent pointer-events-none" />
 
-        {/* Blouse & Royal Hanger Emblem */}
-        <div className="flex flex-col items-center justify-center mb-1">
-          <svg className="w-9 h-7 text-[#c98e3b]" viewBox="0 0 40 28" fill="none">
+        {/* Blouse & Royal Hanger Emblem (Compact) */}
+        <div className="flex flex-col items-center justify-center mb-0.5">
+          <svg className="w-7 h-5 text-[#c98e3b]" viewBox="0 0 40 28" fill="none">
             {/* Elegant Hanger Hook */}
             <path
               d="M20 3C22 3 23 5 21 7C19.5 8.5 19.5 10 20 11"
@@ -530,50 +530,50 @@ export default function NetworkScreen({
           </svg>
 
           {/* Title: DESIGNER BLOUSE VIP */}
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <h1 className="font-serif tracking-[0.25em] text-[#55361e] font-extrabold text-lg sm:text-xl uppercase drop-shadow-2xs">
+          <div className="flex items-center justify-center gap-1.5 mt-0.5">
+            <h1 className="font-serif tracking-[0.2em] text-[#55361e] font-extrabold text-sm sm:text-base uppercase drop-shadow-2xs">
               DESIGNER BLOUSE
             </h1>
-            <span className="font-serif font-black text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-[#e5ab48] via-[#cb933b] to-[#996515] drop-shadow-xs">
+            <span className="font-serif font-black text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#e5ab48] via-[#cb933b] to-[#996515] drop-shadow-xs">
               VIP
             </span>
           </div>
         </div>
 
-        {/* Companion Action Buttons for Rules & Rewards */}
-        <div className="mt-3 grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] border border-[#d9ba7f] shadow-2xs">
+        {/* 3 Companion Action Buttons (Small, Sleek Height) */}
+        <div className="mt-1.5 grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-gradient-to-b from-[#fdf7ea] to-[#f4e2be] border border-[#d9ba7f] shadow-2xs">
           <button
             onClick={() => setActiveModalTab('BUY RULES')}
-            className="py-1.5 px-2 rounded-xl text-center font-serif text-[10.5px] sm:text-xs font-bold text-[#55361e] bg-white/70 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1"
+            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-[#b3781e]" />
-            <span>BUY RULES</span>
+            <HelpCircle className="w-3 h-3 text-[#b3781e] shrink-0" />
+            <span className="truncate">BUY RULES</span>
           </button>
           <button
             onClick={() => setActiveModalTab('MY REWARDS')}
-            className="py-1.5 px-2 rounded-xl text-center font-serif text-[10.5px] sm:text-xs font-bold text-[#55361e] bg-white/70 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1"
+            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
           >
-            <Gift className="w-3.5 h-3.5 text-[#b3781e]" />
-            <span>MY REWARDS</span>
+            <Gift className="w-3 h-3 text-[#b3781e] shrink-0" />
+            <span className="truncate">MY REWARDS</span>
           </button>
           <button
             onClick={() => setActiveModalTab('MY PURCHASES')}
-            className="py-1.5 px-2 rounded-xl text-center font-serif text-[10.5px] sm:text-xs font-bold text-[#55361e] bg-white/70 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1"
+            className="py-1 px-1 rounded-lg text-center font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#55361e] bg-white/80 hover:bg-white active:scale-95 transition-all shadow-2xs flex items-center justify-center gap-1 border border-[#ebd8b6]"
           >
-            <Coins className="w-3.5 h-3.5 text-[#b3781e]" />
-            <span>MY PURCHASES</span>
+            <Coins className="w-3 h-3 text-[#b3781e] shrink-0" />
+            <span className="truncate">MY PURCHASES</span>
           </button>
         </div>
 
         {/* =========================================================================
-            VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE WITH HIGH QUALITY LOGO IMAGES
+            VIP 1 TO VIP 10 HORIZONTAL SCROLL SHOWCASE (REDUCED PLAN HEIGHT)
             ========================================================================= */}
-        <div className="mt-4 pt-3 border-t border-[#dfbe7e]/70 space-y-2.5">
+        <div className="mt-2.5 pt-2 border-t border-[#dfbe7e]/70 space-y-1.5">
           {/* Header with Title and Scroll Controllers */}
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-1.5">
-              <Crown className="w-4 h-4 text-[#b87d23] fill-[#b87d23]" />
-              <h2 className="font-serif font-black text-xs sm:text-sm text-[#46280b] uppercase tracking-wide">
+              <Crown className="w-3.5 h-3.5 text-[#b87d23] fill-[#b87d23]" />
+              <h2 className="font-serif font-black text-[11px] sm:text-xs text-[#46280b] uppercase tracking-wide">
                 VIP 1 – VIP 10 PRIVILEGE TIERS
               </h2>
             </div>
@@ -582,25 +582,25 @@ export default function NetworkScreen({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => scrollVip('left')}
-                className="w-6 h-6 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
+                className="w-5 h-5 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
                 aria-label="Scroll left"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-3 h-3" />
               </button>
               <button
                 onClick={() => scrollVip('right')}
-                className="w-6 h-6 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
+                className="w-5 h-5 rounded-full bg-[#f3deb6] hover:bg-[#e7cd9d] active:scale-90 text-[#4d2c0e] flex items-center justify-center border border-[#d6a54d] shadow-2xs transition-all"
                 aria-label="Scroll right"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           </div>
 
-          {/* Horizontally Scrollable VIP Cards Track */}
+          {/* Horizontally Scrollable VIP Cards Track (Reduced Height) */}
           <div
             ref={vipScrollRef}
-            className="flex gap-3 overflow-x-auto pb-2.5 pt-1 px-1 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#d9a54c]/70 scrollbar-track-transparent select-none"
+            className="flex gap-2.5 overflow-x-auto pb-2 pt-0.5 px-0.5 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#d9a54c]/70 scrollbar-track-transparent select-none"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {VIP_TIERS.map((tier) => {
@@ -612,54 +612,54 @@ export default function NetworkScreen({
                     setSelectedVipTier(tier);
                     setActiveModalTab('VIP LEVEL');
                   }}
-                  className={`shrink-0 w-[160px] sm:w-[172px] snap-start rounded-2xl p-3 border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-between text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 ${
+                  className={`shrink-0 w-[142px] sm:w-[152px] snap-start rounded-xl p-2 border-2 cursor-pointer transition-all duration-200 flex flex-col items-center justify-between text-center relative overflow-hidden group hover:scale-[1.02] active:scale-95 ${
                     isCurrent
-                      ? 'border-[#c99130] bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] shadow-md ring-2 ring-[#e5ab48]/40'
+                      ? 'border-[#c99130] bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] shadow-sm ring-1 ring-[#e5ab48]/40'
                       : 'border-[#dfbe7e] bg-gradient-to-b from-[#fffefd] via-[#fdf9f0] to-[#f8edcf] shadow-2xs hover:border-[#caa050]'
                   }`}
                 >
                   {/* Top Status Pill */}
-                  <div className="w-full flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-tighter">
+                  <div className="w-full flex items-center justify-between mb-0.5">
+                    <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-tighter">
                       LEVEL {tier.level}
                     </span>
                     {isCurrent ? (
-                      <span className="bg-emerald-600 text-white text-[8.5px] font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-2xs">
-                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      <span className="bg-emerald-600 text-white text-[7.5px] font-extrabold px-1.5 py-0.2 rounded-full flex items-center gap-0.5 shadow-2xs">
+                        <Check className="w-2 h-2 stroke-[3]" />
                         ACTIVE
                       </span>
                     ) : (
-                      <span className="bg-[#5a3818]/10 text-[#5a3818] text-[8.5px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                        <Lock className="w-2.5 h-2.5 text-[#8c5929]" />
+                      <span className="bg-[#5a3818]/10 text-[#5a3818] text-[7.5px] font-bold px-1.5 py-0.2 rounded-full flex items-center gap-0.5">
+                        <Lock className="w-2 h-2 text-[#8c5929]" />
                         TIER {tier.level}
                       </span>
                     )}
                   </div>
 
-                  {/* High Quality Luxury VIP Badge Logo */}
-                  <div className="my-1 drop-shadow-sm group-hover:scale-105 transition-transform duration-300">
-                    <VipBadgeIcon level={tier.level} className="w-16 h-16 sm:w-18 sm:h-18" />
+                  {/* High Quality Luxury VIP Badge Logo (Compact Height) */}
+                  <div className="my-0.5 drop-shadow-xs group-hover:scale-105 transition-transform duration-300">
+                    <VipBadgeIcon level={tier.level} className="w-12 h-12 sm:w-13 sm:h-13" />
                   </div>
 
                   {/* VIP Title & Subtitle */}
-                  <div className="mt-1">
-                    <h3 className="font-serif font-black text-sm text-[#46280b] tracking-wide">
+                  <div className="mt-0.5">
+                    <h3 className="font-serif font-black text-xs text-[#46280b] tracking-wide leading-tight">
                       {tier.title}
                     </h3>
-                    <p className="text-[10px] font-bold text-[#86592a] line-clamp-1">
+                    <p className="text-[9px] font-bold text-[#86592a] truncate max-w-[130px]">
                       {tier.subtitle}
                     </p>
                   </div>
 
                   {/* Key Stats Block: Rebate & Spend Target */}
-                  <div className="w-full my-2 bg-white/80 rounded-xl p-1.5 border border-[#e5cfab] space-y-1 shadow-2xs">
-                    <div className="flex items-center justify-between text-[10px]">
+                  <div className="w-full my-1 bg-white/85 rounded-lg p-1 border border-[#e5cfab] space-y-0.5 shadow-2xs">
+                    <div className="flex items-center justify-between text-[9px]">
                       <span className="text-slate-500 font-semibold">Rebate:</span>
-                      <span className="font-black text-[#965c19] bg-[#faecd4] px-1.5 py-0.2 rounded font-mono">
+                      <span className="font-black text-[#965c19] bg-[#faecd4] px-1 py-0.2 rounded font-mono">
                         {tier.rebate}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center justify-between text-[9px]">
                       <span className="text-slate-500 font-semibold">Target:</span>
                       <span className="font-black text-slate-800 font-mono">
                         {tier.spend}
@@ -668,7 +668,7 @@ export default function NetworkScreen({
                   </div>
 
                   {/* Daily Limit Text */}
-                  <div className="text-[9.5px] text-[#6d4621] font-semibold mb-2 line-clamp-1">
+                  <div className="text-[8.5px] text-[#6d4621] font-semibold mb-1 truncate max-w-[130px]">
                     ⚡ {tier.limit}
                   </div>
 
@@ -679,14 +679,14 @@ export default function NetworkScreen({
                       setSelectedVipTier(tier);
                       setActiveModalTab('VIP LEVEL');
                     }}
-                    className={`w-full py-1.5 px-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center gap-1 ${
+                    className={`w-full py-1 px-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all shadow-2xs flex items-center justify-center gap-0.5 ${
                       isCurrent
                         ? 'bg-[#4e2e0f] text-[#ffebbe] hover:bg-[#3b220a]'
                         : 'bg-gradient-to-r from-[#d9a54c] to-[#be8832] text-white hover:brightness-105'
                     }`}
                   >
                     <span>{isCurrent ? 'My Privileges' : 'View Perks'}</span>
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-2.5 h-2.5" />
                   </button>
                 </div>
               );
@@ -694,7 +694,7 @@ export default function NetworkScreen({
           </div>
 
           {/* Quick Helper Note */}
-          <div className="flex items-center justify-between px-1 text-[10px] sm:text-[11px] font-semibold text-[#734a23]">
+          <div className="flex items-center justify-between px-1 text-[9.5px] sm:text-[10px] font-semibold text-[#734a23]">
             <span className="flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-[#b3781e]" />
               Tap any VIP level (1 to 10) for full rebate & daily limits
