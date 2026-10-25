@@ -410,19 +410,21 @@ export default function InvestmentApp() {
 
           {/* 2. Main Content Viewport Full Screen */}
           <div className="flex-1 flex flex-col min-w-0 w-full bg-[#faf6ee]">
-            {/* Top Desktop Header (Directly at top of page) */}
-            <DesktopHeader
-              stats={userStats}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onOpenDeposit={() => setActiveModal('deposit')}
-              onOpenWithdraw={() => setActiveModal('withdraw')}
-              onOpenHistory={() => setActiveModal('history')}
-              onOpenProfile={() => setActiveTab('profile')}
-              onOpenAddCustomer={() => setActiveModal('add-customer')}
-              onOpenCustomerList={() => setActiveModal('customer-list')}
-              onToggleMobileLayout={() => setManualLayout('mobile')}
-            />
+            {/* Top Desktop Header (Only shown on Home tab) */}
+            {activeTab === 'home' && (
+              <DesktopHeader
+                stats={userStats}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onOpenDeposit={() => setActiveModal('deposit')}
+                onOpenWithdraw={() => setActiveModal('withdraw')}
+                onOpenHistory={() => setActiveModal('history')}
+                onOpenProfile={() => setActiveTab('profile')}
+                onOpenAddCustomer={() => setActiveModal('add-customer')}
+                onOpenCustomerList={() => setActiveModal('customer-list')}
+                onToggleMobileLayout={() => setManualLayout('mobile')}
+              />
+            )}
 
             {/* Scrollable Main Area Full Width (Side gaps removed) */}
             <main className="flex-1 px-3 sm:px-4 py-3.5 w-full max-w-full">
@@ -501,15 +503,17 @@ export default function InvestmentApp() {
             - Bottom Navigation Menu IS DISPLAYED (Home, Network, Earnings, Wallet, Profile)
             ========================================================================= */
         <div className="flex flex-col min-h-screen bg-[#faf6ee] text-[#46280b]">
-          {/* Top Mobile Header (Directly at top of page) */}
-          <MobileHeader
-            stats={userStats}
-            onOpenDeposit={() => setActiveModal('deposit')}
-            onOpenHistory={() => setActiveModal('history')}
-            onOpenAddCustomer={() => setActiveModal('add-customer')}
-            onOpenProfile={() => setActiveTab('profile')}
-            onOpenNotifications={() => setActiveModal('notifications')}
-          />
+          {/* Top Mobile Header (Only shown on Home tab) */}
+          {activeTab === 'home' && (
+            <MobileHeader
+              stats={userStats}
+              onOpenDeposit={() => setActiveModal('deposit')}
+              onOpenHistory={() => setActiveModal('history')}
+              onOpenAddCustomer={() => setActiveModal('add-customer')}
+              onOpenProfile={() => setActiveTab('profile')}
+              onOpenNotifications={() => setActiveModal('notifications')}
+            />
+          )}
 
           {/* Main Mobile Scrollable Content (Reduced top gap) */}
           <main className="flex-1 px-3 pt-1.5 pb-24 overflow-y-auto max-w-lg mx-auto w-full">
@@ -676,6 +680,7 @@ export default function InvestmentApp() {
       >
         <DepositContent
           currentBalance={userStats.walletBalance}
+          userStats={userStats}
           onDepositSuccess={handleDepositSuccess}
           onClose={() => setActiveModal('none')}
         />

@@ -9,6 +9,8 @@ import {
   collection,
   query,
   where,
+  deleteDoc,
+  updateDoc,
   getDocFromServer,
   Firestore,
 } from 'firebase/firestore';
@@ -173,3 +175,310 @@ export async function findUserInFirestore(identifier: string): Promise<UserAccou
     return null;
   }
 }
+
+export interface DepositRecord {
+  id: string;
+  loginUid: string;
+  userName?: string;
+  mobile?: string;
+  amount: number;
+  utrNumber: string;
+  imageUrl: string;
+  dateTime: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  createdAt: string;
+}
+
+// Save deposit/recharge request to Firestore deposits collection
+export async function saveDepositToFirestore(
+  depositData: DepositRecord
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const docRef = doc(db, 'deposits', depositData.id);
+    await withTimeout(setDoc(docRef, depositData), 4000);
+    return { success: true };
+  } catch (err: unknown) {
+    console.warn('Warning saving deposit to Firestore:', err);
+    const message = err instanceof Error ? err.message : 'Failed to save deposit to Firestore';
+    return { success: false, error: message };
+  }
+}
+
+// =========================================================================
+// ADMIN FIRESTORE UTILITIES
+// =========================================================================
+
+// 1. Fetch all users
+export async function getAllUsersFromFirestore(): Promise<UserAccountData[]> {
+  try {
+    const usersRef = collection(db, 'users');
+    const snap = await withTimeout(getDocs(usersRef), 4000);
+    const users: UserAccountData[] = [];
+    snap.forEach((docSnap) => {
+      users.push(docSnap.data() as UserAccountData);
+    });
+    return users;
+  } catch (err) {
+    console.warn('Error fetching users from Firestore:', err);
+    return [];
+  }
+}
+
+// 2. Update user status (block/unblock)
+export async function updateUserStatusInFirestore(
+  loginUid: string,
+  status: 'active' | 'blocked'
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    await withTimeout(updateDoc(docRef, { status }), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating user status in Firestore:', err);
+    return false;
+  }
+}
+
+// 3. Update user balance
+export async function updateUserBalanceInFirestore(
+  loginUid: string,
+  newBalance: number
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    await withTimeout(updateDoc(docRef, { balance: newBalance }), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating user balance in Firestore:', err);
+    return false;
+  }
+}
+
+// 4. Delete user
+export async function deleteUserFromFirestore(loginUid: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    await withTimeout(deleteDoc(docRef), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error deleting user from Firestore:', err);
+    return false;
+  }
+}
+
+// 5. Fetch all deposits
+export async function getAllDepositsFromFirestore(): Promise<DepositRecord[]> {
+  try {
+    const depRef = collection(db, 'deposits');
+    const snap = await withTimeout(getDocs(depRef), 4000);
+    const deposits: DepositRecord[] = [];
+    snap.forEach((docSnap) => {
+      deposits.push(docSnap.data() as DepositRecord);
+    });
+    return deposits.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch (err) {
+    console.warn('Error fetching deposits from Firestore:', err);
+    return [];
+  }
+}
+
+// 6. Update deposit status (Approve / Reject)
+export async function updateDepositStatusInFirestore(
+  depositId: string,
+  status: 'Approved' | 'Rejected',
+  depositRecord?: DepositRecord
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'deposits', depositId);
+    await withTimeout(updateDoc(docRef, { status }), 4000);
+
+    // If approved, automatically credit user wallet balance in Firestore!
+    if (status === 'Approved' && depositRecord?.loginUid && depositRecord?.amount) {
+      try {
+        const userDocRef = doc(db, 'users', depositRecord.loginUid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+          const currentBal = userSnap.data().balance || 0;
+          await updateDoc(userDocRef, { balance: currentBal + depositRecord.amount });
+        }
+      } catch (e) {
+        console.warn('Error auto-crediting user balance on deposit approval:', e);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.warn('Error updating deposit status in Firestore:', err);
+    return false;
+  }
+}
+
+// 7. Withdrawals interface & functions
+export interface WithdrawalRecord {
+  id: string;
+  loginUid: string;
+  userName?: string;
+  mobile?: string;
+  amount: number;
+  bankDetails: string; // UPI ID or Account Details
+  dateTime: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  createdAt: string;
+}
+
+export async function saveWithdrawalToFirestore(
+  withdrawalData: WithdrawalRecord
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const docRef = doc(db, 'withdrawals', withdrawalData.id);
+    await withTimeout(setDoc(docRef, withdrawalData), 4000);
+    return { success: true };
+  } catch (err) {
+    console.warn('Error saving withdrawal to Firestore:', err);
+    return { success: false, error: 'Failed to save' };
+  }
+}
+
+export async function getAllWithdrawalsFromFirestore(): Promise<WithdrawalRecord[]> {
+  try {
+    const wdRef = collection(db, 'withdrawals');
+    const snap = await withTimeout(getDocs(wdRef), 4000);
+    const withdrawals: WithdrawalRecord[] = [];
+    snap.forEach((docSnap) => {
+      withdrawals.push(docSnap.data() as WithdrawalRecord);
+    });
+    return withdrawals.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch (err) {
+    console.warn('Error fetching withdrawals from Firestore:', err);
+    return [];
+  }
+}
+
+export async function updateWithdrawalStatusInFirestore(
+  withdrawalId: string,
+  status: 'Approved' | 'Rejected'
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'withdrawals', withdrawalId);
+    await withTimeout(updateDoc(docRef, { status }), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating withdrawal status in Firestore:', err);
+    return false;
+  }
+}
+
+// 8. Gateway Settings
+export interface GatewaySettings {
+  upiId: string;
+  qrCodeUrl?: string;
+  minDeposit: number;
+  minWithdrawal: number;
+}
+
+export async function getGatewaySettingsFromFirestore(): Promise<GatewaySettings> {
+  try {
+    const docRef = doc(db, 'settings', 'gateway');
+    const snap = await withTimeout(getDoc(docRef), 3000);
+    if (snap.exists()) {
+      return snap.data() as GatewaySettings;
+    }
+  } catch (err) {
+    console.warn('Error reading gateway settings from Firestore:', err);
+  }
+  return {
+    upiId: 'networkjoinpro@upi',
+    minDeposit: 100,
+    minWithdrawal: 200,
+  };
+}
+
+export async function saveGatewaySettingsToFirestore(
+  settings: GatewaySettings
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'settings', 'gateway');
+    await withTimeout(setDoc(docRef, settings), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error saving gateway settings to Firestore:', err);
+    return false;
+  }
+}
+
+// 9. Custom Admin Plans Management
+export async function saveCustomPlanToFirestore(plan: any): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'plans', plan.id);
+    await withTimeout(setDoc(docRef, plan), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error saving plan to Firestore:', err);
+    return false;
+  }
+}
+
+export async function deleteCustomPlanFromFirestore(planId: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'plans', planId);
+    await withTimeout(deleteDoc(docRef), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error deleting plan from Firestore:', err);
+    return false;
+  }
+}
+
+export async function getCustomPlansFromFirestore(): Promise<any[]> {
+  try {
+    const ref = collection(db, 'plans');
+    const snap = await withTimeout(getDocs(ref), 3000);
+    const plans: any[] = [];
+    snap.forEach((docSnap) => plans.push(docSnap.data()));
+    return plans;
+  } catch (err) {
+    console.warn('Error fetching plans from Firestore:', err);
+    return [];
+  }
+}
+
+// 10. Custom Home Sliders Management
+export async function saveCustomSliderToFirestore(slider: any): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'sliders', String(slider.id));
+    await withTimeout(setDoc(docRef, slider), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error saving slider to Firestore:', err);
+    return false;
+  }
+}
+
+export async function deleteCustomSliderFromFirestore(sliderId: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'sliders', String(sliderId));
+    await withTimeout(deleteDoc(docRef), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error deleting slider from Firestore:', err);
+    return false;
+  }
+}
+
+export async function getCustomSlidersFromFirestore(): Promise<any[]> {
+  try {
+    const ref = collection(db, 'sliders');
+    const snap = await withTimeout(getDocs(ref), 3000);
+    const sliders: any[] = [];
+    snap.forEach((docSnap) => sliders.push(docSnap.data()));
+    return sliders;
+  } catch (err) {
+    console.warn('Error fetching sliders from Firestore:', err);
+    return [];
+  }
+}
+
+

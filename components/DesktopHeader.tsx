@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Search, Bell, Plus, ArrowUpRight, Crown, LayoutGrid, Smartphone, UserPlus, Users, Maximize2, Settings } from 'lucide-react';
 import { UserStats } from '@/types/investment';
 
@@ -112,6 +113,16 @@ export default function DesktopHeader({
           >
             <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7d511f]" />
           </button>
+
+          {/* Admin Panel Quick Link */}
+          <Link
+            href="/admin"
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800 transition-all shadow-xs border border-slate-800"
+            title="Admin Panel Control Center"
+          >
+            <Settings className="w-3.5 h-3.5 text-amber-400" />
+            <span>Admin</span>
+          </Link>
 
           {/* Settings / Configuration */}
           <button

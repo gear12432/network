@@ -2,18 +2,38 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      // Allow reading user for login validation
-      allow get: if true;
-      allow list: if true;
-      // Allow user creation during signup
-      allow create: if request.resource.data.loginUid == userId;
-      // Allow user updates
-      allow update: if true;
-      allow delete: if false;
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /deposits/{depositId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /plans/{planId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /sliders/{sliderId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /settings/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
     }
 
     match /test/{docId} {
-      allow read: if true;
+      allow read, write: if true;
     }
   }
 }
+

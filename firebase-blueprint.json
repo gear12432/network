@@ -51,12 +51,105 @@
         }
       },
       "required": ["loginUid", "fullName", "mobile", "email", "password", "createdAt"]
+    },
+    "Deposit": {
+      "title": "Deposit",
+      "description": "Wallet recharge request submitted with UTR reference number and payment screenshot",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Deposit transaction ID e.g. DEP172983719" },
+        "loginUid": { "type": "string", "description": "User login UID e.g. GK37643" },
+        "userName": { "type": "string", "description": "User full name" },
+        "mobile": { "type": "string", "description": "User mobile number" },
+        "amount": { "type": "number", "description": "Recharge amount in INR" },
+        "utrNumber": { "type": "string", "description": "12-digit UTR/Txn ID number" },
+        "imageUrl": { "type": "string", "description": "Base64 encoded payment screenshot image" },
+        "dateTime": { "type": "string", "description": "Formatted date and time of request" },
+        "status": { "type": "string", "description": "Status of recharge request (Pending, Approved, Rejected)" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of creation" }
+      },
+      "required": ["id", "loginUid", "amount", "utrNumber", "dateTime", "status", "createdAt"]
+    },
+    "Withdrawal": {
+      "title": "Withdrawal",
+      "description": "User withdrawal request record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "loginUid": { "type": "string" },
+        "userName": { "type": "string" },
+        "mobile": { "type": "string" },
+        "amount": { "type": "number" },
+        "bankDetails": { "type": "string" },
+        "dateTime": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "loginUid", "amount", "status", "createdAt"]
+    },
+    "Plan": {
+      "title": "Plan",
+      "description": "Investment plan configuration created by admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "dailyReturn": { "type": "number" },
+        "validityDays": { "type": "number" },
+        "totalReturn": { "type": "number" }
+      },
+      "required": ["id", "name", "category", "price", "dailyReturn", "validityDays"]
+    },
+    "Slider": {
+      "title": "Slider",
+      "description": "Home screen banner slider created by admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subtext": { "type": "string" },
+        "badgeLeft": { "type": "string" },
+        "badgeRight": { "type": "string" },
+        "btnText": { "type": "string" }
+      },
+      "required": ["id", "title"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Payment gateway and app configuration settings",
+      "type": "object",
+      "properties": {
+        "upiId": { "type": "string" },
+        "qrCodeUrl": { "type": "string" }
+      }
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "User",
       "description": "Collection of registered application users identified by login UID"
+    },
+    "/deposits/{depositId}": {
+      "schema": "Deposit",
+      "description": "Collection of wallet deposit/recharge payment submissions with UTR and screenshot"
+    },
+    "/withdrawals/{withdrawalId}": {
+      "schema": "Withdrawal",
+      "description": "Collection of user withdrawal requests"
+    },
+    "/plans/{planId}": {
+      "schema": "Plan",
+      "description": "Custom investment plans created by admin"
+    },
+    "/sliders/{sliderId}": {
+      "schema": "Slider",
+      "description": "Custom home screen sliders created by admin"
+    },
+    "/settings/{docId}": {
+      "schema": "Setting",
+      "description": "App and payment gateway configurations"
     }
   }
 }
