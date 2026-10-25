@@ -42,10 +42,42 @@ import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
 import SplashScreen from '@/components/SplashScreen';
 import AuthScreen from '@/components/screens/AuthScreen';
+import AdminPanel from '@/components/admin/AdminPanel';
 import { UserAccountData, testConnection } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 
 export default function InvestmentApp() {
+  // Admin Route Detection
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    return (
+      path.includes('admin') ||
+      hash.includes('admin') ||
+      search.includes('admin')
+    );
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkRoute = () => {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (path.includes('admin') || hash.includes('admin') || search.includes('admin')) {
+        setIsAdminRoute(true);
+      }
+    };
+    checkRoute();
+    window.addEventListener('popstate', checkRoute);
+    window.addEventListener('hashchange', checkRoute);
+    return () => {
+      window.removeEventListener('popstate', checkRoute);
+      window.removeEventListener('hashchange', checkRoute);
+    };
+  }, []);
   // Main State
   const [userStats, setUserStats] = useState<UserStats>(() => {
     if (typeof window === 'undefined') return INITIAL_USER_STATS;
@@ -333,6 +365,11 @@ export default function InvestmentApp() {
     setSelectedPlanForDetail(plan);
     setActiveModal('plan-detail');
   };
+
+  // 0. Direct Admin Route Bypass
+  if (isAdminRoute) {
+    return <AdminPanel />;
+  }
 
   // 1. Initial Animated Splash Screen
   if (showSplash) {
