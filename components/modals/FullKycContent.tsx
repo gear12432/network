@@ -44,30 +44,30 @@ export default function FullKycContent({
 
   return (
     <div className="space-y-4">
-      {/* Verification Status Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-4 sm:p-5 shadow-sm">
+      {/* Verification Status Banner: Deep Chocolate Bronze Banner with Gold Accents */}
+      <div className="bg-gradient-to-r from-[#2c180a] via-[#4a280e] to-[#6d3e16] border-2 border-[#dfbe7e] text-white rounded-2xl p-4 sm:p-5 shadow-lg relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1.5 bg-white/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+          <span className="inline-flex items-center gap-1.5 bg-[#dfbe7e]/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide text-[#ffd485] border border-[#dfbe7e]/40">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#ffd485]" />
             <span>Govt. Verified ID</span>
           </span>
-          <span className="text-xs font-bold text-emerald-200 font-mono">
+          <span className="text-xs font-bold text-[#ffd485] font-mono">
             Tier-3 Full KYC
           </span>
         </div>
 
-        <h3 className="text-lg font-black tracking-tight mb-1">
+        <h3 className="text-lg font-black tracking-tight mb-1 text-white">
           Full KYC Document Verification
         </h3>
-        <p className="text-xs text-emerald-100/90 leading-relaxed">
+        <p className="text-xs text-[#faecd4]/90 leading-relaxed">
           Full KYC verification ensures unlimited 24/7 withdrawals and protects your investment balance.
         </p>
       </div>
 
-      {/* KYC Checklist */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs space-y-3">
-        <h4 className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
-          <UserCheck className="w-4 h-4 text-emerald-600" />
+      {/* KYC Checklist: Cream / Gold Card */}
+      <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-xs space-y-3">
+        <h4 className="font-bold text-[#46280b] text-xs sm:text-sm flex items-center gap-1.5">
+          <UserCheck className="w-4 h-4 text-[#8a5416]" />
           <span>Full KYC Details & Documents</span>
         </h4>
 
@@ -76,16 +76,18 @@ export default function FullKycContent({
             label="Full Legal Name (as per Aadhaar/PAN)"
             value={userName}
             disabled
-            inputClassName="font-bold text-slate-800"
+            focusColor="gold"
+            inputClassName="font-bold text-[#46280b]"
           />
 
           <FloatingInput
             label="Aadhaar Card Number"
             value={aadhaar}
             onChange={(e) => setAadhaar(e.target.value)}
-            inputClassName="font-mono text-black font-bold"
+            focusColor="gold"
+            inputClassName="font-mono text-[#46280b] font-bold"
             rightElement={
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
+              <span className="text-[10px] bg-[#faecd4] text-[#22c55e] font-bold px-1.5 py-0.5 rounded border border-[#dfbe7e]">
                 Verified ✓
               </span>
             }
@@ -95,9 +97,10 @@ export default function FullKycContent({
             label="Permanent Account Number (PAN)"
             value={pan}
             onChange={(e) => setPan(e.target.value.toUpperCase())}
-            inputClassName="font-mono text-black font-bold uppercase"
+            focusColor="gold"
+            inputClassName="font-mono text-[#46280b] font-bold uppercase"
             rightElement={
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
+              <span className="text-[10px] bg-[#faecd4] text-[#22c55e] font-bold px-1.5 py-0.5 rounded border border-[#dfbe7e]">
                 Linked ✓
               </span>
             }
@@ -108,38 +111,40 @@ export default function FullKycContent({
               label="Settlement Bank A/C"
               value={bankAcc}
               onChange={(e) => setBankAcc(e.target.value)}
-              inputClassName="font-mono text-black font-bold"
+              focusColor="gold"
+              inputClassName="font-mono text-[#46280b] font-bold"
             />
 
             <FloatingInput
               label="Bank IFSC Code"
               value={ifsc}
               onChange={(e) => setIfsc(e.target.value.toUpperCase())}
-              inputClassName="font-mono text-black font-bold uppercase"
+              focusColor="gold"
+              inputClassName="font-mono text-[#46280b] font-bold uppercase"
             />
           </div>
         </div>
       </div>
 
       {/* Benefits Card */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 space-y-2 text-xs">
-        <span className="font-bold text-emerald-900 block flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-emerald-600" />
+      <div className="bg-[#faecd4]/80 border-2 border-[#dfbe7e] rounded-2xl p-3.5 space-y-2 text-xs">
+        <span className="font-bold text-[#8a5416] block flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-[#d0872e]" />
           <span>Full KYC Verified Benefits Activated</span>
         </span>
-        <ul className="space-y-1 text-emerald-800 text-[11px]">
+        <ul className="space-y-1 text-[#46280b] text-[11px] font-medium">
           <li>• Unlimited single-day withdrawal limit (up to ₹5,00,000/day)</li>
           <li>• 0% gateway commission on all UPI & IMPS transfers</li>
           <li>• Priority 60-second settlement queue</li>
         </ul>
       </div>
 
-      {/* Button */}
+      {/* Button: #D0872E */}
       <div className="pt-2">
         <button
           onClick={handleVerify}
           disabled={isSubmitting}
-          className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-98 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+          className="w-full py-3.5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] active:scale-98 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#d0872e]/30 transition-all cursor-pointer"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Full KYC Status: Active & Approved</span>

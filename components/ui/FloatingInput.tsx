@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useId } from 'react';
+import React, { useState, useId } from 'react';
 
 export interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -11,7 +11,7 @@ export interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputE
   inputClassName?: string;
   labelClassName?: string;
   badgeRequired?: boolean;
-  focusColor?: 'emerald' | 'blue';
+  focusColor?: 'emerald' | 'blue' | 'gold';
 }
 
 export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
@@ -25,7 +25,7 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
       inputClassName = '',
       labelClassName = '',
       badgeRequired = false,
-      focusColor = 'emerald',
+      focusColor = 'gold',
       value,
       defaultValue,
       onChange,
@@ -41,12 +41,10 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
     const inputId = props.id || generatedId;
     const [isFocused, setIsFocused] = useState(false);
 
-    // Determine if input has value
     const hasValue =
       value !== undefined && value !== null && String(value).trim().length > 0;
     const isFloating = isFocused || hasValue;
 
-    // Calculate left offset for the resting label
     let restLeftClass = 'left-4';
     let inputPaddingLeftClass = 'pl-4';
 
@@ -61,13 +59,13 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
       inputPaddingLeftClass = 'pl-10';
     }
 
-    const paddingRightClass = rightElement ? 'pr-12' : 'pr-4';
+    const paddingRightClass = rightElement ? 'pr-11' : 'pr-4';
 
     return (
       <div className={`relative group w-full ${containerClassName}`}>
         {/* Left Icon */}
         {leftIcon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none flex items-center z-10">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8a5416] pointer-events-none flex items-center z-10">
             {leftIcon}
           </div>
         )}
@@ -77,7 +75,7 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
           <div
             className={`absolute ${
               leftIcon ? 'left-9' : 'left-3.5'
-            } top-1/2 -translate-y-1/2 text-xs font-black text-slate-900 pointer-events-none flex items-center z-10 transition-opacity duration-200 ${
+            } top-1/2 -translate-y-1/2 text-xs font-black text-[#b87324] pointer-events-none flex items-center z-10 transition-opacity duration-200 ${
               isFloating ? 'opacity-100' : 'opacity-70'
             }`}
           >
@@ -104,13 +102,15 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
             onBlur?.(e);
           }}
           placeholder=" "
-          className={`peer w-full h-12 bg-white border rounded-xl font-bold text-sm text-black placeholder-transparent focus:outline-none transition-all duration-200 ${inputPaddingLeftClass} ${paddingRightClass} ${
+          className={`peer w-full h-12 bg-white border-2 rounded-xl font-bold text-sm text-[#46280b] placeholder-transparent focus:outline-none transition-all duration-200 ${inputPaddingLeftClass} ${paddingRightClass} ${
             isFocused
               ? focusColor === 'blue'
                 ? 'border-blue-900 ring-2 ring-blue-900/20 shadow-xs'
-                : 'border-emerald-600 ring-2 ring-emerald-500/20 shadow-xs'
-              : 'border-slate-300 hover:border-slate-400'
-          } ${disabled ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''} ${inputClassName}`}
+                : focusColor === 'emerald'
+                ? 'border-emerald-600 ring-2 ring-emerald-500/20 shadow-xs'
+                : 'border-[#d0872e] ring-2 ring-[#d0872e]/30 shadow-xs'
+              : 'border-[#dfbe7e] hover:border-[#caa050]'
+          } ${disabled ? 'bg-[#f5ecdd] text-[#8a5d2e] cursor-not-allowed' : ''} ${inputClassName}`}
         />
 
         {/* Floating Label: Smoothly animates up to top border */}
@@ -118,21 +118,23 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
           htmlFor={inputId}
           className={`absolute pointer-events-none select-none transition-all duration-200 ease-out origin-left z-20 ${
             isFloating
-              ? `top-0 -translate-y-1/2 left-3 bg-white px-1.5 text-[11px] font-bold ${
+              ? `top-0 -translate-y-1/2 left-3 bg-[#faf6ee] px-1.5 text-[11px] font-bold ${
                   isFocused
                     ? focusColor === 'blue'
                       ? 'text-blue-900'
-                      : 'text-emerald-700'
-                    : 'text-slate-900'
+                      : focusColor === 'emerald'
+                      ? 'text-emerald-700'
+                      : 'text-[#8a5416]'
+                    : 'text-[#55361e]'
                 }`
-              : `top-1/2 -translate-y-1/2 ${restLeftClass} text-xs font-bold text-black`
+              : `top-1/2 -translate-y-1/2 ${restLeftClass} text-xs font-bold text-[#7a5328]`
           } ${labelClassName}`}
         >
           <span>{label}</span>
           {badgeRequired && <span className="text-rose-500 ml-0.5">*</span>}
         </label>
 
-        {/* Right Element (Search spinner, Match checkmark, Clear button, etc.) */}
+        {/* Right Element */}
         {rightElement && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center z-10">
             {rightElement}
@@ -144,4 +146,5 @@ export const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputPro
 );
 
 FloatingInput.displayName = 'FloatingInput';
+
 export default FloatingInput;

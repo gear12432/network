@@ -9,6 +9,7 @@ import {
   Building,
   CreditCard,
   AlertCircle,
+  Zap,
 } from 'lucide-react';
 import { triggerConfetti } from '@/lib/confetti';
 import FloatingInput from '@/components/ui/FloatingInput';
@@ -61,36 +62,36 @@ export default function WithdrawContent({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Balance Overview */}
-      <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-4 flex items-center justify-between">
+    <div className="space-y-4 text-[#46280b]">
+      {/* Balance Overview - Deep Royal Chocolate Hero */}
+      <div className="bg-gradient-to-r from-[#2c180a] via-[#4a280e] to-[#6d3e16] text-white rounded-2xl p-4 flex items-center justify-between border-2 border-[#dfbe7e] shadow-sm">
         <div>
-          <span className="text-xs text-slate-400 block">Withdrawable Balance</span>
-          <span className="text-2xl font-black text-emerald-400 font-mono">
+          <span className="text-xs text-[#fed788] block">Withdrawable Wallet Balance</span>
+          <span className="text-2xl font-black text-[#ffd485] font-mono">
             ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-slate-400 block">Processing Time</span>
-          <span className="text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">
+          <span className="text-[10px] text-[#dfbe7e] block">Processing Speed</span>
+          <span className="text-xs font-bold text-[#55361e] bg-[#faecd4] border border-[#dfbe7e] px-2.5 py-1 rounded-md">
             Under 60s
           </span>
         </div>
       </div>
 
-      {/* Amount Input with floating animated label */}
-      <div className="pt-1">
+      {/* Amount Input with floating animated label - Palace Gold Container */}
+      <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3">
         <FloatingInput
           label="Withdrawal Amount (Min ₹100)"
           type="number"
           value={withdrawAmount}
           onChange={(e) => setWithdrawAmount(e.target.value)}
           leftPrefix="₹"
-          inputClassName="font-mono font-bold text-black text-base"
+          inputClassName="font-mono font-bold text-[#46280b] text-base"
         />
 
         {/* Quick Percent Buttons */}
-        <div className="grid grid-cols-4 gap-2 mt-2">
+        <div className="grid grid-cols-4 gap-2 pt-1">
           {[
             { label: '25%', val: 0.25 },
             { label: '50%', val: 0.5 },
@@ -100,7 +101,7 @@ export default function WithdrawContent({
             <button
               key={btn.label}
               onClick={() => setPercentAmount(btn.val)}
-              className="py-1 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+              className="py-1.5 px-2 rounded-xl bg-white/95 hover:bg-[#faecd4] text-[#46280b] border border-[#dfbe7e] text-xs font-bold transition-colors cursor-pointer"
             >
               {btn.label}
             </button>
@@ -109,104 +110,104 @@ export default function WithdrawContent({
       </div>
 
       {/* Payout Channels */}
-      <div className="space-y-3">
+      <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3">
+        <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
+          Select Payout Destination
+        </label>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setPayoutType('upi')}
-            className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`p-3 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               payoutType === 'upi'
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
-                : 'bg-white border-slate-200 text-slate-600'
+                ? 'bg-[#fffdf9] border-[#D0872E] text-[#46280b] ring-1 ring-[#D0872E]/30 shadow-xs'
+                : 'bg-white/80 border-[#dfbe7e]/50 text-[#7a5328]'
             }`}
           >
-            <CreditCard className="w-4 h-4" />
-            <span>UPI ID (Instant)</span>
+            <CreditCard className="w-4 h-4 text-[#8a5416]" />
+            <span>Instant UPI ID</span>
           </button>
 
           <button
             onClick={() => setPayoutType('bank')}
-            className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`p-3 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               payoutType === 'bank'
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
-                : 'bg-white border-slate-200 text-slate-600'
+                ? 'bg-[#fffdf9] border-[#D0872E] text-[#46280b] ring-1 ring-[#D0872E]/30 shadow-xs'
+                : 'bg-white/80 border-[#dfbe7e]/50 text-[#7a5328]'
             }`}
           >
-            <Building className="w-4 h-4" />
-            <span>Bank Account</span>
+            <Building className="w-4 h-4 text-[#8a5416]" />
+            <span>Direct Bank Transfer</span>
           </button>
         </div>
 
         {payoutType === 'upi' ? (
-          <div className="pt-1">
+          <div className="space-y-2 pt-1">
             <FloatingInput
-              label="Your Verified UPI ID"
-              type="text"
+              label="UPI Virtual ID (VPA)"
               value={upiId}
               onChange={(e) => setUpiId(e.target.value)}
-              inputClassName="font-bold text-black"
+              placeholder="username@bank"
+              inputClassName="font-mono font-bold text-[#46280b] text-sm"
             />
+            <span className="text-[10px] text-[#7a5328] block pl-1">
+              Supports PhonePe, Google Pay, Paytm, BHIM & all Indian UPI apps
+            </span>
           </div>
         ) : (
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2.5 pt-1">
             <FloatingInput
-              label="Account Holder Name"
-              type="text"
+              label="Account Holder Full Legal Name"
               value={accHolder}
               onChange={(e) => setAccHolder(e.target.value)}
-              inputClassName="font-bold text-black"
+              inputClassName="font-bold text-[#46280b] text-sm"
             />
-
-            <FloatingInput
-              label="Bank Account Number"
-              type="text"
-              value={bankAcc}
-              onChange={(e) => setBankAcc(e.target.value)}
-              inputClassName="font-mono font-bold text-black"
-            />
-
-            <FloatingInput
-              label="Bank IFSC Code"
-              type="text"
-              value={ifsc}
-              onChange={(e) => setIfsc(e.target.value.toUpperCase())}
-              inputClassName="font-mono font-bold uppercase text-black"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <FloatingInput
+                label="Bank Account Number"
+                value={bankAcc}
+                onChange={(e) => setBankAcc(e.target.value)}
+                inputClassName="font-mono font-bold text-[#46280b] text-sm"
+              />
+              <FloatingInput
+                label="IFSC Code"
+                value={ifsc}
+                onChange={(e) => setIfsc(e.target.value.toUpperCase())}
+                inputClassName="font-mono font-bold text-[#46280b] text-sm uppercase"
+              />
+            </div>
           </div>
         )}
       </div>
 
-      {/* 0% Platform Fee Banner */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs flex items-center justify-between text-emerald-900">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Platform Fee: 0% Free</span>
-        </div>
-        <span className="font-bold">You Receive: ₹{numAmount.toLocaleString('en-IN')}</span>
+      {/* Security Guarantee Note */}
+      <div className="bg-[#fff8ea] text-[#55361e] rounded-xl p-3 text-xs flex items-center gap-2 border-2 border-[#dfbe7e]">
+        <ShieldCheck className="w-4 h-4 text-[#8a5416] shrink-0" />
+        <span>Instant Automated RTGS / IMPS Payout • Zero Deduction Fee</span>
       </div>
 
-      {/* CTA Button */}
-      <div className="pt-2">
+      {/* Withdraw CTA Button */}
+      <div className="pt-1">
         {isSuccess ? (
-          <div className="w-full py-3.5 bg-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md">
+          <div className="w-full py-4 bg-[#22c55e] text-white font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-md">
             <CheckCircle2 className="w-5 h-5" />
-            <span>₹{numAmount.toLocaleString('en-IN')} Withdrawal Dispatched!</span>
+            <span>₹{numAmount.toLocaleString('en-IN')} Sent Successfully!</span>
           </div>
         ) : (
           <button
             onClick={handleWithdraw}
             disabled={!isValid || isProcessing}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 ${
+            className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
               isValid && !isProcessing
-                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-[#D0872E] hover:bg-[#b87324] text-white shadow-[#d0872e]/30'
+                : 'bg-[#cfbc9e] text-[#7a5328] cursor-not-allowed'
             }`}
           >
             {isProcessing ? (
-              <span>Initiating Bank Settlement...</span>
+              <span>Transmitting Payout to Bank...</span>
             ) : (
               <>
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Withdraw ₹{numAmount.toLocaleString('en-IN')} Now</span>
+                <ArrowUpRight className="w-4 h-4 stroke-[3]" />
+                <span>Withdraw ₹{numAmount.toLocaleString('en-IN')} Instantly</span>
               </>
             )}
           </button>

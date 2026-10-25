@@ -79,22 +79,22 @@ function FloatingInput({
   return (
     <div className="relative w-full pt-1.5">
       <div
-        className={`relative flex items-center w-full min-h-[52px] h-[52px] sm:min-h-[56px] sm:h-14 bg-[#28170c] rounded-xl transition-all duration-200 border ${
+        className={`relative flex items-center w-full min-h-[52px] h-[52px] sm:min-h-[56px] sm:h-14 bg-white rounded-xl transition-all duration-200 border-2 ${
           isFocused
-            ? 'border-[#d0872e] ring-2 ring-[#d0872e]/30 shadow-md shadow-[#d0872e]/10'
-            : 'border-[#dfbe7e]/30 hover:border-[#dfbe7e]/50'
+            ? 'border-[#d0872e] ring-2 ring-[#d0872e]/20 shadow-md shadow-[#d0872e]/10'
+            : 'border-[#dfbe7e] hover:border-[#c59c55]'
         }`}
       >
         {/* Left Icon */}
         {icon && (
-          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#dfbe7e]">
+          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#8a5416]">
             {icon}
           </div>
         )}
 
         {/* Optional Prefix (e.g. +91) shown only when floating/focused */}
         {prefix && isFloating && (
-          <span className="absolute left-10 text-xs sm:text-sm font-mono text-[#ffd485] font-bold pointer-events-none">
+          <span className="absolute left-10 text-xs sm:text-sm font-mono text-[#8a5416] font-bold pointer-events-none">
             {prefix}
           </span>
         )}
@@ -103,8 +103,8 @@ function FloatingInput({
         <label
           className={`absolute pointer-events-none transition-all duration-200 ease-out origin-left select-none z-10 ${
             isFloating
-              ? '-top-2.5 left-3 px-1.5 py-0 bg-[#28170c] text-xs font-bold text-[#ffd485] tracking-wide rounded-sm shadow-xs'
-              : `top-1/2 -translate-y-1/2 text-sm sm:text-base text-white/75 font-medium ${
+              ? '-top-2.5 left-3 px-1.5 py-0 bg-[#faf6ee] text-xs font-bold text-[#8a5416] tracking-wide rounded border border-[#dfbe7e] shadow-xs'
+              : `top-1/2 -translate-y-1/2 text-sm sm:text-base text-[#7a5328]/80 font-medium ${
                   icon ? 'left-10' : 'left-3.5'
                 }`
           }`}
@@ -112,7 +112,7 @@ function FloatingInput({
           {label}
         </label>
 
-        {/* Native Input - Pure White Text, Centered Inside Container */}
+        {/* Native Input - Dark Espresso Text */}
         <input
           type={type}
           value={value}
@@ -121,7 +121,7 @@ function FloatingInput({
           onBlur={() => setIsFocused(false)}
           required={required}
           autoComplete={autoComplete}
-          className={`w-full bg-transparent text-white font-medium text-sm sm:text-base focus:outline-none transition-all [color-scheme:dark] ${
+          className={`w-full bg-transparent text-[#46280b] font-medium text-sm sm:text-base focus:outline-none transition-all [color-scheme:light] ${
             icon
               ? prefix && isFloating
                 ? 'pl-18'
@@ -164,21 +164,21 @@ function FloatingSelect({
   return (
     <div className="relative w-full pt-1.5">
       <div
-        className={`relative flex items-center w-full min-h-[52px] h-[52px] sm:min-h-[56px] sm:h-14 bg-[#28170c] rounded-xl transition-all duration-200 border ${
+        className={`relative flex items-center w-full min-h-[52px] h-[52px] sm:min-h-[56px] sm:h-14 bg-white rounded-xl transition-all duration-200 border-2 ${
           isFocused
-            ? 'border-[#d0872e] ring-2 ring-[#d0872e]/30 shadow-md shadow-[#d0872e]/10'
-            : 'border-[#dfbe7e]/30 hover:border-[#dfbe7e]/50'
+            ? 'border-[#d0872e] ring-2 ring-[#d0872e]/20 shadow-md shadow-[#d0872e]/10'
+            : 'border-[#dfbe7e] hover:border-[#c59c55]'
         }`}
       >
         {icon && (
-          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#dfbe7e]">
+          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#8a5416]">
             {icon}
           </div>
         )}
 
         {/* Floating Label Outlined on Top Border */}
         <label
-          className="absolute -top-2.5 left-3 px-1.5 py-0 bg-[#28170c] text-xs font-bold text-[#ffd485] tracking-wide pointer-events-none select-none z-10 rounded-sm shadow-xs"
+          className="absolute -top-2.5 left-3 px-1.5 py-0 bg-[#faf6ee] text-xs font-bold text-[#8a5416] tracking-wide pointer-events-none select-none z-10 rounded border border-[#dfbe7e] shadow-xs"
         >
           {label}
         </label>
@@ -188,19 +188,19 @@ function FloatingSelect({
           onChange={onChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full bg-transparent text-white font-medium text-sm sm:text-base focus:outline-none transition-all appearance-none cursor-pointer [color-scheme:dark] ${
+          className={`w-full bg-transparent text-[#46280b] font-medium text-sm sm:text-base focus:outline-none transition-all appearance-none cursor-pointer [color-scheme:light] ${
             icon ? 'pl-10' : 'pl-3.5'
           } pr-8 py-2.5`}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-[#241407] text-white">
+            <option key={opt.value} value={opt.value} className="bg-[#faf6ee] text-[#46280b]">
               {opt.label}
             </option>
           ))}
         </select>
 
         {/* Custom Arrow */}
-        <div className="absolute right-3.5 pointer-events-none text-[#dfbe7e] text-xs">
+        <div className="absolute right-3.5 pointer-events-none text-[#8a5416] text-xs">
           ▼
         </div>
       </div>
@@ -490,11 +490,11 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-gradient-to-b from-[#1c1007] via-[#281508] to-[#120903] text-white flex flex-col justify-between overflow-y-auto selection:bg-[#d0872e] selection:text-black">
+    <div className="fixed inset-0 z-40 bg-[#faf6ee] text-[#46280b] flex flex-col justify-between overflow-y-auto selection:bg-[#d0872e] selection:text-white">
       {/* Background Ambience with warm gold / bronze glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#d0872e]/15 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#894b0a]/20 rounded-full blur-[100px]" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#dfbe7e]/20 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#d0872e]/10 rounded-full blur-[100px]" />
       </div>
 
       {/* Main Full-Screen Content (Clean layout without top box/tabs) */}
@@ -510,11 +510,11 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             className="flex-1 flex flex-col justify-center py-4"
           >
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#faecd4] to-[#d0872e]">
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#46280b]">
                 Sign In to Your Account
               </h2>
-              <p className="text-xs sm:text-sm text-[#b5a388] mt-1.5">
-                Enter your <strong>Login UID</strong> (e.g. <code>GK37643</code>) and password to access your dashboard.
+              <p className="text-xs sm:text-sm text-[#7a5328] mt-1.5">
+                Enter your <strong className="text-[#46280b]">Login UID</strong> (e.g. <code className="bg-[#faecd4] text-[#8a5416] px-1.5 py-0.5 rounded border border-[#dfbe7e] font-mono">GK37643</code>) and password to access your dashboard.
               </p>
             </div>
 
@@ -522,9 +522,9 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-red-950/40 text-red-300 text-xs border border-red-800/40"
+                className="flex items-start gap-2.5 p-3.5 mb-5 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200"
               >
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                 <span>{loginError}</span>
               </motion.div>
             )}
@@ -553,7 +553,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                   <button
                     type="button"
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="text-slate-400 hover:text-white p-1"
+                    className="text-[#8a5416] hover:text-[#46280b] p-1"
                     tabIndex={-1}
                   >
                     {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -563,7 +563,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
               {/* Forgot Password Link */}
               <div className="flex justify-end pt-0.5">
-                <span className="text-[11px] text-[#d0872e] cursor-pointer hover:underline">
+                <span className="text-[11px] text-[#8a5416] font-semibold cursor-pointer hover:underline hover:text-[#d0872e]">
                   Forgot Password?
                 </span>
               </div>
@@ -591,7 +591,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
               {/* Switch to Signup */}
               <div className="text-center pt-3">
-                <p className="text-xs text-[#a08a6b]">
+                <p className="text-xs text-[#7a5328]">
                   Don&apos;t have an account?{' '}
                   <button
                     type="button"
@@ -599,7 +599,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       setMode('signup');
                       setSignupError(null);
                     }}
-                    className="text-[#ffd485] font-bold hover:underline ml-1"
+                    className="text-[#8a5416] font-bold hover:underline ml-1"
                   >
                     Sign Up Now
                   </button>
@@ -623,7 +623,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             <div className="mb-6 pt-1">
               <div className="flex items-center justify-between relative">
                 {/* Horizontal progress track line */}
-                <div className="absolute top-4 left-6 right-6 h-0.5 bg-[#3f2410] -z-0" />
+                <div className="absolute top-4 left-6 right-6 h-0.5 bg-[#dfbe7e]/50 -z-0" />
                 <div
                   className="absolute top-4 left-6 h-0.5 bg-[#d0872e] transition-all duration-300 -z-0"
                   style={{
@@ -660,7 +660,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                             ? 'bg-[#22c55e] text-white shadow-[#22c55e]/30'
                             : isActive
                             ? 'bg-[#d0872e] text-white ring-4 ring-[#d0872e]/30 shadow-[#d0872e]/40'
-                            : 'bg-[#28170c] border border-[#593214] text-[#a08a6b]'
+                            : 'bg-[#fff8ea] border-2 border-[#dfbe7e] text-[#7a5328]'
                         }`}
                       >
                         {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : s.num}
@@ -668,10 +668,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       <span
                         className={`text-[10px] mt-1.5 font-medium whitespace-nowrap ${
                           isActive
-                            ? 'text-[#ffd485] font-bold'
+                            ? 'text-[#8a5416] font-bold'
                             : isDone
                             ? 'text-[#22c55e]'
-                            : 'text-[#a08a6b]'
+                            : 'text-[#7a5328]'
                         }`}
                       >
                         {s.label}
@@ -687,9 +687,9 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2.5 p-3.5 mb-4 rounded-xl bg-red-950/40 text-red-300 text-xs border border-red-800/40"
+                className="flex items-start gap-2.5 p-3.5 mb-4 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200"
               >
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                 <span>{signupError}</span>
               </motion.div>
             )}
@@ -702,10 +702,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-white">
+                  <h3 className="font-serif font-bold text-lg text-[#46280b]">
                     1. Personal Information
                   </h3>
-                  <p className="text-xs text-[#a08a6b] mt-0.5">
+                  <p className="text-xs text-[#7a5328] mt-0.5">
                     Please provide your legal name, mobile number, and secure password
                   </p>
                 </div>
@@ -752,7 +752,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                     <button
                       type="button"
                       onClick={() => setShowSignupPassword(!showSignupPassword)}
-                      className="text-slate-400 hover:text-white p-1"
+                      className="text-[#8a5416] hover:text-[#46280b] p-1"
                       tabIndex={-1}
                     >
                       {showSignupPassword ? (
@@ -785,10 +785,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-white">
+                  <h3 className="font-serif font-bold text-lg text-[#46280b]">
                     2. KYC Verification Details
                   </h3>
-                  <p className="text-xs text-[#a08a6b] mt-0.5">
+                  <p className="text-xs text-[#7a5328] mt-0.5">
                     Select a government-issued identification document
                   </p>
                 </div>
@@ -843,9 +843,9 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                   <button
                     type="button"
                     onClick={handlePrevStep}
-                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#28170c] hover:bg-[#382112] text-[#f2e2cb] border border-[#dfbe7e]/25 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#fff7ea] hover:bg-[#faecd4] text-[#55361e] border-2 border-[#dfbe7e] font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5 text-[#dfbe7e]" />
+                    <ArrowLeft className="w-3.5 h-3.5 text-[#8a5416]" />
                     <span>Back</span>
                   </button>
 
@@ -869,10 +869,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-white">
+                  <h3 className="font-serif font-bold text-lg text-[#46280b]">
                     3. Residential Address
                   </h3>
-                  <p className="text-xs text-[#a08a6b] mt-0.5">
+                  <p className="text-xs text-[#7a5328] mt-0.5">
                     Enter your complete permanent residential address
                   </p>
                 </div>
@@ -916,9 +916,9 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                   <button
                     type="button"
                     onClick={handlePrevStep}
-                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#28170c] hover:bg-[#382112] text-[#f2e2cb] border border-[#dfbe7e]/25 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#fff7ea] hover:bg-[#faecd4] text-[#55361e] border-2 border-[#dfbe7e] font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5 text-[#dfbe7e]" />
+                    <ArrowLeft className="w-3.5 h-3.5 text-[#8a5416]" />
                     <span>Back</span>
                   </button>
 
@@ -942,19 +942,19 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-white">
+                  <h3 className="font-serif font-bold text-lg text-[#46280b]">
                     4. Confirm Registration Details
                   </h3>
-                  <p className="text-xs text-[#a08a6b] mt-0.5">
+                  <p className="text-xs text-[#7a5328] mt-0.5">
                     Please carefully review all your entered information before submission
                   </p>
                 </div>
 
-                {/* Summary Rows (Fluid list, clean dark presentation) */}
+                {/* Summary Rows (Fluid list with cream/gold presentation) */}
                 <div className="space-y-3 py-1 text-xs">
                   {/* Personal Summary */}
-                  <div className="bg-[#28170c]/90 border border-[#dfbe7e]/25 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center justify-between text-[#ffd485] font-bold">
+                  <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-xl p-3.5 space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between text-[#8a5416] font-bold">
                       <span className="flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-[#d0872e]" />
                         Personal Information
@@ -962,30 +962,30 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       <button
                         type="button"
                         onClick={() => setCurrentStep('details')}
-                        className="text-[#ffd485] underline text-[11px] cursor-pointer hover:text-white"
+                        className="text-[#8a5416] underline text-[11px] cursor-pointer hover:text-[#d0872e] font-bold"
                       >
                         Edit
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-slate-300">
+                    <div className="grid grid-cols-2 gap-2 text-[#46280b]">
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">Name:</span>
-                        <span className="font-semibold text-white">{fullName}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Name:</span>
+                        <span className="font-bold text-[#46280b]">{fullName}</span>
                       </div>
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">Mobile:</span>
-                        <span className="font-mono text-white">+91 {mobile}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Mobile:</span>
+                        <span className="font-mono font-bold text-[#46280b]">+91 {mobile}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-[#a08a6b] block text-[10px]">Email:</span>
-                        <span className="text-white">{email}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Email:</span>
+                        <span className="font-semibold text-[#46280b]">{email}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* KYC Summary */}
-                  <div className="bg-[#28170c]/90 border border-[#dfbe7e]/25 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center justify-between text-[#ffd485] font-bold">
+                  <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-xl p-3.5 space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between text-[#8a5416] font-bold">
                       <span className="flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-[#d0872e]" />
                         KYC Details
@@ -993,34 +993,34 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       <button
                         type="button"
                         onClick={() => setCurrentStep('kyc')}
-                        className="text-[#ffd485] underline text-[11px] cursor-pointer hover:text-white"
+                        className="text-[#8a5416] underline text-[11px] cursor-pointer hover:text-[#d0872e] font-bold"
                       >
                         Edit
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-slate-300">
+                    <div className="grid grid-cols-2 gap-2 text-[#46280b]">
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">Document:</span>
-                        <span className="text-white">{idType}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Document:</span>
+                        <span className="font-bold text-[#46280b]">{idType}</span>
                       </div>
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">ID Number:</span>
-                        <span className="font-mono text-white">{idNumber}</span>
+                        <span className="text-[#7a5328] block text-[10px]">ID Number:</span>
+                        <span className="font-mono font-bold text-[#46280b]">{idNumber}</span>
                       </div>
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">Date of Birth:</span>
-                        <span className="text-white">{dob}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Date of Birth:</span>
+                        <span className="font-semibold text-[#46280b]">{dob}</span>
                       </div>
                       <div>
-                        <span className="text-[#a08a6b] block text-[10px]">Gender:</span>
-                        <span className="text-white">{gender}</span>
+                        <span className="text-[#7a5328] block text-[10px]">Gender:</span>
+                        <span className="font-semibold text-[#46280b]">{gender}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Address Summary */}
-                  <div className="bg-[#28170c]/90 border border-[#dfbe7e]/25 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center justify-between text-[#ffd485] font-bold">
+                  <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-xl p-3.5 space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between text-[#8a5416] font-bold">
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-[#d0872e]" />
                         Address Details
@@ -1028,15 +1028,15 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       <button
                         type="button"
                         onClick={() => setCurrentStep('address')}
-                        className="text-[#ffd485] underline text-[11px] cursor-pointer hover:text-white"
+                        className="text-[#8a5416] underline text-[11px] cursor-pointer hover:text-[#d0872e] font-bold"
                       >
                         Edit
                       </button>
                     </div>
-                    <div className="text-slate-300 space-y-0.5">
-                      <p className="text-white">{street}</p>
-                      <p className="text-[#a08a6b]">
-                        {city}, {state} - <span className="font-mono text-white">{pincode}</span>
+                    <div className="text-[#46280b] space-y-0.5">
+                      <p className="font-semibold text-[#46280b]">{street}</p>
+                      <p className="text-[#7a5328]">
+                        {city}, {state} - <span className="font-mono font-bold text-[#46280b]">{pincode}</span>
                       </p>
                     </div>
                   </div>
@@ -1046,9 +1046,9 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                   <button
                     type="button"
                     onClick={handlePrevStep}
-                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#28170c] hover:bg-[#382112] text-[#f2e2cb] border border-[#dfbe7e]/25 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                    className="w-1/3 py-3.5 px-3 rounded-xl bg-[#fff7ea] hover:bg-[#faecd4] text-[#55361e] border-2 border-[#dfbe7e] font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5 text-[#dfbe7e]" />
+                    <ArrowLeft className="w-3.5 h-3.5 text-[#8a5416]" />
                     <span>Back</span>
                   </button>
 
@@ -1077,7 +1077,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
             {/* Login link below Sign Up steps */}
             <div className="text-center pt-6 pb-2">
-              <p className="text-xs sm:text-sm text-[#cfbc9e]">
+              <p className="text-xs sm:text-sm text-[#7a5328]">
                 Already have an account?{' '}
                 <button
                   type="button"
@@ -1085,7 +1085,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                     setMode('login');
                     setLoginError(null);
                   }}
-                  className="text-[#ffd485] font-black underline hover:text-[#d0872e] cursor-pointer ml-1 text-sm tracking-wide transition-colors"
+                  className="text-[#8a5416] font-black underline hover:text-[#d0872e] cursor-pointer ml-1 text-sm tracking-wide transition-colors"
                 >
                   Login
                 </button>
@@ -1100,33 +1100,33 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
          ========================================================================= */}
       <AnimatePresence>
         {createdUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-md bg-[#1c1007] border border-[#dfbe7e]/35 text-white rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+              className="w-full max-w-md bg-[#faf6ee] border-2 border-[#dfbe7e] text-[#46280b] rounded-3xl p-6 shadow-2xl relative overflow-hidden"
             >
               {/* Gold Top Ambient Light */}
-              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-[#d0872e]/25 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-[#dfbe7e]/30 rounded-full blur-2xl pointer-events-none" />
 
               {/* Medallion */}
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#894b0a] via-[#d0872e] to-[#ffd485] p-0.5 shadow-lg shadow-[#d0872e]/30 flex items-center justify-center mb-3">
-                  <div className="w-full h-full bg-[#28170c] rounded-[14px] flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-[#ffd485]" />
+                  <div className="w-full h-full bg-[#faf6ee] rounded-[14px] flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-[#d0872e]" />
                   </div>
                 </div>
 
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#d0872e]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8a5416]">
                   Account Created Successfully
                 </span>
 
-                <h3 className="font-serif font-black text-xl text-white mt-1">
+                <h3 className="font-serif font-black text-xl text-[#46280b] mt-1">
                   Congratulations!
                 </h3>
 
-                <p className="text-xs text-[#cfbc9e] mt-2 px-2 leading-relaxed">
+                <p className="text-xs text-[#7a5328] mt-2 px-2 leading-relaxed">
                   Congratulations! Your account has been successfully created. Now login using this Login UID and Password:
                 </p>
               </div>
@@ -1134,24 +1134,24 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               {/* Generated UID and Password Display with 1-Click Copy */}
               <div className="space-y-2.5 my-5">
                 {/* Login UID Card */}
-                <div className="bg-[#28170c] border border-[#dfbe7e]/25 rounded-2xl p-3.5 flex items-center justify-between">
+                <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
                   <div>
-                    <span className="text-[10px] text-[#a08a6b] uppercase font-semibold block">
+                    <span className="text-[10px] text-[#7a5328] uppercase font-semibold block">
                       YOUR LOGIN UID
                     </span>
-                    <span className="font-mono text-lg font-black text-[#ffd485] tracking-wider">
+                    <span className="font-mono text-lg font-black text-[#8a5416] tracking-wider">
                       {createdUser.loginUid}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopy(createdUser.loginUid, 'uid')}
-                    className="px-3 py-1.5 rounded-lg bg-[#3a200f] hover:bg-[#4a2b15] border border-[#dfbe7e]/30 text-xs font-semibold text-[#ffd485] flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-[#fff7ea] hover:bg-[#faecd4] border-2 border-[#dfbe7e] text-xs font-semibold text-[#8a5416] flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                   >
                     {copiedUid ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-[#52c41a]" />
-                        <span className="text-[#52c41a]">Copied!</span>
+                        <Check className="w-3.5 h-3.5 text-[#22c55e]" />
+                        <span className="text-[#22c55e]">Copied!</span>
                       </>
                     ) : (
                       <>
@@ -1163,24 +1163,24 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 </div>
 
                 {/* Password Card */}
-                <div className="bg-[#28170c] border border-[#dfbe7e]/25 rounded-2xl p-3.5 flex items-center justify-between">
+                <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
                   <div>
-                    <span className="text-[10px] text-[#a08a6b] uppercase font-semibold block">
+                    <span className="text-[10px] text-[#7a5328] uppercase font-semibold block">
                       YOUR PASSWORD
                     </span>
-                    <span className="font-mono text-base font-bold text-white tracking-widest">
+                    <span className="font-mono text-base font-bold text-[#46280b] tracking-widest">
                       {createdUser.password}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopy(createdUser.password, 'pwd')}
-                    className="px-3 py-1.5 rounded-lg bg-[#3a200f] hover:bg-[#4a2b15] border border-[#dfbe7e]/30 text-xs font-semibold text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-[#fff7ea] hover:bg-[#faecd4] border-2 border-[#dfbe7e] text-xs font-semibold text-[#46280b] flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                   >
                     {copiedPwd ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-[#52c41a]" />
-                        <span className="text-[#52c41a]">Copied!</span>
+                        <Check className="w-3.5 h-3.5 text-[#22c55e]" />
+                        <span className="text-[#22c55e]">Copied!</span>
                       </>
                     ) : (
                       <>

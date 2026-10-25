@@ -15,6 +15,8 @@ import {
   FileCheck2,
   LayoutGrid,
   List,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
 import PlanCard from '@/components/PlanCard';
@@ -57,6 +59,9 @@ export default function HomeScreen({
 
   // View Mode: default to 'grid' on desktop, 'list' on mobile
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobileView ? 'list' : 'grid');
+
+  // Mobile Stats Dropdown Accordion Toggle (hidden by default on mobile, always visible on desktop)
+  const [isStatsOpenMobile, setIsStatsOpenMobile] = useState(false);
 
   // Slider State (Small compact height as marked in screenshot)
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -231,46 +236,40 @@ export default function HomeScreen({
               </button>
             </div>
           )}
-
-          {/* Active Investments tracker widget */}
-          {activeInvestments.length > 0 && (
-            <div className="bg-gradient-to-r from-[#4a2b0e] via-[#6e3c15] to-[#8f5624] text-white rounded-2xl p-3 shadow-xs space-y-2 border border-[#dfbe7e]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-[#2b1706]/70 text-[#f6d080] flex items-center justify-center border border-[#dfbe7e]/50">
-                    <Clock className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold block text-[#fff8ec]">
-                      {activeInvestments.length} Active Plan{activeInvestments.length > 1 ? 's' : ''} Running
-                    </span>
-                    <span className="text-[10px] text-[#f4d188]">
-                      Generating daily ROI directly to your wallet
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-[#fed788] bg-[#2b1706]/80 px-2 py-0.5 rounded-md border border-[#caa050]/50">
-                  Active 🟡
-                </span>
-              </div>
-
-              {activeInvestments[0].customerName && (
-                <div className="text-[11px] bg-[#2b1706]/80 text-[#ffecc3] px-2.5 py-1.5 rounded-lg flex items-center justify-between border border-[#caa050]/40">
-                  <span className="truncate">
-                    Latest: <strong className="text-[#ffd786]">{activeInvestments[0].planName}</strong>
-                  </span>
-                  <span className="text-[#ffd786] font-mono font-bold shrink-0 ml-2">
-                    +₹{activeInvestments[0].dailyReturn.toFixed(2)}/day
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Right Column: Executive Quick Stats Grid + VIP Security Card */}
         <div className="lg:col-span-4 flex flex-col justify-between gap-3">
-          <div className="grid grid-cols-2 gap-2.5">
+          {/* Mobile Dropdown Accordion Toggle Button for Account Stats */}
+          <button
+            onClick={() => setIsStatsOpenMobile(!isStatsOpenMobile)}
+            className="md:hidden flex items-center justify-between w-full p-3 rounded-2xl bg-gradient-to-r from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border border-[#dfbe7e] shadow-2xs text-[#46280b] active:scale-[0.99] transition-all cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-[#fadca0] via-[#ffecc3] to-[#fff4dc] text-[#8a5b28] flex items-center justify-center border border-[#dfc38d] shadow-2xs">
+                <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-black text-[#46280b] block leading-tight">
+                  All Data Account Statistics
+                </span>
+                <span className="text-[10px] text-[#8a5b28] font-semibold leading-tight">
+                  {isStatsOpenMobile ? 'Tap to hide statistics' : 'Tap to show JOINS, EARNED, PAYOUT, ACTIVE'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-bold text-[#8a5b28] bg-[#faecd4] px-2.5 py-1 rounded-xl border border-[#e8d2aa]">
+              <span>{isStatsOpenMobile ? 'Hide' : 'Show'}</span>
+              {isStatsOpenMobile ? (
+                <ChevronUp className="w-4 h-4 stroke-[2.5]" />
+              ) : (
+                <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+              )}
+            </div>
+          </button>
+
+          {/* 4 Stat Cards: Hidden by default in mobile view, toggled via dropdown; Always visible on desktop */}
+          <div className={`grid grid-cols-2 gap-2.5 ${isStatsOpenMobile ? 'grid' : 'hidden md:grid'}`}>
             {/* Joins Card */}
             <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3 border border-[#dfbe7e] shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">

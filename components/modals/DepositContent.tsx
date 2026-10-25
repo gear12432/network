@@ -53,26 +53,26 @@ export default function DepositContent({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Current Balance Banner */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between">
+    <div className="space-y-4 text-[#46280b]">
+      {/* Current Balance Banner - Deep Royal Chocolate Hero */}
+      <div className="bg-gradient-to-r from-[#2c180a] via-[#4a280e] to-[#6d3e16] text-white rounded-2xl p-4 flex items-center justify-between border-2 border-[#dfbe7e] shadow-sm">
         <div>
-          <span className="text-xs text-slate-400 block">Current Balance</span>
-          <span className="text-xl font-extrabold text-emerald-400 font-mono">
+          <span className="text-xs text-[#fed788] block">Current Wallet Balance</span>
+          <span className="text-2xl font-black text-[#ffd485] font-mono">
             ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-slate-400 block">Deposit Gateway</span>
-          <span className="text-xs font-bold text-white bg-slate-800 px-2.5 py-1 rounded-md">
+          <span className="text-[10px] text-[#dfbe7e] block">Deposit Gateway</span>
+          <span className="text-xs font-bold text-[#55361e] bg-[#faecd4] border border-[#dfbe7e] px-2.5 py-1 rounded-md">
             Fast UPI 2.0
           </span>
         </div>
       </div>
 
-      {/* Preset Amounts */}
-      <div>
-        <label className="text-xs font-bold text-slate-700 block mb-2">
+      {/* Preset Amounts - Palace Gold Card Container */}
+      <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3">
+        <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
           Select Deposit Amount (INR)
         </label>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -85,10 +85,10 @@ export default function DepositContent({
                   setSelectedAmount(amt);
                   setCustomAmount('');
                 }}
-                className={`py-2 px-1 text-center rounded-xl border text-xs font-bold transition-all ${
+                className={`py-2 px-1 text-center rounded-xl border-2 text-xs font-mono font-bold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    ? 'bg-[#D0872E] text-white border-[#dfbe7e] shadow-xs'
+                    : 'bg-white/95 text-[#46280b] border-[#dfbe7e]/60 hover:bg-[#faecd4]'
                 }`}
               >
                 ₹{amt.toLocaleString('en-IN')}
@@ -98,7 +98,7 @@ export default function DepositContent({
         </div>
 
         {/* Custom Amount Input with floating animated label */}
-        <div className="mt-3">
+        <div className="mt-2">
           <FloatingInput
             label="Or Enter Custom Amount (Min ₹100)"
             type="number"
@@ -108,14 +108,14 @@ export default function DepositContent({
               setSelectedAmount(0);
             }}
             leftPrefix="₹"
-            inputClassName="font-mono font-bold text-black text-sm"
+            inputClassName="font-mono font-bold text-[#46280b] text-sm"
           />
         </div>
       </div>
 
       {/* Payment Gateway Options */}
-      <div>
-        <label className="text-xs font-bold text-slate-700 block mb-2">
+      <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-2.5">
+        <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
           Select Payment Method
         </label>
         <div className="grid grid-cols-2 gap-2.5">
@@ -130,19 +130,19 @@ export default function DepositContent({
               <div
                 key={m.id}
                 onClick={() => setPaymentMethod(m.id as any)}
-                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                className={`p-3 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-emerald-50/70 border-emerald-500 ring-1 ring-emerald-500'
-                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                    ? 'bg-[#fffdf9] border-[#D0872E] ring-1 ring-[#D0872E]/30 shadow-xs'
+                    : 'bg-white/85 border-[#dfbe7e]/50 hover:bg-white'
                 }`}
               >
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">{m.name}</span>
-                  <span className="text-[10px] text-emerald-600 font-medium">{m.badge}</span>
+                  <span className="text-xs font-bold text-[#46280b] block">{m.name}</span>
+                  <span className="text-[10px] text-[#b87324] font-semibold">{m.badge}</span>
                 </div>
                 <div
-                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    isSelected ? 'border-[#D0872E] bg-[#D0872E]' : 'border-[#dfbe7e]'
                   }`}
                 >
                   {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -154,15 +154,15 @@ export default function DepositContent({
       </div>
 
       {/* Zero Fee Guarantee Note */}
-      <div className="bg-emerald-50 text-emerald-900 rounded-xl p-3 text-xs flex items-center gap-2 border border-emerald-200/80">
-        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-        <span>100% Secure Payment • 0% Deposit Fee • Instant Auto-Credit</span>
+      <div className="bg-[#fff8ea] text-[#55361e] rounded-xl p-3 text-xs flex items-center gap-2 border-2 border-[#dfbe7e]">
+        <ShieldCheck className="w-4 h-4 text-[#8a5416] shrink-0" />
+        <span className="font-medium">100% Secure Payment • 0% Deposit Fee • Instant Auto-Credit</span>
       </div>
 
       {/* Deposit CTA Button */}
-      <div className="pt-2">
+      <div className="pt-1">
         {isSuccess ? (
-          <div className="w-full py-3.5 bg-emerald-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md">
+          <div className="w-full py-4 bg-[#22c55e] text-white font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-md">
             <CheckCircle2 className="w-5 h-5" />
             <span>₹{amountToDeposit.toLocaleString('en-IN')} Added Successfully!</span>
           </div>
@@ -170,17 +170,17 @@ export default function DepositContent({
           <button
             onClick={handleDeposit}
             disabled={amountToDeposit < 100 || isProcessing}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 ${
+            className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
               amountToDeposit >= 100 && !isProcessing
-                ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-[#D0872E] hover:bg-[#b87324] text-white shadow-[#d0872e]/30'
+                : 'bg-[#cfbc9e] text-[#7a5328] cursor-not-allowed'
             }`}
           >
             {isProcessing ? (
               <span>Verifying Payment...</span>
             ) : (
               <>
-                <Zap className="w-4 h-4" />
+                <Zap className="w-4 h-4 text-[#ffd485]" />
                 <span>Pay ₹{amountToDeposit.toLocaleString('en-IN')} Instantly</span>
               </>
             )}

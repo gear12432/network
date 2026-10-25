@@ -9,7 +9,7 @@ export interface FloatingTextareaProps
   textareaClassName?: string;
   labelClassName?: string;
   badgeRequired?: boolean;
-  focusColor?: 'emerald' | 'blue';
+  focusColor?: 'emerald' | 'blue' | 'gold';
 }
 
 export const FloatingTextarea = React.forwardRef<
@@ -23,7 +23,7 @@ export const FloatingTextarea = React.forwardRef<
       textareaClassName = '',
       labelClassName = '',
       badgeRequired = false,
-      focusColor = 'emerald',
+      focusColor = 'gold',
       value,
       defaultValue,
       onChange,
@@ -63,27 +63,32 @@ export const FloatingTextarea = React.forwardRef<
             onBlur?.(e);
           }}
           placeholder=" "
-          className={`peer w-full p-3.5 bg-white border rounded-xl font-bold text-xs text-black placeholder-transparent focus:outline-none transition-all duration-200 resize-none ${
+          className={`peer w-full bg-white border-2 rounded-xl font-bold text-sm text-[#46280b] p-3 pt-4 placeholder-transparent focus:outline-none transition-all duration-200 resize-none ${
             isFocused
               ? focusColor === 'blue'
                 ? 'border-blue-900 ring-2 ring-blue-900/20 shadow-xs'
-                : 'border-emerald-600 ring-2 ring-emerald-500/20 shadow-xs'
-              : 'border-slate-300 hover:border-slate-400'
-          } ${disabled ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''} ${textareaClassName}`}
+                : focusColor === 'emerald'
+                ? 'border-emerald-600 ring-2 ring-emerald-500/20 shadow-xs'
+                : 'border-[#d0872e] ring-2 ring-[#d0872e]/30 shadow-xs'
+              : 'border-[#dfbe7e] hover:border-[#caa050]'
+          } ${disabled ? 'bg-[#f5ecdd] text-[#8a5d2e] cursor-not-allowed' : ''} ${textareaClassName}`}
         />
 
+        {/* Floating Label */}
         <label
           htmlFor={textareaId}
           className={`absolute pointer-events-none select-none transition-all duration-200 ease-out origin-left z-20 ${
             isFloating
-              ? `top-0 -translate-y-1/2 left-3 bg-white px-1.5 text-[11px] font-bold ${
+              ? `top-0 -translate-y-1/2 left-3 bg-[#faf6ee] px-1.5 text-[11px] font-bold ${
                   isFocused
                     ? focusColor === 'blue'
                       ? 'text-blue-900'
-                      : 'text-emerald-700'
-                    : 'text-slate-900'
+                      : focusColor === 'emerald'
+                      ? 'text-emerald-700'
+                      : 'text-[#8a5416]'
+                    : 'text-[#55361e]'
                 }`
-              : 'top-3.5 left-3.5 text-xs font-bold text-black'
+              : 'top-3.5 left-3 text-xs font-bold text-[#7a5328]'
           } ${labelClassName}`}
         >
           <span>{label}</span>
@@ -95,4 +100,5 @@ export const FloatingTextarea = React.forwardRef<
 );
 
 FloatingTextarea.displayName = 'FloatingTextarea';
+
 export default FloatingTextarea;
