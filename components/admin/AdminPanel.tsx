@@ -28,6 +28,8 @@ import {
   RefreshCw,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   X,
   Sparkles,
   ArrowLeft,
@@ -93,60 +95,119 @@ export default function AdminPanel() {
   // Image Modal Preview for Payment Screenshots
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // 20 Predefined Plan Name Options with Icons
+  // 20 Predefined Plan Name Options with Icons & Default Minimum Amounts
   const PLAN_NAME_OPTIONS = [
-    'Basic Investment Plan ⚡',
-    'Starter Investment Plan 🚀',
-    'Silver Investment Plan 🥈',
-    'Gold Investment Plan 🥇',
-    'Platinum Investment Plan 💠',
-    'Diamond Investment Plan 💎',
-    'Premium Investment Plan 👑',
-    'Smart Investment Plan 🎯',
-    'Growth Investment Plan 📈',
-    'Wealth Builder Plan 💰',
-    'Monthly Income Plan 📅',
-    'Smart Saver Plan 🛡️',
-    'Royal Investment Plan 🏰',
-    'Elite Investment Plan ✨',
-    'Ultimate Investment Plan 🌟',
-    'Power Investment Plan ⚡',
-    'Pro Investment Plan 💼',
-    'Mega Investment Plan 🔥',
-    'Future Wealth Plan 🔮',
-    'Infinity Investment Plan ♾️',
-    'Custom Plan Name...',
+    { title: 'Basic Investment Plan', icon: '⚡', minAmount: 100, defaultRate: 1 },
+    { title: 'Starter Investment Plan', icon: '🚀', minAmount: 500, defaultRate: 1.2 },
+    { title: 'Silver Investment Plan', icon: '🥈', minAmount: 1000, defaultRate: 1.5 },
+    { title: 'Gold Investment Plan', icon: '🥇', minAmount: 2500, defaultRate: 2 },
+    { title: 'Platinum Investment Plan', icon: '💠', minAmount: 5000, defaultRate: 2.5 },
+    { title: 'Diamond Investment Plan', icon: '💎', minAmount: 10000, defaultRate: 3 },
+    { title: 'Premium Investment Plan', icon: '👑', minAmount: 15000, defaultRate: 3.5 },
+    { title: 'Smart Investment Plan', icon: '🎯', minAmount: 20000, defaultRate: 4 },
+    { title: 'Growth Investment Plan', icon: '📈', minAmount: 25000, defaultRate: 4.5 },
+    { title: 'Wealth Builder Plan', icon: '💰', minAmount: 30000, defaultRate: 5 },
+    { title: 'Monthly Income Plan', icon: '📅', minAmount: 35000, defaultRate: 5.5 },
+    { title: 'Smart Saver Plan', icon: '🛡️', minAmount: 40000, defaultRate: 6 },
+    { title: 'Royal Investment Plan', icon: '🏰', minAmount: 50000, defaultRate: 7 },
+    { title: 'Elite Investment Plan', icon: '✨', minAmount: 60000, defaultRate: 8 },
+    { title: 'Ultimate Investment Plan', icon: '🌟', minAmount: 75000, defaultRate: 9 },
+    { title: 'Power Investment Plan', icon: '⚡', minAmount: 85000, defaultRate: 10 },
+    { title: 'Pro Investment Plan', icon: '💼', minAmount: 100000, defaultRate: 12 },
+    { title: 'Mega Investment Plan', icon: '🔥', minAmount: 150000, defaultRate: 15 },
+    { title: 'Future Wealth Plan', icon: '🔮', minAmount: 200000, defaultRate: 18 },
+    { title: 'Infinity Investment Plan', icon: '♾️', minAmount: 500000, defaultRate: 20 },
+    { title: 'Custom Plan Name...', icon: '✏️', minAmount: 1000, defaultRate: 2 },
   ];
 
-  // New Plan Form State
+  // Custom Dropdown Open State
+  const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
+
+  // Helper to extract selected icon safely
+  const getSelectedPlanIcon = (nameStr?: any) => {
+    if (!nameStr) return '⚡';
+    let str = '';
+    if (typeof nameStr === 'string') {
+      str = nameStr;
+    } else if (typeof nameStr === 'object' && nameStr?.title) {
+      str = nameStr.title;
+    } else {
+      return '⚡';
+    }
+
+    const found = PLAN_NAME_OPTIONS.find(
+      (p) => p.title.toLowerCase() === str.toLowerCase() || str.startsWith(p.title)
+    );
+    return found ? found.icon : '⚡';
+  };
+
+  // New Plan Form State (Initially Blank - No Default Selection)
   const [newPlan, setNewPlan] = useState({
-    name: 'Basic Investment Plan ⚡',
+    name: '',
     customName: '',
     category: 'VIP',
-    price: '1000',
-    dailyReturn: '100',
+    price: '',
+    dailyReturn: '',
     validityDays: '30',
-    estProfit: '3000',
-    totalReturn: '4000',
+    estProfit: '',
+    totalReturn: '',
   });
   const [planMsg, setPlanMsg] = useState('');
 
-  // Handle Input Changes & Auto-Calculation for Investment Plan
+  // Handle Selection of Plan Option from Dropdown (Auto-fills Minimum Amount & Default Percentage)
+  const handleSelectPlanOption = (opt: (typeof PLAN_NAME_OPTIONS)[0]) => {
+    setIsPlanDropdownOpen(false);
+    if (opt.title === 'Custom Plan Name...') {
+      setNewPlan({
+        name: 'Custom Plan Name...',
+        customName: '',
+        category: 'VIP',
+        price: '1000',
+        dailyReturn: '2',
+        validityDays: '30',
+        estProfit: String(1000 * 0.02 * 30),
+        totalReturn: String(1000 + 1000 * 0.02 * 30),
+      });
+      return;
+    }
+
+    const minAmt = opt.minAmount || 100;
+    const rate = opt.defaultRate || 1;
+    const days = 30;
+    const calcDailyInRupees = minAmt * (rate / 100);
+    const calcEst = Math.round(calcDailyInRupees * days * 100) / 100;
+    const calcTotal = Math.round((minAmt + calcEst) * 100) / 100;
+
+    setNewPlan({
+      name: `${opt.title} ${opt.icon}`,
+      customName: '',
+      category: 'VIP',
+      price: String(minAmt),
+      dailyReturn: String(rate),
+      validityDays: String(days),
+      estProfit: String(calcEst),
+      totalReturn: String(calcTotal),
+    });
+  };
+
+  // Handle Input Changes & Percentage-Based Auto-Calculations for Investment Plan
   const handlePlanInputChange = (field: string, value: string) => {
     setNewPlan((prev) => {
       const updated = { ...prev, [field]: value };
       const priceNum = parseFloat(field === 'price' ? value : prev.price) || 0;
-      const dailyNum = parseFloat(field === 'dailyReturn' ? value : prev.dailyReturn) || 0;
+      const ratePercent = parseFloat(field === 'dailyReturn' ? value : prev.dailyReturn) || 0;
       const daysNum = parseInt(field === 'validityDays' ? value : prev.validityDays) || 0;
 
-      const calcEst = dailyNum * daysNum;
-      const calcTotal = priceNum + calcEst;
+      if (priceNum > 0 && ratePercent > 0 && daysNum > 0) {
+        const dailyIncomeInRupees = priceNum * (ratePercent / 100);
+        const calcEst = Math.round(dailyIncomeInRupees * daysNum * 100) / 100;
+        const calcTotal = Math.round((priceNum + calcEst) * 100) / 100;
 
-      if (field !== 'estProfit') {
-        updated.estProfit = String(calcEst);
-      }
-      if (field !== 'totalReturn') {
-        updated.totalReturn = String(calcTotal);
+        if (field !== 'estProfit') updated.estProfit = String(calcEst);
+        if (field !== 'totalReturn') updated.totalReturn = String(calcTotal);
+      } else {
+        if (field !== 'estProfit') updated.estProfit = '';
+        if (field !== 'totalReturn') updated.totalReturn = '';
       }
 
       return updated;
@@ -332,20 +393,22 @@ export default function AdminPanel() {
     if (!finalName || !newPlan.price || !newPlan.dailyReturn) return;
 
     const priceNum = parseFloat(newPlan.price) || 0;
-    const returnNum = parseFloat(newPlan.dailyReturn) || 0;
+    const ratePercent = parseFloat(newPlan.dailyReturn) || 0;
     const daysNum = parseInt(newPlan.validityDays) || 30;
-    const estProfitNum = parseFloat(newPlan.estProfit) || returnNum * daysNum;
+    const dailyProfitRupees = priceNum * (ratePercent / 100);
+    const estProfitNum = parseFloat(newPlan.estProfit) || dailyProfitRupees * daysNum;
     const totalReturnNum = parseFloat(newPlan.totalReturn) || priceNum + estProfitNum;
 
     const planObj = {
       id: `PLAN_${Date.now()}`,
       name: finalName,
-      category: newPlan.category,
+      category: newPlan.category || 'VIP',
       price: priceNum,
-      dailyReturn: returnNum,
+      dailyPercent: ratePercent,
+      dailyReturn: Math.round(dailyProfitRupees * 100) / 100, // Daily profit in ₹
       validityDays: daysNum,
-      estProfit: estProfitNum,
-      totalReturn: totalReturnNum,
+      estProfit: Math.round(estProfitNum * 100) / 100,
+      totalReturn: Math.round(totalReturnNum * 100) / 100,
       colorGradient: 'from-amber-600 via-orange-600 to-amber-700',
       tag: 'NEW EXCLUSIVE',
     };
@@ -353,15 +416,17 @@ export default function AdminPanel() {
     setPlans((prev) => [planObj, ...prev]);
     await saveCustomPlanToFirestore(planObj);
     setPlanMsg('Investment plan saved successfully!');
+
+    // Clear entire form data on save
     setNewPlan({
-      name: PLAN_NAME_OPTIONS[0],
+      name: '',
       customName: '',
       category: 'VIP',
-      price: '1000',
-      dailyReturn: '100',
+      price: '',
+      dailyReturn: '',
       validityDays: '30',
-      estProfit: '3000',
-      totalReturn: '4000',
+      estProfit: '',
+      totalReturn: '',
     });
     setTimeout(() => setPlanMsg(''), 3000);
   };
@@ -1565,33 +1630,87 @@ export default function AdminPanel() {
         {activeTab === 'plans' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* Create Plan Form */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
-              <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-                Create New Investment Plan
-              </h3>
-              <form onSubmit={handleCreatePlan} className="space-y-3 text-xs">
-                {/* PLAN NAME DROPDOWN WITH ICONS */}
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Plan Name (Select Title)
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-base font-black text-slate-900">
+                  Add New Investment Plan
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Select a predefined plan title or enter a custom name with live auto calculations.
+                </p>
+              </div>
+
+              <form onSubmit={handleCreatePlan} className="space-y-4 text-xs">
+                {/* 1. PLAN NAME INTERACTIVE DROPDOWN WITH ICON BADGE */}
+                <div className="relative">
+                  <label className="font-extrabold text-slate-800 block mb-1 text-xs">
+                    Plan Name
                   </label>
-                  <select
-                    value={newPlan.name}
-                    onChange={(e) => handlePlanInputChange('name', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600 cursor-pointer"
+
+                  {/* Dropdown Trigger showing Icon Badge & Plan Title */}
+                  <div
+                    onClick={() => setIsPlanDropdownOpen(!isPlanDropdownOpen)}
+                    className="w-full px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl font-bold flex items-center justify-between cursor-pointer transition-all shadow-2xs"
                   >
-                    {PLAN_NAME_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {newPlan.name ? (
+                        <>
+                          <span className="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-900 flex items-center justify-center text-base font-black shrink-0 border border-cyan-200">
+                            {getSelectedPlanIcon(newPlan.name)}
+                          </span>
+                          <span className="truncate text-slate-900 text-xs font-black">
+                            {typeof newPlan.name === 'string'
+                              ? newPlan.name
+                              : (newPlan.name as any)?.title || ''}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-slate-400 font-bold text-xs py-1">
+                          Select Plan Name...
+                        </span>
+                      )}
+                    </div>
+                    {isPlanDropdownOpen ? (
+                      <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Dropdown Menu Options */}
+                  {isPlanDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 z-40 mt-1.5 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl divide-y divide-slate-100 p-1.5 animate-in fade-in duration-150">
+                      {PLAN_NAME_OPTIONS.map((opt) => (
+                        <div
+                          key={opt.title}
+                          onClick={() => handleSelectPlanOption(opt)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all ${
+                            newPlan.name.includes(opt.title)
+                              ? 'bg-cyan-50 text-cyan-900 font-black border border-cyan-200'
+                              : 'hover:bg-slate-50 text-slate-800 font-bold'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-sm shrink-0">
+                              {opt.icon}
+                            </span>
+                            <span className="text-xs truncate">{opt.title}</span>
+                          </div>
+                          {opt.minAmount && (
+                            <span className="text-[10px] font-mono font-extrabold text-cyan-800 bg-cyan-100 px-1.5 py-0.5 rounded-md shrink-0 ml-2">
+                              Min: ₹{opt.minAmount}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* IF CUSTOM PLAN NAME SELECTED */}
+                {/* IF CUSTOM PLAN NAME IS SELECTED */}
                 {newPlan.name === 'Custom Plan Name...' && (
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">
+                    <label className="font-bold text-slate-700 block mb-1 text-xs">
                       Custom Plan Title
                     </label>
                     <input
@@ -1599,90 +1718,102 @@ export default function AdminPanel() {
                       required
                       value={newPlan.customName}
                       onChange={(e) => handlePlanInputChange('customName', e.target.value)}
-                      placeholder="Enter custom plan name..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600"
+                      placeholder="Enter custom plan title..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600 focus:bg-white text-xs"
                     />
                   </div>
                 )}
 
-                {/* CATEGORY */}
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Category</label>
-                  <select
-                    value={newPlan.category}
-                    onChange={(e) => handlePlanInputChange('category', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600 cursor-pointer"
-                  >
-                    <option value="VIP">VIP Tier</option>
-                    <option value="Platinum">Platinum Tier</option>
-                    <option value="Gold">Gold Tier</option>
-                    <option value="Silver">Silver Tier</option>
-                    <option value="Bronze">Bronze Tier</option>
-                  </select>
-                </div>
-
-                {/* INVESTMENT (₹) & DAILY PROFIT (₹) */}
-                <div className="grid grid-cols-2 gap-2">
+                {/* 2. INVESTMENT (₹) & 3. DAILY PROFIT (%) */}
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Investment (₹)</label>
+                    <label className="font-extrabold text-slate-800 block mb-1 text-xs">
+                      Investment (₹)
+                    </label>
                     <input
                       type="number"
                       required
                       value={newPlan.price}
                       onChange={(e) => handlePlanInputChange('price', e.target.value)}
-                      placeholder="1000"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
+                      placeholder="e.g. 100"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-extrabold focus:outline-none focus:border-cyan-600 focus:bg-white text-xs text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Daily Profit (₹)</label>
+                    <label className="font-extrabold text-slate-800 block mb-1 text-xs">
+                      Daily Profit (%)
+                    </label>
                     <input
                       type="number"
+                      step="any"
                       required
                       value={newPlan.dailyReturn}
                       onChange={(e) => handlePlanInputChange('dailyReturn', e.target.value)}
-                      placeholder="100"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
+                      placeholder="e.g. 1 or 1.02"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-extrabold focus:outline-none focus:border-cyan-600 focus:bg-white text-xs text-slate-900"
                     />
+                    {newPlan.price && newPlan.dailyReturn && (
+                      <p className="text-[10px] text-cyan-700 font-bold mt-1">
+                        ₹
+                        {(
+                          (parseFloat(newPlan.price) || 0) *
+                          ((parseFloat(newPlan.dailyReturn) || 0) / 100)
+                        ).toFixed(2)}
+                        /day
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* DURATION (DAYS) */}
+                {/* 4. DURATION (DAYS) */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Duration (Days)</label>
+                  <label className="font-extrabold text-slate-800 block mb-1 text-xs">
+                    Duration (Days)
+                  </label>
                   <input
                     type="number"
                     required
                     value={newPlan.validityDays}
                     onChange={(e) => handlePlanInputChange('validityDays', e.target.value)}
                     placeholder="30"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-extrabold focus:outline-none focus:border-cyan-600 focus:bg-white text-xs text-slate-900"
                   />
                 </div>
 
-                {/* EST. PROFIT (₹) & TOTAL (₹) */}
-                <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <div>
-                    <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
-                      Est. Profit (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={newPlan.estProfit}
-                      onChange={(e) => handlePlanInputChange('estProfit', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-black text-amber-700 focus:outline-none"
-                    />
+                {/* 5. EST. PROFIT (₹) & 6. TOTAL (₹) - LIVE AUTO FILL */}
+                <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-200/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                      Auto-Calculated Financial Returns
+                    </span>
+                    <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md">
+                      Live Auto Fill ⚡
+                    </span>
                   </div>
-                  <div>
-                    <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
-                      Total Return (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={newPlan.totalReturn}
-                      onChange={(e) => handlePlanInputChange('totalReturn', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-black text-emerald-700 focus:outline-none"
-                    />
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
+                        Est. Profit (₹)
+                      </label>
+                      <input
+                        type="number"
+                        readOnly
+                        value={newPlan.estProfit}
+                        className="w-full px-3 py-2 bg-amber-50/80 border border-amber-200 rounded-xl font-mono font-black text-amber-800 text-xs focus:outline-none cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
+                        Total (₹)
+                      </label>
+                      <input
+                        type="number"
+                        readOnly
+                        value={newPlan.totalReturn}
+                        className="w-full px-3 py-2 bg-emerald-50/80 border border-emerald-200 rounded-xl font-mono font-black text-emerald-800 text-xs focus:outline-none cursor-not-allowed"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1692,7 +1823,7 @@ export default function AdminPanel() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer active:scale-95 text-xs"
                 >
                   Save Plan to Firebase
                 </button>
@@ -1700,28 +1831,44 @@ export default function AdminPanel() {
             </div>
 
             {/* Existing Plans List */}
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
+            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3">
               <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
                 Active Plans List (Total: {plans.length})
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {plans.map((p) => (
                   <div
                     key={p.id}
-                    className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between"
+                    className="p-3.5 bg-slate-50/80 hover:bg-slate-100/80 rounded-2xl border border-slate-200/80 transition-all flex items-start justify-between gap-3 shadow-2xs"
                   >
-                    <div>
-                      <span className="text-xs font-black text-slate-900 block">{p.name}</span>
-                      <span className="text-[10px] text-amber-700 font-bold bg-amber-100 px-1.5 rounded-md">
-                        {p.category}
-                      </span>
-                      <p className="text-[11px] font-mono font-bold text-slate-700 mt-1">
-                        Price: ₹{p.price?.toLocaleString('en-IN')} | Daily Profit: ₹{p.dailyReturn}/day
-                      </p>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-slate-900 truncate">{p.name}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] font-mono font-bold text-slate-700 pt-1">
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-normal block">Investment</span>
+                          <span className="text-slate-900">₹{p.price?.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-normal block">Daily Profit</span>
+                          <span className="text-emerald-700">₹{p.dailyReturn}/day</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-normal block">Duration</span>
+                          <span className="text-slate-800">{p.validityDays} Days</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-normal block">Total Return</span>
+                          <span className="text-amber-700">
+                            ₹{(p.totalReturn || (p.price + (p.dailyReturn * p.validityDays)))?.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDeletePlan(p.id)}
-                      className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg cursor-pointer"
+                      className="p-2 text-rose-600 hover:bg-rose-100/80 rounded-xl cursor-pointer shrink-0 transition-all"
                       title="Delete Plan"
                     >
                       <Trash2 className="w-4 h-4" />
