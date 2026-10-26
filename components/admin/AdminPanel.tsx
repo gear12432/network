@@ -63,6 +63,10 @@ export default function AdminPanel() {
     'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits'
   >('dashboard');
 
+  // Sidebar Collapsed State (Starts in small icon-only mode)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
+  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
+
   // Loading and State
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserAccountData[]>([]);
@@ -323,23 +327,33 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-[#edf1f5] text-slate-800 font-sans flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
       {/* =========================================================================
-          1. TOP CYAN HEADER BAR (Matching FAB ADMIN Design)
+          1. TOP CYAN HEADER BAR (Matching FAB ADMIN Design + Sidebar Toggle)
           ========================================================================= */}
-      <header className="bg-[#009aaa] text-white px-4 py-2.5 flex items-center justify-between shadow-md z-30 shrink-0">
-        {/* Left: Logo Brand & Dropdown Control */}
-        <div className="flex items-center gap-4">
+      <header className="bg-[#009aaa] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md z-30 shrink-0">
+        {/* Left: Sidebar Toggle Button + Logo Brand + Dropdown Control */}
+        <div className="flex items-center gap-3">
+          {/* Hamburger Sidebar Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 text-white transition-all cursor-pointer border border-white/20"
+            title={sidebarCollapsed ? 'Expand Sidebar Menu' : 'Collapse Sidebar to Icon Mode'}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+          </button>
+
           {/* Brand Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center font-black text-white text-base shadow-2xs">
               ⚡
             </div>
-            <span className="font-extrabold text-base tracking-tight font-sans text-white">
-              NETWORKJOIN <span className="text-cyan-200 font-normal text-xs uppercase tracking-wider">ADMIN</span>
+            <span className="font-extrabold text-sm sm:text-base tracking-tight font-sans text-white">
+              NETWORKJOIN <span className="text-cyan-200 font-normal text-xs uppercase tracking-wider hidden xs:inline">ADMIN</span>
             </span>
           </div>
 
           {/* Sidebar Toggle & Dropdown Selector */}
-          <div className="hidden sm:flex items-center gap-2 border-l border-cyan-400/40 pl-4">
+          <div className="hidden sm:flex items-center gap-2 border-l border-cyan-400/40 pl-3">
             <button
               onClick={refreshData}
               title="Refresh Data"
@@ -367,7 +381,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Right: Search, Notifications, Badges & Admin Avatar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Search Bar */}
           <div className="relative hidden md:block w-48">
             <Search className="w-3.5 h-3.5 text-cyan-200 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -415,7 +429,7 @@ export default function AdminPanel() {
 
           {/* Admin User Avatar */}
           <div className="flex items-center gap-2 pl-2 border-l border-cyan-400/40">
-            <div className="relative">
+            <div className="relative cursor-pointer" onClick={toggleSidebar} title="Click to Toggle Sidebar">
               <div className="w-8 h-8 rounded-full bg-cyan-200 text-cyan-900 font-extrabold flex items-center justify-center text-xs shadow-xs border border-white/40">
                 AD
               </div>
@@ -429,36 +443,55 @@ export default function AdminPanel() {
       </header>
 
       {/* =========================================================================
-          2. MAIN DESKTOP BODY: SIDEBAR + CONTENT VIEWPORT
+          2. MAIN DESKTOP BODY: COLLAPSIBLE SIDEBAR + CONTENT VIEWPORT
           ========================================================================= */}
       <div className="flex flex-1 min-h-0 w-full overflow-hidden">
         {/* -----------------------------------------------------------------------
-            LEFT DARK SIDEBAR (Matching FAB ADMIN Design)
+            LEFT DARK SIDEBAR (Collapsible w-16 to w-64 with Smooth Animation)
             ----------------------------------------------------------------------- */}
-        <aside className="w-60 bg-[#232b38] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg border-r border-slate-800 overflow-y-auto">
+        <aside
+          className={`${
+            sidebarCollapsed ? 'w-16' : 'w-64'
+          } transition-all duration-300 ease-in-out bg-[#232b38] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg border-r border-slate-800 overflow-y-auto overflow-x-hidden`}
+        >
           <div>
-            {/* Top User Profile Card */}
-            <div className="p-3 bg-[#1d2430] border-b border-slate-700/60 flex items-center gap-3">
-              <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-400 text-white font-extrabold flex items-center justify-center text-sm shadow-md border border-cyan-300/30">
-                  AD
+            {/* Top User Profile Card & Collapse Toggle */}
+            <div
+              onClick={toggleSidebar}
+              className={`p-3 bg-[#1d2430] border-b border-slate-700/60 flex items-center ${
+                sidebarCollapsed ? 'justify-center' : 'justify-between'
+              } cursor-pointer hover:bg-[#252f3f] transition-colors`}
+              title={sidebarCollapsed ? 'Click to Expand Sidebar' : 'Click to Collapse Sidebar'}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-400 text-white font-extrabold flex items-center justify-center text-xs shadow-md border border-cyan-300/30">
+                    AD
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#1d2430]" />
                 </div>
-                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#1d2430]" />
+                {!sidebarCollapsed && (
+                  <div className="min-w-0 flex-1 transition-opacity duration-200">
+                    <h3 className="text-xs font-black text-white truncate">Super Admin</h3>
+                    <span className="text-[10px] text-emerald-400 font-semibold block">Online • Full Control</span>
+                  </div>
+                )}
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-xs font-black text-white truncate">Super Admin</h3>
-                <span className="text-[10px] text-emerald-400 font-semibold block">Online • Full Control</span>
-              </div>
+              {!sidebarCollapsed && (
+                <ChevronRight className="w-4 h-4 text-slate-400 rotate-180 shrink-0" />
+              )}
             </div>
 
             {/* Sidebar Categorized Menu */}
-            <div className="py-3 px-2 space-y-4">
+            <div className="py-3 px-1.5 space-y-4">
               {/* Category 1: PERSONAL */}
               <div>
-                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
-                  PERSONAL
-                </span>
-                <nav className="space-y-0.5">
+                {!sidebarCollapsed && (
+                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
+                    PERSONAL
+                  </span>
+                )}
+                <nav className="space-y-1">
                   {[
                     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                     { id: 'users', label: 'Users Directory', icon: Users, badge: users.length },
@@ -470,28 +503,33 @@ export default function AdminPanel() {
                       <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        title={item.label}
+                        className={`w-full flex items-center ${
+                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
+                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isActive
                             ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
                             : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          <span className="truncate">{item.label}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {item.badge !== undefined && item.badge > 0 && (
-                            <span
-                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
-                        </div>
+                        {!sidebarCollapsed && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {item.badge !== undefined && item.badge > 0 && (
+                              <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -500,10 +538,12 @@ export default function AdminPanel() {
 
               {/* Category 2: FINANCE & PAYOUTS */}
               <div>
-                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
-                  FINANCE & PAYOUTS
-                </span>
-                <nav className="space-y-0.5">
+                {!sidebarCollapsed && (
+                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
+                    FINANCE & PAYOUTS
+                  </span>
+                )}
+                <nav className="space-y-1">
                   {[
                     { id: 'withdrawals', label: 'Withdrawal Payouts', icon: ArrowUpRight, badge: pendingWithdrawalsCount },
                     { id: 'plans', label: 'Yield Plans', icon: Layers },
@@ -515,28 +555,33 @@ export default function AdminPanel() {
                       <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        title={item.label}
+                        className={`w-full flex items-center ${
+                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
+                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isActive
                             ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
                             : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          <span className="truncate">{item.label}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {item.badge !== undefined && item.badge > 0 && (
-                            <span
-                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
-                        </div>
+                        {!sidebarCollapsed && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {item.badge !== undefined && item.badge > 0 && (
+                              <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -545,10 +590,12 @@ export default function AdminPanel() {
 
               {/* Category 3: CMS & APP */}
               <div>
-                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
-                  CMS & APP
-                </span>
-                <nav className="space-y-0.5">
+                {!sidebarCollapsed && (
+                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
+                    CMS & APP
+                  </span>
+                )}
+                <nav className="space-y-1">
                   {[
                     { id: 'sliders', label: 'Home Sliders', icon: Sliders },
                   ].map((item) => {
@@ -558,17 +605,22 @@ export default function AdminPanel() {
                       <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        title={item.label}
+                        className={`w-full flex items-center ${
+                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
+                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isActive
                             ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
                             : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          <span className="truncate">{item.label}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
                         </div>
-                        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                        {!sidebarCollapsed && (
+                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                        )}
                       </button>
                     );
                   })}
@@ -578,7 +630,7 @@ export default function AdminPanel() {
           </div>
 
           {/* Bottom Exit to User App Button */}
-          <div className="p-3 border-t border-slate-700/60 bg-[#1d2430]">
+          <div className="p-2 border-t border-slate-700/60 bg-[#1d2430]">
             <button
               type="button"
               onClick={() => {
@@ -587,10 +639,13 @@ export default function AdminPanel() {
                   window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
                 }
               }}
-              className="flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-black rounded-lg transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Return to User Application"
+              className={`flex items-center ${
+                sidebarCollapsed ? 'justify-center py-2.5' : 'justify-center gap-2 py-2'
+              } w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-black rounded-lg transition-all cursor-pointer shadow-xs active:scale-95`}
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-cyan-300" />
-              <span>User Application</span>
+              <ArrowLeft className="w-4 h-4 text-cyan-300 shrink-0" />
+              {!sidebarCollapsed && <span>User Application</span>}
             </button>
           </div>
         </aside>
