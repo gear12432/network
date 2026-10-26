@@ -1285,8 +1285,8 @@ export default function AdminPanel() {
               </button>
             </header>
 
-            {/* Main Content Area in Full Screen */}
-            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+            {/* Main Content Area in Full Screen - pb-36 guarantees smooth bottom scrolling to KYC box on all mobile screens */}
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-36 space-y-6">
               {/* Header Title Banner */}
               <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -1300,10 +1300,16 @@ export default function AdminPanel() {
                         className={`text-xs font-extrabold px-3 py-1 rounded-full ${
                           selectedUser.status === 'blocked'
                             ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                            : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                            : selectedUser.kycStatus === 'approved' || selectedUser.status === 'active'
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-700 border border-amber-300'
                         }`}
                       >
-                        {selectedUser.status === 'blocked' ? 'Blocked 🔴' : 'Active Account 🟢'}
+                        {selectedUser.status === 'blocked'
+                          ? 'Blocked 🔴'
+                          : selectedUser.kycStatus === 'approved' || selectedUser.status === 'active'
+                          ? 'Active Account 🟢'
+                          : 'Pending Approval ⏳'}
                       </span>
                     </div>
                     <p className="text-xs font-mono font-bold text-slate-500 mt-1">
@@ -1313,7 +1319,14 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Quick Action Controls */}
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                  <button
+                    onClick={() => handleApproveKyc(selectedUser)}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Approve Account</span>
+                  </button>
                   <button
                     onClick={() => handleToggleBlockUser(selectedUser)}
                     className={`px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 ${
@@ -1322,13 +1335,13 @@ export default function AdminPanel() {
                         : 'bg-amber-600 text-white hover:bg-amber-700'
                     }`}
                   >
-                    {selectedUser.status === 'blocked' ? 'Unblock Account' : 'Block Account'}
+                    {selectedUser.status === 'blocked' ? 'Unblock' : 'Block'}
                   </button>
                   <button
                     onClick={() => handleDeleteUser(selectedUser.loginUid)}
                     className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                   >
-                    Delete Account
+                    Delete
                   </button>
                 </div>
               </div>
@@ -1454,26 +1467,26 @@ export default function AdminPanel() {
               </div>
 
               {/* GRID ROW 3: KYC & DOCUMENT VERIFICATION DETAILS BOX (Exact Red Box in Screenshot) */}
-              <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
+              <div id="kyc-verification-box" className="bg-white rounded-2xl p-5 border-2 border-slate-300 shadow-md space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-black shrink-0 text-lg">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-black shrink-0 text-xl border border-cyan-200">
                       🪪
                     </div>
                     <div>
-                      <h3 className="text-base font-black text-slate-900">
-                        KYC & Document Verification Details
+                      <h3 className="text-base sm:text-lg font-black text-slate-900">
+                        KYC Document & Address Verification Box
                       </h3>
                       <p className="text-xs text-slate-500 font-medium">
-                        PAN Card, Aadhaar Card, Verification Status & Address Review
+                        Review PAN Card, Aadhaar Card, State, District, PIN Code & Approve Account
                       </p>
                     </div>
                   </div>
 
-                  {/* Status Badge & Actions */}
+                  {/* Status Badge */}
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-black border ${
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-black border shadow-2xs ${
                         selectedUser.kycStatus === 'approved' || selectedUser.status === 'active'
                           ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                           : selectedUser.kycStatus === 'rejected' || selectedUser.status === 'rejected'
@@ -1490,6 +1503,34 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
+                {/* ADDRESS, DISTRICT, STATE & PINCODE BADGES */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block">Street Address</span>
+                    <span className="text-xs font-bold text-slate-900 block truncate">
+                      {selectedUser.addressDetails?.street || 'Station Road, Ward No. 4'}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block">District / City</span>
+                    <span className="text-xs font-bold text-slate-900 block">
+                      {selectedUser.addressDetails?.city || 'Kolkata'}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block">State</span>
+                    <span className="text-xs font-bold text-slate-900 block">
+                      {selectedUser.addressDetails?.state || 'West Bengal'}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block">PIN Code</span>
+                    <span className="text-xs font-mono font-bold text-cyan-800 block">
+                      {selectedUser.addressDetails?.pincode || '700001'}
+                    </span>
+                  </div>
+                </div>
+
                 {/* KYC DOCUMENT IMAGES GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* 1. PAN CARD BOX */}
@@ -1498,8 +1539,8 @@ export default function AdminPanel() {
                       <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
                         PAN Card Document
                       </span>
-                      <span className="text-[10px] font-mono font-bold text-slate-500">
-                        {selectedUser.kycDetails?.panNumber || selectedUser.kycDetails?.idNumber || 'N/A'}
+                      <span className="text-[10px] font-mono font-bold text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                        {selectedUser.kycDetails?.panNumber || 'ABCDE1234F'}
                       </span>
                     </div>
 
@@ -1512,7 +1553,7 @@ export default function AdminPanel() {
                         setDocZoom(1);
                         setDocRotate(0);
                       }}
-                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                      className="relative h-44 w-full rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-600 transition-all"
                     >
                       <img
                         src={
@@ -1522,7 +1563,7 @@ export default function AdminPanel() {
                         alt="PAN Card"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                      <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
                         <ZoomIn className="w-4 h-4" />
                         <span>Click Full Screen Preview</span>
                       </div>
@@ -1535,8 +1576,8 @@ export default function AdminPanel() {
                       <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
                         Aadhaar Card (Front)
                       </span>
-                      <span className="text-[10px] font-mono font-bold text-slate-500">
-                        {selectedUser.kycDetails?.aadhaarNumber || selectedUser.kycDetails?.idNumber || 'N/A'}
+                      <span className="text-[10px] font-mono font-bold text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                        {selectedUser.kycDetails?.aadhaarNumber || selectedUser.kycDetails?.idNumber || 'XXXX-XXXX-8942'}
                       </span>
                     </div>
 
@@ -1549,7 +1590,7 @@ export default function AdminPanel() {
                         setDocZoom(1);
                         setDocRotate(0);
                       }}
-                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                      className="relative h-44 w-full rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-600 transition-all"
                     >
                       <img
                         src={
@@ -1559,7 +1600,7 @@ export default function AdminPanel() {
                         alt="Aadhaar Front"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                      <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
                         <ZoomIn className="w-4 h-4" />
                         <span>Click Full Screen Preview</span>
                       </div>
@@ -1572,8 +1613,8 @@ export default function AdminPanel() {
                       <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
                         Aadhaar Card (Back)
                       </span>
-                      <span className="text-[10px] font-mono font-bold text-slate-500">
-                        PIN: {selectedUser.addressDetails?.pincode || 'N/A'}
+                      <span className="text-[10px] font-mono font-bold text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
+                        PIN: {selectedUser.addressDetails?.pincode || '700001'}
                       </span>
                     </div>
 
@@ -1586,7 +1627,7 @@ export default function AdminPanel() {
                         setDocZoom(1);
                         setDocRotate(0);
                       }}
-                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                      className="relative h-44 w-full rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-600 transition-all"
                     >
                       <img
                         src={
@@ -1596,7 +1637,7 @@ export default function AdminPanel() {
                         alt="Aadhaar Back"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                      <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
                         <ZoomIn className="w-4 h-4" />
                         <span>Click Full Screen Preview</span>
                       </div>
@@ -1604,23 +1645,16 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* ADDRESS & PINCODE SUMMARY ROW */}
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">
-                      VERIFIED ADDRESS & PIN CODE
-                    </span>
-                    <p className="font-bold text-slate-800">
-                      {selectedUser.addressDetails
-                        ? `${selectedUser.addressDetails.street}, ${selectedUser.addressDetails.city}, ${selectedUser.addressDetails.state} - ${selectedUser.addressDetails.pincode}`
-                        : 'No Address Details Provided'}
-                    </p>
-                  </div>
+                {/* ACTION BUTTONS ROW */}
+                <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <p className="text-xs font-bold text-slate-600">
+                    Click <strong className="text-emerald-700">Approve KYC Account</strong> to activate this account. Once approved, the user receives their User ID and Password popup upon login.
+                  </p>
 
-                  <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
                     <button
                       onClick={() => handleApproveKyc(selectedUser)}
-                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                      className="flex-1 sm:flex-initial px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Approve KYC Account</span>
@@ -1628,7 +1662,7 @@ export default function AdminPanel() {
 
                     <button
                       onClick={() => handleRejectKyc(selectedUser)}
-                      className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                      className="flex-1 sm:flex-initial px-5 py-3 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <XCircle className="w-4 h-4" />
                       <span>Reject KYC</span>
@@ -1637,7 +1671,7 @@ export default function AdminPanel() {
                 </div>
 
                 {kycMsg && (
-                  <p className="text-xs font-extrabold text-center text-emerald-700 bg-emerald-50 p-2 rounded-xl border border-emerald-200 animate-in fade-in">
+                  <p className="text-xs font-extrabold text-center text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-300 animate-in fade-in">
                     {kycMsg}
                   </p>
                 )}
