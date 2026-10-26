@@ -1055,126 +1055,183 @@ export default function AdminPanel() {
         )}
 
         {/* USER DETAILS MODAL / SCREEN */}
+        {/* FULL SCREEN USER DETAILS PROFILE SCREEN (With Smooth Opening Animation & 100% Viewport Coverage) */}
         {selectedUser && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-5 space-y-4 shadow-2xl relative my-auto max-h-[90vh] overflow-y-auto">
-              {/* Close Button */}
+          <div className="fixed inset-0 z-50 bg-[#edf1f5] w-full h-full min-h-screen overflow-y-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ease-out flex flex-col">
+            {/* Top Navigation Bar */}
+            <header className="bg-[#009aaa] text-white px-4 py-3 shadow-md sticky top-0 z-20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer border border-white/30"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>← ऑल यूज़र लिस्ट (Back to Users List)</span>
+                </button>
+                <div className="hidden sm:flex items-center gap-2 border-l border-white/30 pl-3">
+                  <span className="text-sm font-extrabold text-white">
+                    यूज़र प्रोफाइल डिटेल्स ({selectedUser.fullName})
+                  </span>
+                </div>
+              </div>
+
               <button
                 onClick={() => setSelectedUser(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-full cursor-pointer"
+                className="p-1.5 bg-white/20 hover:bg-white/30 text-white rounded-full cursor-pointer transition-all"
+                title="Close Full Screen View"
               >
                 <X className="w-5 h-5" />
               </button>
+            </header>
 
-              <h3 className="text-lg font-black text-slate-900">यूज़र डिटेल्स (User Details Profile)</h3>
-
-              {/* TOP BOX: USER DETAILS BOX (White clean container with border) */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  {/* Avatar */}
-                  <div className="w-16 h-16 rounded-full bg-slate-900 text-amber-400 text-2xl font-black flex items-center justify-center shrink-0 border-2 border-slate-300">
+            {/* Main Content Area in Full Screen */}
+            <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+              {/* Header Title Banner */}
+              <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-900 text-amber-400 text-2xl font-black flex items-center justify-center shrink-0 border-2 border-amber-400/40 shadow-sm">
                     {selectedUser.fullName?.[0] || 'U'}
                   </div>
-                  <div className="text-center sm:text-left flex-1">
-                    <div className="flex items-center justify-center sm:justify-start gap-2">
-                      <h4 className="text-base font-black text-slate-900">{selectedUser.fullName}</h4>
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h2 className="text-xl font-black text-slate-900">{selectedUser.fullName}</h2>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        className={`text-xs font-extrabold px-3 py-1 rounded-full ${
                           selectedUser.status === 'blocked'
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'bg-emerald-100 text-emerald-700'
+                            ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                            : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
                         }`}
                       >
-                        {selectedUser.status === 'blocked' ? 'Blocked' : 'Active'}
+                        {selectedUser.status === 'blocked' ? 'Blocked 🔴' : 'Active Account 🟢'}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 font-mono font-bold mt-0.5">
-                      UID: {selectedUser.loginUid}
+                    <p className="text-xs font-mono font-bold text-slate-500 mt-1">
+                      UID: <span className="text-cyan-700">{selectedUser.loginUid}</span> | रजिस्टर्ड: {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-IN') : 'Recently'}
                     </p>
                   </div>
+                </div>
 
-                  {/* Edit Wallet Balance Box */}
-                  <div className="bg-white p-3 rounded-xl border border-slate-200 text-center sm:text-right w-full sm:w-auto">
-                    <span className="text-[10px] text-slate-500 font-bold block uppercase">
-                      Wallet Balance
+                {/* Quick Action Controls */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => handleToggleBlockUser(selectedUser)}
+                    className={`px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 ${
+                      selectedUser.status === 'blocked'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-amber-600 text-white hover:bg-amber-700'
+                    }`}
+                  >
+                    {selectedUser.status === 'blocked' ? 'अनब्लॉक यूज़र (Unblock)' : 'ब्लॉक यूज़र (Block Account)'}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteUser(selectedUser.loginUid)}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                  >
+                    डिलीट यूज़र (Delete Account)
+                  </button>
+                </div>
+              </div>
+
+              {/* GRID ROW 1: WALLET & PERSONAL DETAILS */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* WALLET BALANCE & EDIT CARD */}
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
+                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block border-b border-slate-100 pb-2">
+                    वॉलेट बैलेंस मैनेजमेंट (Wallet Management)
+                  </span>
+                  <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80 text-center">
+                    <span className="text-xs font-bold text-emerald-800 uppercase block mb-1">
+                      CURRENT WALLET BALANCE
                     </span>
-                    <div className="text-lg font-black text-emerald-700 font-mono">
+                    <div className="text-3xl font-black text-emerald-700 font-mono">
                       ₹{(selectedUser.balance || 0).toLocaleString('en-IN')}
                     </div>
                   </div>
+
+                  <div className="space-y-2 pt-1">
+                    <label className="text-xs font-bold text-slate-700 block">
+                      बैलेंस अपडेट / एडिट करें (Set New Balance):
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={editBalanceInput}
+                        onChange={(e) => setEditBalanceInput(e.target.value)}
+                        className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold text-slate-900 w-full focus:outline-none focus:border-cyan-600 focus:bg-white"
+                        placeholder="अमाउंट दर्ज करें..."
+                      />
+                      <button
+                        onClick={handleSaveUserBalance}
+                        className="px-4 py-2 bg-[#009aaa] hover:bg-cyan-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+                      >
+                        सेव करें (Save)
+                      </button>
+                    </div>
+                    {balanceMsg && (
+                      <p className="text-xs font-bold text-emerald-600 text-center pt-1">{balanceMsg}</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Edit Balance Action Bar */}
-                <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700 shrink-0">
-                    बैलेंस एडिट करें (Edit Balance):
+                {/* PERSONAL INFORMATION & CONTACT DETAILS */}
+                <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
+                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block border-b border-slate-100 pb-2">
+                    व्यक्तिगत एवं संपर्क विवरण (Personal & Contact Information)
                   </span>
-                  <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
-                    <input
-                      type="number"
-                      value={editBalanceInput}
-                      onChange={(e) => setEditBalanceInput(e.target.value)}
-                      className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 w-full focus:outline-none focus:border-slate-900"
-                    />
-                    <button
-                      onClick={handleSaveUserBalance}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-2xs shrink-0 cursor-pointer"
-                    >
-                      सेव करें (Save)
-                    </button>
-                  </div>
-                </div>
-                {balanceMsg && (
-                  <p className="text-xs font-bold text-emerald-600 text-center">{balanceMsg}</p>
-                )}
 
-                {/* Personal & Address Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 text-slate-700">
-                  <div className="flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    <span>मोबाइल: <strong>{selectedUser.mobile}</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="truncate">ईमेल: <strong>{selectedUser.email}</strong></span>
-                  </div>
-                  <div className="flex items-start gap-1.5 sm:col-span-2">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                    <span>
-                      एड्रेस: <strong>
-                        {selectedUser.addressDetails
-                          ? `${selectedUser.addressDetails.street}, ${selectedUser.addressDetails.city}, ${selectedUser.addressDetails.state} - ${selectedUser.addressDetails.pincode}`
-                          : 'Not Provided'}
-                      </strong>
-                    </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center gap-3">
+                      <Phone className="w-5 h-5 text-cyan-600 shrink-0" />
+                      <div>
+                        <span className="text-[10px] text-slate-400 block font-normal">मोबाइल नंबर</span>
+                        <span className="text-slate-900 font-mono text-sm">{selectedUser.mobile || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-cyan-600 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-[10px] text-slate-400 block font-normal">ईमेल एड्रेस</span>
+                        <span className="text-slate-900 font-mono text-xs truncate block">{selectedUser.email || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-[10px] text-slate-400 block font-normal">पूरा पता (Full Address Details)</span>
+                        <span className="text-slate-900 text-xs font-bold">
+                          {selectedUser.addressDetails
+                            ? `${selectedUser.addressDetails.street}, ${selectedUser.addressDetails.city}, ${selectedUser.addressDetails.state} - ${selectedUser.addressDetails.pincode}`
+                            : 'कोई पता उपलब्ध नहीं है (Address Not Provided)'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* LOWER GRID: STATS ACCOUNT BOXES */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                {/* Total Customer Account */}
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                    टोटल कस्टमर (Total Customers)
+              {/* GRID ROW 2: 4 STATS ACCOUNT CARDS */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                    टोटल कस्टमर (Customers)
                   </span>
-                  <span className="text-lg font-black text-slate-900 font-mono">12</span>
+                  <span className="text-2xl font-black text-slate-900 font-mono block">12</span>
                 </div>
 
-                {/* Total Purchased Amount */}
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                    टोटल परचेज प्लान (Purchased Plans)
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                    परचेज प्लान (Plans)
                   </span>
-                  <span className="text-lg font-black text-blue-700 font-mono">₹15,000</span>
+                  <span className="text-2xl font-black text-blue-600 font-mono block">₹15,000</span>
                 </div>
 
-                {/* Total Withdrawals */}
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                    टोटल विड्रोल (Total Withdrawals)
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                    टोटल विड्रोल (Withdrawals)
                   </span>
-                  <span className="text-lg font-black text-amber-700 font-mono">
+                  <span className="text-2xl font-black text-amber-600 font-mono block">
                     ₹{withdrawals
                       .filter((w) => w.loginUid === selectedUser.loginUid && w.status === 'Approved')
                       .reduce((sum, w) => sum + w.amount, 0)
@@ -1182,12 +1239,11 @@ export default function AdminPanel() {
                   </span>
                 </div>
 
-                {/* Total Add Money */}
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                    टोटल एड मनी (Total Add Money)
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                    टोटल एड मनी (Deposits)
                   </span>
-                  <span className="text-lg font-black text-emerald-700 font-mono">
+                  <span className="text-2xl font-black text-emerald-600 font-mono block">
                     ₹{deposits
                       .filter((d) => d.loginUid === selectedUser.loginUid && d.status === 'Approved')
                       .reduce((sum, d) => sum + d.amount, 0)
@@ -1195,21 +1251,7 @@ export default function AdminPanel() {
                   </span>
                 </div>
               </div>
-
-              {/* Toggle Block Button inside modal */}
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  onClick={() => handleToggleBlockUser(selectedUser)}
-                  className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    selectedUser.status === 'blocked'
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                      : 'bg-amber-600 text-white hover:bg-amber-700'
-                  }`}
-                >
-                  {selectedUser.status === 'blocked' ? 'अनब्लॉक यूज़र (Unblock User)' : 'ब्लॉक यूज़र (Block User)'}
-                </button>
-              </div>
-            </div>
+            </main>
           </div>
         )}
 
@@ -1311,22 +1353,30 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* IMAGE PREVIEW MODAL */}
+        {/* FULL SCREEN PAYMENT SCREENSHOT PREVIEW VIEWPORT */}
         {previewImage && (
-          <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-4 max-w-lg w-full relative space-y-3">
+          <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200">
+            <div className="w-full max-w-5xl flex items-center justify-between text-white pb-3 border-b border-slate-800">
+              <span className="text-sm font-extrabold tracking-tight">पेमेंट स्क्रीनशॉट - फुल स्क्रीन व्यू (Payment Proof Preview)</span>
               <button
                 onClick={() => setPreviewImage(null)}
-                className="absolute top-3 right-3 text-slate-500 hover:text-slate-900 p-1 bg-slate-100 rounded-full cursor-pointer"
+                className="flex items-center gap-2 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl cursor-pointer transition-all active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
+                <span>बंद करें (Close View)</span>
               </button>
-              <h4 className="text-sm font-bold text-slate-900">Payment Screenshot Preview</h4>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-2 w-full max-w-4xl overflow-hidden">
               <img
                 src={previewImage}
-                alt="Payment Proof"
-                className="w-full max-h-[70vh] object-contain rounded-xl border border-slate-200"
+                alt="Payment Proof Screenshot"
+                className="max-w-full max-h-[82vh] object-contain rounded-2xl border-2 border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200"
               />
+            </div>
+
+            <div className="text-center text-xs text-slate-400 font-mono">
+              NetworkJoin Pro Deposit Verification System
             </div>
           </div>
         )}
