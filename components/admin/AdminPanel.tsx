@@ -32,6 +32,8 @@ import {
   Sparkles,
   ArrowLeft,
   Copy,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 import {
   getAllUsersFromFirestore,
@@ -108,8 +110,29 @@ export default function AdminPanel() {
     badgeLeft: 'LIMITED OFFER',
     badgeRight: '100% SECURE',
     btnText: 'Invest Now',
+    imageUrl: '',
   });
+  const [sliderImagePreview, setSliderImagePreview] = useState<string>('');
   const [sliderMsg, setSliderMsg] = useState('');
+
+  // Handle Image File Selection for Slider
+  const handleSliderImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('कृपया 5MB से छोटी इमेज फाइल चुनें (File size must be under 5MB)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setSliderImagePreview(base64);
+      setNewSlider((prev) => ({ ...prev, imageUrl: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Gateway Form State
   const [gatewayForm, setGatewayForm] = useState({
@@ -285,28 +308,34 @@ export default function AdminPanel() {
   // Handle Add New Slider
   const handleCreateSlider = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSlider.title) return;
+    if (!newSlider.title && !newSlider.imageUrl) {
+      alert('कृपया टाइटल या इमेज में से कम से कम एक जानकारी भरें (Enter Title or Select Image)');
+      return;
+    }
 
     const sliderObj = {
       id: Date.now(),
-      title: newSlider.title,
+      title: newSlider.title || 'Special Offer Banner',
       subtext: newSlider.subtext,
       badgeLeft: newSlider.badgeLeft,
       badgeRight: newSlider.badgeRight,
       btnText: newSlider.btnText,
+      imageUrl: newSlider.imageUrl,
       bgGradient: 'from-amber-800 via-[#5c3516] to-amber-900',
     };
 
     setSliders((prev) => [sliderObj, ...prev]);
     await saveCustomSliderToFirestore(sliderObj);
-    setSliderMsg('स्लाइडर बैनर सफलतापूर्वक सेव हो गया!');
+    setSliderMsg('स्लाइडर बैनर और इमेज सफलतापूर्वक सेव हो गए!');
     setNewSlider({
       title: '',
       subtext: '',
       badgeLeft: 'LIMITED OFFER',
       badgeRight: '100% SECURE',
       btnText: 'Invest Now',
+      imageUrl: '',
     });
+    setSliderImagePreview('');
     setTimeout(() => setSliderMsg(''), 3000);
   };
 
@@ -1595,11 +1624,62 @@ export default function AdminPanel() {
                 नया होम बैनर स्लाइडर जोड़ें (Add Home Slider)
               </h3>
               <form onSubmit={handleCreateSlider} className="space-y-3 text-xs">
+                {/* CHOICE FILE IMAGE BUTTON */}
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                  <label className="font-extrabold text-slate-800 block">
+                    चॉइस फाइल (Choice Banner Image File):
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center justify-center gap-2 px-3.5 py-2 bg-[#009aaa] hover:bg-cyan-700 text-white rounded-xl font-black text-xs cursor-pointer transition-all shadow-xs active:scale-95">
+                        <Upload className="w-4 h-4" />
+                        <span>चॉइस फाइल (Choice File)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleSliderImageSelect}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {sliderImagePreview && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSliderImagePreview('');
+                            setNewSlider((prev) => ({ ...prev, imageUrl: '' }));
+                          }}
+                          className="px-2.5 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        >
+                          हटाएं (Remove Image)
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Image Preview Thumbnail */}
+                    {sliderImagePreview ? (
+                      <div className="relative w-full h-24 rounded-xl overflow-hidden border border-slate-300 shadow-2xs">
+                        <img
+                          src={sliderImagePreview}
+                          alt="Selected Banner Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute bottom-1 right-2 bg-black/75 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-white/20">
+                          इमेज सेलेक्ट हो गई 🟢
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        इमेज चुनने के लिए ऊपर <strong>'चॉइस फाइल'</strong> बटन पर क्लिक करें। (JPG, PNG, WEBP)
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">टाइटल (Banner Title)</label>
                   <input
                     type="text"
-                    required
                     value={newSlider.title}
                     onChange={(e) => setNewSlider({ ...newSlider, title: e.target.value })}
                     placeholder="उदा: Double ROI Offer Active"
@@ -1655,7 +1735,7 @@ export default function AdminPanel() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer"
+                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
                 >
                   स्लाइडर सेव करें (Save Slider to Firebase)
                 </button>
@@ -1676,18 +1756,37 @@ export default function AdminPanel() {
                   {sliders.map((s) => (
                     <div
                       key={s.id}
-                      className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between"
+                      className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3"
                     >
-                      <div>
-                        <span className="text-xs font-black text-slate-900 block">{s.title}</span>
-                        <p className="text-[11px] text-slate-600">{s.subtext}</p>
+                      <div className="flex items-center gap-3 min-w-0">
+                        {s.imageUrl ? (
+                          <img
+                            src={s.imageUrl}
+                            alt={s.title}
+                            className="w-16 h-12 object-cover rounded-lg border border-slate-300 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-16 h-12 bg-slate-800 text-amber-400 rounded-lg flex items-center justify-center shrink-0 font-bold text-[10px]">
+                            Gradient
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <span className="text-xs font-black text-slate-900 block truncate">{s.title}</span>
+                          <p className="text-[11px] text-slate-600 truncate">{s.subtext}</p>
+                          {s.imageUrl && (
+                            <span className="text-[9px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.2 rounded-md inline-block mt-0.5">
+                              Custom Banner Image 🖼️
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <button
                         onClick={async () => {
                           setSliders((prev) => prev.filter((item) => item.id !== s.id));
                           await deleteCustomSliderFromFirestore(String(s.id));
                         }}
-                        className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg cursor-pointer"
+                        className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg cursor-pointer shrink-0"
+                        title="Delete Slider"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -21,6 +21,7 @@ import {
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
 import PlanCard from '@/components/PlanCard';
 import FloatingInput from '@/components/ui/FloatingInput';
+import { getCustomSlidersFromFirestore } from '@/lib/firebase';
 
 interface HomeScreenProps {
   stats: UserStats;
@@ -65,8 +66,22 @@ export default function HomeScreen({
 
   // Slider State (Small compact height as marked in screenshot)
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [customSlides, setCustomSlides] = useState<any[]>([]);
 
-  const slides = [
+  // Fetch custom sliders from Firebase on mount
+  useEffect(() => {
+    let isMounted = true;
+    getCustomSlidersFromFirestore().then((sliders) => {
+      if (isMounted && sliders && sliders.length > 0) {
+        setCustomSlides(sliders);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const defaultSlides = [
     {
       id: 0,
       badgeLeft: 'SECURE & FAST',
@@ -99,6 +114,8 @@ export default function HomeScreen({
     },
   ];
 
+  const slides = customSlides.length > 0 ? customSlides : defaultSlides;
+
   // Auto-rotate slider every 5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
@@ -123,7 +140,7 @@ export default function HomeScreen({
     return matchesCategory && matchesSearch;
   });
 
-  const slide = slides[currentSlide];
+  const slide = slides[currentSlide % slides.length] || slides[0];
 
   return (
     <div className="space-y-4 pb-20 sm:pb-8">
@@ -155,39 +172,58 @@ export default function HomeScreen({
 
           {/* Compact Small-Height Slider Banner */}
           <div
-            className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${slide.bgGradient} text-white p-3 sm:p-3.5 shadow-sm transition-all duration-500 min-h-[96px] max-h-[108px] flex flex-col justify-between`}
+            className={`relative overflow-hidden rounded-2xl ${
+              slide.imageUrl ? 'bg-slate-900' : `bg-gradient-to-r ${slide.bgGradient || 'from-[#4a2b0e] via-[#75411a] to-[#a86e24]'}`
+            } text-white p-3 sm:p-3.5 shadow-sm transition-all duration-500 min-h-[96px] max-h-[108px] flex flex-col justify-between`}
           >
-            {/* Subtle background glow effect */}
-            <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
+            {/* Custom Banner Image if set via Admin Choice File */}
+            {slide.imageUrl && (
+              <img
+                src={slide.imageUrl}
+                alt={slide.title || 'Home Banner'}
+                className="absolute inset-0 w-full h-full object-cover z-0"
+              />
+            )}
+            {/* Dark gradient overlay for text legibility over custom image */}
+            {slide.imageUrl && (
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/50 to-slate-950/30 z-0" />
+            )}
+
+            {/* Subtle background glow effect (when no custom image) */}
+            {!slide.imageUrl && (
+              <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none z-0" />
+            )}
 
             {/* Top Badges Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between relative z-10">
               <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-xs text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide uppercase">
                 <ShieldCheck className="w-2.5 h-2.5 text-emerald-300" />
-                <span>{slide.badgeLeft}</span>
+                <span>{slide.badgeLeft || 'SPECIAL OFFER'}</span>
               </span>
 
-              <span className="text-[9px] font-bold bg-black/20 text-blue-100 px-1.5 py-0.5 rounded-full border border-white/10">
-                {slide.badgeRight}
+              <span className="text-[9px] font-bold bg-black/40 text-blue-100 px-1.5 py-0.5 rounded-full border border-white/10 backdrop-blur-xs">
+                {slide.badgeRight || 'VERIFIED'}
               </span>
             </div>
 
             {/* Main Banner Heading & Subtitle */}
-            <div className="my-0.5">
-              <h3 className="text-xs sm:text-sm font-black tracking-tight leading-tight truncate">
+            <div className="my-0.5 relative z-10">
+              <h3 className="text-xs sm:text-sm font-black tracking-tight leading-tight truncate drop-shadow-sm">
                 {slide.title}
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-blue-100/90 leading-tight truncate max-w-md">
-                {slide.subtext}
-              </p>
+              {slide.subtext && (
+                <p className="text-[10px] sm:text-[11px] text-blue-100/90 leading-tight truncate max-w-md drop-shadow-xs">
+                  {slide.subtext}
+                </p>
+              )}
             </div>
 
             {/* Bottom Carousel Dots + CTA Button */}
-            <div className="flex items-center justify-between pt-0.5">
+            <div className="flex items-center justify-between pt-0.5 relative z-10">
               <div className="flex items-center gap-1">
-                {slides.map((s, idx) => (
+                {slides.map((s: any, idx: number) => (
                   <button
-                    key={s.id}
+                    key={s.id || idx}
                     onClick={() => setCurrentSlide(idx)}
                     className={`h-1.5 rounded-full transition-all cursor-pointer ${
                       currentSlide === idx ? 'w-4 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
@@ -198,10 +234,16 @@ export default function HomeScreen({
               </div>
 
               <button
-                onClick={slide.action}
+                onClick={() => {
+                  if (typeof slide.action === 'function') {
+                    slide.action();
+                  } else {
+                    onSelectCategory('All Plans');
+                  }
+                }}
                 className="flex items-center gap-1 text-[10px] sm:text-xs font-bold bg-[#fff8eb] text-[#4e2e0f] hover:bg-white active:scale-95 px-2.5 py-1 rounded-full transition-all shadow-xs cursor-pointer"
               >
-                <span>{slide.btnText}</span>
+                <span>{slide.btnText || 'Explore'}</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
