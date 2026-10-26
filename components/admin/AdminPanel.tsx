@@ -36,10 +36,14 @@ import {
   Copy,
   Upload,
   Image as ImageIcon,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from 'lucide-react';
 import {
   getAllUsersFromFirestore,
   updateUserStatusInFirestore,
+  updateUserKycStatusInFirestore,
   updateUserBalanceInFirestore,
   deleteUserFromFirestore,
   getAllDepositsFromFirestore,
@@ -94,6 +98,42 @@ export default function AdminPanel() {
 
   // Image Modal Preview for Payment Screenshots
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Full Screen Interactive Document Viewer Modal (With Zoom controls)
+  const [docModal, setDocModal] = useState<{ url: string; title: string } | null>(null);
+  const [docZoom, setDocZoom] = useState<number>(1);
+  const [docRotate, setDocRotate] = useState<number>(0);
+  const [kycMsg, setKycMsg] = useState<string>('');
+
+  // Handle Approve User KYC
+  const handleApproveKyc = async (u: UserAccountData) => {
+    setUsers((prev) =>
+      prev.map((item) =>
+        item.loginUid === u.loginUid ? { ...item, status: 'active', kycStatus: 'approved' } : item
+      )
+    );
+    if (selectedUser?.loginUid === u.loginUid) {
+      setSelectedUser({ ...selectedUser, status: 'active', kycStatus: 'approved' });
+    }
+    setKycMsg('User KYC & Account Approved Successfully! 🟢');
+    await updateUserKycStatusInFirestore(u.loginUid, 'approved', 'active');
+    setTimeout(() => setKycMsg(''), 3000);
+  };
+
+  // Handle Reject User KYC
+  const handleRejectKyc = async (u: UserAccountData) => {
+    setUsers((prev) =>
+      prev.map((item) =>
+        item.loginUid === u.loginUid ? { ...item, status: 'rejected', kycStatus: 'rejected' } : item
+      )
+    );
+    if (selectedUser?.loginUid === u.loginUid) {
+      setSelectedUser({ ...selectedUser, status: 'rejected', kycStatus: 'rejected' });
+    }
+    setKycMsg('User KYC Rejected 🔴');
+    await updateUserKycStatusInFirestore(u.loginUid, 'rejected', 'rejected');
+    setTimeout(() => setKycMsg(''), 3000);
+  };
 
   // 20 Predefined Plan Name Options with Icons & Default Minimum Amounts
   const PLAN_NAME_OPTIONS = [
@@ -1412,6 +1452,196 @@ export default function AdminPanel() {
                   </span>
                 </div>
               </div>
+
+              {/* GRID ROW 3: KYC & DOCUMENT VERIFICATION DETAILS BOX (Exact Red Box in Screenshot) */}
+              <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-black shrink-0 text-lg">
+                      🪪
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-slate-900">
+                        KYC & Document Verification Details
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium">
+                        PAN Card, Aadhaar Card, Verification Status & Address Review
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge & Actions */}
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-black border ${
+                        selectedUser.kycStatus === 'approved' || selectedUser.status === 'active'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : selectedUser.kycStatus === 'rejected' || selectedUser.status === 'rejected'
+                          ? 'bg-rose-100 text-rose-800 border-rose-300'
+                          : 'bg-amber-100 text-amber-800 border-amber-300'
+                      }`}
+                    >
+                      {selectedUser.kycStatus === 'approved' || selectedUser.status === 'active'
+                        ? 'KYC Approved 🟢'
+                        : selectedUser.kycStatus === 'rejected' || selectedUser.status === 'rejected'
+                        ? 'KYC Rejected 🔴'
+                        : 'Pending Approval ⏳'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* KYC DOCUMENT IMAGES GRID */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* 1. PAN CARD BOX */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                        PAN Card Document
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-slate-500">
+                        {selectedUser.kycDetails?.panNumber || selectedUser.kycDetails?.idNumber || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        const url =
+                          selectedUser.kycDetails?.panImage ||
+                          'https://picsum.photos/seed/pancard/800/500';
+                        setDocModal({ url, title: `PAN Card Document - ${selectedUser.fullName}` });
+                        setDocZoom(1);
+                        setDocRotate(0);
+                      }}
+                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                    >
+                      <img
+                        src={
+                          selectedUser.kycDetails?.panImage ||
+                          'https://picsum.photos/seed/pancard/800/500'
+                        }
+                        alt="PAN Card"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                        <ZoomIn className="w-4 h-4" />
+                        <span>Click Full Screen Preview</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. AADHAAR CARD FRONT BOX */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                        Aadhaar Card (Front)
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-slate-500">
+                        {selectedUser.kycDetails?.aadhaarNumber || selectedUser.kycDetails?.idNumber || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        const url =
+                          selectedUser.kycDetails?.aadhaarFrontImage ||
+                          'https://picsum.photos/seed/aadhaarfront/800/500';
+                        setDocModal({ url, title: `Aadhaar Card (Front) - ${selectedUser.fullName}` });
+                        setDocZoom(1);
+                        setDocRotate(0);
+                      }}
+                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                    >
+                      <img
+                        src={
+                          selectedUser.kycDetails?.aadhaarFrontImage ||
+                          'https://picsum.photos/seed/aadhaarfront/800/500'
+                        }
+                        alt="Aadhaar Front"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                        <ZoomIn className="w-4 h-4" />
+                        <span>Click Full Screen Preview</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. AADHAAR CARD BACK BOX */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                        Aadhaar Card (Back)
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-slate-500">
+                        PIN: {selectedUser.addressDetails?.pincode || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        const url =
+                          selectedUser.kycDetails?.aadhaarBackImage ||
+                          'https://picsum.photos/seed/aadhaarback/800/500';
+                        setDocModal({ url, title: `Aadhaar Card (Back) - ${selectedUser.fullName}` });
+                        setDocZoom(1);
+                        setDocRotate(0);
+                      }}
+                      className="relative h-40 w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-200 group cursor-pointer shadow-xs hover:border-cyan-500 transition-all"
+                    >
+                      <img
+                        src={
+                          selectedUser.kycDetails?.aadhaarBackImage ||
+                          'https://picsum.photos/seed/aadhaarback/800/500'
+                        }
+                        alt="Aadhaar Back"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-1.5 backdrop-blur-[2px]">
+                        <ZoomIn className="w-4 h-4" />
+                        <span>Click Full Screen Preview</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ADDRESS & PINCODE SUMMARY ROW */}
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">
+                      VERIFIED ADDRESS & PIN CODE
+                    </span>
+                    <p className="font-bold text-slate-800">
+                      {selectedUser.addressDetails
+                        ? `${selectedUser.addressDetails.street}, ${selectedUser.addressDetails.city}, ${selectedUser.addressDetails.state} - ${selectedUser.addressDetails.pincode}`
+                        : 'No Address Details Provided'}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                    <button
+                      onClick={() => handleApproveKyc(selectedUser)}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Approve KYC Account</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleRejectKyc(selectedUser)}
+                      className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span>Reject KYC</span>
+                    </button>
+                  </div>
+                </div>
+
+                {kycMsg && (
+                  <p className="text-xs font-extrabold text-center text-emerald-700 bg-emerald-50 p-2 rounded-xl border border-emerald-200 animate-in fade-in">
+                    {kycMsg}
+                  </p>
+                )}
+              </div>
             </main>
           </div>
         )}
@@ -1538,6 +1768,77 @@ export default function AdminPanel() {
 
             <div className="text-center text-xs text-slate-400 font-mono">
               NetworkJoin Pro Deposit Verification System
+            </div>
+          </div>
+        )}
+
+        {/* INTERACTIVE FULL SCREEN DOCUMENT IMAGE VIEWER WITH SMOOTH ANIMATION & ZOOM */}
+        {docModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-lg flex flex-col justify-between p-4 sm:p-6 animate-in fade-in duration-300">
+            {/* Top Toolbar */}
+            <div className="w-full max-w-6xl mx-auto flex items-center justify-between text-white pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-extrabold tracking-tight text-cyan-400">
+                  {docModal.title}
+                </span>
+                <span className="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-md text-slate-300">
+                  Zoom: {Math.round(docZoom * 100)}%
+                </span>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setDocZoom((z) => Math.min(z + 0.25, 3))}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl cursor-pointer transition-all active:scale-95"
+                  title="Zoom In (+)"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setDocZoom((z) => Math.max(z - 0.25, 0.5))}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl cursor-pointer transition-all active:scale-95"
+                  title="Zoom Out (-)"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setDocZoom(1);
+                    setDocRotate(0);
+                  }}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl cursor-pointer transition-all active:scale-95"
+                  title="Reset Zoom"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setDocModal(null)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl cursor-pointer transition-all active:scale-95 ml-2"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Close Viewer</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Document Image View Area */}
+            <div className="flex-1 flex items-center justify-center p-4 overflow-auto relative">
+              <img
+                src={docModal.url}
+                alt={docModal.title}
+                style={{
+                  transform: `scale(${docZoom}) rotate(${docRotate}deg)`,
+                  transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+                className="max-w-full max-h-[78vh] object-contain rounded-2xl shadow-2xl border-2 border-slate-700"
+              />
+            </div>
+
+            {/* Bottom Footer Tip */}
+            <div className="text-center text-xs text-slate-400 font-mono">
+              Use controls above to Zoom In, Zoom Out, or Reset View. Smooth full-screen document viewer.
             </div>
           </div>
         )}

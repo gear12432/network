@@ -233,8 +233,14 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // Step 2: KYC Details
   const [idType, setIdType] = useState('Aadhaar Card');
   const [idNumber, setIdNumber] = useState('');
+  const [panNumber, setPanNumber] = useState('');
   const [dob, setDob] = useState('');
   const [gender, setGender] = useState('Male');
+
+  // KYC Image files (base64 Data URLs)
+  const [panImage, setPanImage] = useState<string>('');
+  const [aadhaarFrontImage, setAadhaarFrontImage] = useState<string>('');
+  const [aadhaarBackImage, setAadhaarBackImage] = useState<string>('');
 
   // Step 3: Address Details
   const [street, setStreet] = useState('');
@@ -242,10 +248,51 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   const [state, setState] = useState('');
   const [pincode, setPincode] = useState('');
 
-  // Success Pop-up state
+  // Success Pop-up state & Pending Review Modal state
   const [createdUser, setCreatedUser] = useState<UserAccountData | null>(null);
+  const [pendingNoticeUser, setPendingNoticeUser] = useState<UserAccountData | null>(null);
+  const [approvedNoticeUser, setApprovedNoticeUser] = useState<UserAccountData | null>(null);
   const [copiedUid, setCopiedUid] = useState(false);
   const [copiedPwd, setCopiedPwd] = useState(false);
+
+  // Helper to read file input into base64 Data URL
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (val: string) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      setSignupError('Image file size must be less than 6MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) {
+        setter(ev.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Re-fetch user status when checking pending review status
+  const handleCheckPendingStatus = async () => {
+    if (!pendingNoticeUser) return;
+    setLoginLoading(true);
+    try {
+      const updatedUser = await findUserInFirestore(pendingNoticeUser.loginUid);
+      if (updatedUser && updatedUser.status === 'active' && updatedUser.kycStatus === 'approved') {
+        setPendingNoticeUser(null);
+        setApprovedNoticeUser(updatedUser);
+      } else {
+        setSignupError('Your KYC verification is still under review by Admin Panel. Please check again later.');
+      }
+    } catch (err) {
+      console.error('Error checking status:', err);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   // Step Validation (English error responses)
   const validateStep1 = () => {
@@ -324,8 +371,13 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         kycDetails: {
           idType,
           idNumber: idNumber.trim().toUpperCase(),
+          panNumber: panNumber.trim().toUpperCase() || idNumber.trim().toUpperCase(),
+          aadhaarNumber: idNumber.trim().toUpperCase(),
           dob,
           gender,
+          panImage,
+          aadhaarFrontImage,
+          aadhaarBackImage,
         },
         addressDetails: {
           street: street.trim(),
@@ -335,7 +387,8 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         },
         balance: 12500,
         vipLevel: 1,
-        status: 'active',
+        status: 'pending_approval',
+        kycStatus: 'pending',
         createdAt: new Date().toISOString(),
       };
 
@@ -354,7 +407,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
       // Trigger Confetti celebration
       triggerConfetti();
 
-      // Show the Success Pop-up
+      // Show the Success Pop-up with Pending Review Notice
       setCreatedUser(newUserData);
     } catch (err: unknown) {
       console.error('Registration failed:', err);
@@ -440,6 +493,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           balance: 14850,
           vipLevel: 3,
           status: 'active',
+          kycStatus: 'approved',
         };
       }
 
@@ -456,11 +510,18 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         return;
       }
 
-      // Login Successful!
+      // Check account approval status
+      if (user.status === 'pending_approval' || user.kycStatus === 'pending' || user.kycStatus === 'rejected') {
+        setPendingNoticeUser(user);
+        setLoginLoading(false);
+        return;
+      }
+
+      // Login Successful (Account is active & KYC approved!)
       if (typeof window !== 'undefined') {
         localStorage.setItem('network_join_pro_user', JSON.stringify(user));
       }
-      onLoginSuccess(user);
+      setApprovedNoticeUser(user);
     } catch (err: unknown) {
       console.error('Login error:', err);
       setLoginError('Login service error. Please check your internet connection.');
@@ -809,11 +870,19 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
                 {/* ID Number Floating Input */}
                 <FloatingInput
-                  label="Document / ID Number"
+                  label="Aadhaar / ID Card Number"
                   value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
+                  onChange={(e) => setIdNumber(e.target.value.toUpperCase())}
                   icon={<FileText className="w-4 h-4" />}
                   required
+                />
+
+                {/* PAN Number Input */}
+                <FloatingInput
+                  label="PAN Card Number"
+                  value={panNumber}
+                  onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                  icon={<FileText className="w-4 h-4" />}
                 />
 
                 {/* DOB & Gender */}
@@ -837,6 +906,87 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                       { value: 'Other', label: 'Other' },
                     ]}
                   />
+                </div>
+
+                {/* Document Upload Buttons (Choice File) */}
+                <div className="space-y-3 pt-1">
+                  <span className="text-xs font-bold text-[#8a5416] block uppercase tracking-wider">
+                    Upload KYC Document Copies (Images)
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {/* PAN Image Upload */}
+                    <div className="bg-white border-2 border-dashed border-[#dfbe7e] rounded-xl p-2.5 text-center flex flex-col items-center justify-center relative hover:border-[#d0872e] transition-colors">
+                      {panImage ? (
+                        <div className="w-full h-16 relative rounded-lg overflow-hidden border border-[#dfbe7e] mb-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={panImage} alt="PAN Document" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-[#faf6ee] border border-[#dfbe7e] flex items-center justify-center text-[#8a5416] mb-1">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                      )}
+                      <span className="text-[11px] font-bold text-[#46280b] mb-1">PAN Card Image</span>
+                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                        {panImage ? 'Change File' : 'Choose File'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setPanImage)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Aadhaar Front Image Upload */}
+                    <div className="bg-white border-2 border-dashed border-[#dfbe7e] rounded-xl p-2.5 text-center flex flex-col items-center justify-center relative hover:border-[#d0872e] transition-colors">
+                      {aadhaarFrontImage ? (
+                        <div className="w-full h-16 relative rounded-lg overflow-hidden border border-[#dfbe7e] mb-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={aadhaarFrontImage} alt="Aadhaar Front" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-[#faf6ee] border border-[#dfbe7e] flex items-center justify-center text-[#8a5416] mb-1">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                      )}
+                      <span className="text-[11px] font-bold text-[#46280b] mb-1">Aadhaar Front</span>
+                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                        {aadhaarFrontImage ? 'Change File' : 'Choose File'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setAadhaarFrontImage)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Aadhaar Back Image Upload */}
+                    <div className="bg-white border-2 border-dashed border-[#dfbe7e] rounded-xl p-2.5 text-center flex flex-col items-center justify-center relative hover:border-[#d0872e] transition-colors">
+                      {aadhaarBackImage ? (
+                        <div className="w-full h-16 relative rounded-lg overflow-hidden border border-[#dfbe7e] mb-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={aadhaarBackImage} alt="Aadhaar Back" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-[#faf6ee] border border-[#dfbe7e] flex items-center justify-center text-[#8a5416] mb-1">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                      )}
+                      <span className="text-[11px] font-bold text-[#46280b] mb-1">Aadhaar Back</span>
+                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                        {aadhaarBackImage ? 'Change File' : 'Choose File'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setAadhaarBackImage)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-2 flex items-center gap-3">
@@ -1199,6 +1349,137 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 className="w-full py-3.5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-black text-sm tracking-wide shadow-lg shadow-[#d0872e]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
                 <span>Login Now with this UID</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            PENDING KYC REVIEW MODAL (Confirmation message: Reviewing within 24 hours)
+           ========================================================================= */}
+        {pendingNoticeUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-[#faf6ee] border-2 border-[#dfbe7e] text-[#46280b] rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
+                KYC Verification Pending
+              </span>
+
+              <h3 className="font-serif font-black text-xl text-[#46280b] mt-3">
+                Verification Under Review
+              </h3>
+
+              <div className="bg-amber-50/80 border-2 border-amber-200/80 rounded-2xl p-4 my-4 text-left space-y-2">
+                <p className="text-xs sm:text-sm text-[#46280b] font-medium leading-relaxed">
+                  Your KYC verification is currently under review by the Admin Panel. Your account credentials (User ID & Password) will be activated within <strong className="text-[#8a5416]">24 hours</strong> once approved.
+                </p>
+                <div className="pt-2 border-t border-amber-200 text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-amber-800 font-semibold">Login UID:</span>
+                    <span className="font-mono font-bold text-[#8a5416]">{pendingNoticeUser.loginUid}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-amber-800 font-semibold">Full Name:</span>
+                    <span className="font-medium text-[#46280b]">{pendingNoticeUser.fullName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-amber-800 font-semibold">Status:</span>
+                    <span className="font-bold text-amber-700 uppercase">Pending Approval</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  disabled={loginLoading}
+                  onClick={handleCheckPendingStatus}
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide shadow-md shadow-[#d0872e]/25 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
+                >
+                  {loginLoading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Check Verification Status</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPendingNoticeUser(null)}
+                  className="w-full py-2.5 text-xs text-[#8a5416] font-semibold hover:underline cursor-pointer"
+                >
+                  Close & Back to Login
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            APPROVED NOTICE MODAL (Congratulations & Access Dashboard)
+           ========================================================================= */}
+        {approvedNoticeUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-[#faf6ee] border-2 border-[#dfbe7e] text-[#46280b] rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+                Account Approved
+              </span>
+
+              <h3 className="font-serif font-black text-xl text-[#46280b] mt-3">
+                Congratulations!
+              </h3>
+
+              <div className="bg-emerald-50/80 border-2 border-emerald-200/80 rounded-2xl p-4 my-4 text-left space-y-2">
+                <p className="text-xs sm:text-sm text-[#46280b] font-medium leading-relaxed">
+                  Congratulations! Your account has been approved by the Admin Panel.
+                </p>
+                <div className="pt-2 border-t border-emerald-200 text-xs space-y-1.5 font-mono">
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-800 font-semibold">User ID:</span>
+                    <span className="font-bold text-[#8a5416] bg-white px-2 py-0.5 rounded border border-emerald-300">
+                      {approvedNoticeUser.loginUid}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-800 font-semibold">Password:</span>
+                    <span className="font-bold text-[#46280b] bg-white px-2 py-0.5 rounded border border-emerald-300">
+                      {approvedNoticeUser.password}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const u = approvedNoticeUser;
+                  setApprovedNoticeUser(null);
+                  onLoginSuccess(u);
+                }}
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm tracking-wide shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+              >
+                <span>Proceed to Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </motion.div>

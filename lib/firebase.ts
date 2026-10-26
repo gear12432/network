@@ -79,6 +79,11 @@ export interface UserAccountData {
     idNumber: string;
     dob: string;
     gender: string;
+    panNumber?: string;
+    aadhaarNumber?: string;
+    panImage?: string;
+    aadhaarFrontImage?: string;
+    aadhaarBackImage?: string;
   };
   addressDetails: {
     street: string;
@@ -88,7 +93,8 @@ export interface UserAccountData {
   };
   balance?: number;
   vipLevel?: number;
-  status?: string;
+  status?: string; // 'active' | 'blocked' | 'pending_approval' | 'rejected'
+  kycStatus?: 'pending' | 'approved' | 'rejected' | string;
   createdAt?: string;
 }
 
@@ -227,7 +233,7 @@ export async function getAllUsersFromFirestore(): Promise<UserAccountData[]> {
 // 2. Update user status (block/unblock)
 export async function updateUserStatusInFirestore(
   loginUid: string,
-  status: 'active' | 'blocked'
+  status: 'active' | 'blocked' | 'pending_approval' | 'rejected'
 ): Promise<boolean> {
   try {
     const docRef = doc(db, 'users', loginUid);
@@ -235,6 +241,26 @@ export async function updateUserStatusInFirestore(
     return true;
   } catch (err) {
     console.warn('Error updating user status in Firestore:', err);
+    return false;
+  }
+}
+
+// 2b. Update user KYC status & account activation in Firestore
+export async function updateUserKycStatusInFirestore(
+  loginUid: string,
+  kycStatus: 'approved' | 'rejected' | 'pending',
+  accountStatus?: 'active' | 'pending_approval' | 'rejected' | 'blocked'
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    const updates: Record<string, any> = { kycStatus };
+    if (accountStatus) {
+      updates.status = accountStatus;
+    }
+    await withTimeout(updateDoc(docRef, updates), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating user KYC status in Firestore:', err);
     return false;
   }
 }
