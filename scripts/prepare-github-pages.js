@@ -9,18 +9,14 @@ function patchHtmlFile(filePath, depth = 0) {
   let content = fs.readFileSync(filePath, 'utf8');
   const prefix = depth > 0 ? '../'.repeat(depth) : './';
 
-  // Replace absolute references with depth-aware relative references
-  content = content.replace(/(href|src)="\/_next\//g, `$1="${prefix}_next/`);
-  content = content.replace(/(href|src)='\/_next\//g, `$1='${prefix}_next/`);
-  content = content.replace(/url\(\/_next\//g, `url(${prefix}_next/`);
-  content = content.replace(/url\("\/_next\//g, `url("${prefix}_next/`);
-  content = content.replace(/url\('\/_next\//g, `url('${prefix}_next/`);
-  content = content.replace(/(href|src)="\/assets\//g, `$1="${prefix}assets/`);
-  content = content.replace(/(href|src)='\/assets\//g, `$1='${prefix}assets/`);
-  content = content.replace(/"\/_next\//g, `"${prefix}_next/`);
+  // First normalize any previous relative or absolute _next/ asset references
+  content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `$1="${prefix}_next/`);
+  content = content.replace(/url\(["']?(\.\.\/|\.\/|\/network\/|\/)?_next\//g, `url("${prefix}_next/`);
+  content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?assets\//g, `$1="${prefix}assets/`);
+  content = content.replace(/["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `"${prefix}_next/`);
 
   fs.writeFileSync(filePath, content, 'utf8');
-  console.log(`[GitHub Pages Fix] Patched relative paths in ${filePath} (depth: ${depth})`);
+  console.log(`[GitHub Pages Fix] Patched relative paths in ${filePath} (target depth: ${depth}, prefix: '${prefix}')`);
 }
 
 function processDirectory(dir, relativeDepth = 0) {
@@ -67,8 +63,15 @@ if (fs.existsSync(outDir)) {
   const rootNext = path.join(projectRoot, '_next');
   const rootAdminDir = path.join(projectRoot, 'admin');
 
-  if (fs.existsSync(indexOut)) fs.copyFileSync(indexOut, rootIndex);
-  if (fs.existsSync(errorOut)) fs.copyFileSync(errorOut, root404);
+  if (fs.existsSync(indexOut)) {
+    fs.copyFileSync(indexOut, rootIndex);
+    patchHtmlFile(rootIndex, 0);
+  }
+
+  if (fs.existsSync(errorOut)) {
+    fs.copyFileSync(errorOut, root404);
+    patchHtmlFile(root404, 0);
+  }
 
   // Copy out/_next directly to root/_next
   const outNext = path.join(outDir, '_next');
@@ -85,19 +88,24 @@ if (fs.existsSync(outDir)) {
     fs.mkdirSync(rootAdminDir, { recursive: true });
   }
 
+  const rootAdminIndexFile = path.join(rootAdminDir, 'index.html');
+  const rootAdminHtmlFile = path.join(projectRoot, 'admin.html');
+
   if (fs.existsSync(outAdminIndex)) {
-    fs.copyFileSync(outAdminIndex, path.join(rootAdminDir, 'index.html'));
-    fs.copyFileSync(outAdminIndex, path.join(projectRoot, 'admin.html'));
-    console.log('[GitHub Pages Fix] Copied admin/index.html to root admin/index.html and admin.html.');
+    fs.copyFileSync(outAdminIndex, rootAdminIndexFile);
+    fs.copyFileSync(outAdminIndex, rootAdminHtmlFile);
   } else if (fs.existsSync(outAdminHtml)) {
-    fs.copyFileSync(outAdminHtml, path.join(rootAdminDir, 'index.html'));
-    fs.copyFileSync(outAdminHtml, path.join(projectRoot, 'admin.html'));
-    console.log('[GitHub Pages Fix] Copied admin.html to root admin/index.html and admin.html.');
+    fs.copyFileSync(outAdminHtml, rootAdminIndexFile);
+    fs.copyFileSync(outAdminHtml, rootAdminHtmlFile);
   } else if (fs.existsSync(indexOut)) {
-    fs.copyFileSync(indexOut, path.join(rootAdminDir, 'index.html'));
-    fs.copyFileSync(indexOut, path.join(projectRoot, 'admin.html'));
-    console.log('[GitHub Pages Fix] Fallback copied index.html to root admin/index.html and admin.html.');
+    fs.copyFileSync(indexOut, rootAdminIndexFile);
+    fs.copyFileSync(indexOut, rootAdminHtmlFile);
   }
+
+  // CRITICAL: Re-patch root/admin.html with depth 0 (./_next/) and root/admin/index.html with depth 1 (../_next/)
+  patchHtmlFile(rootAdminHtmlFile, 0);
+  patchHtmlFile(rootAdminIndexFile, 1);
+  console.log('[GitHub Pages Fix] Successfully patched root admin.html (depth 0) and root/admin/index.html (depth 1).');
 
   // Create .nojekyll in root
   fs.writeFileSync(path.join(projectRoot, '.nojekyll'), '');
