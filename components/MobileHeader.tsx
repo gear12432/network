@@ -12,6 +12,7 @@ interface MobileHeaderProps {
   onOpenAddCustomer: () => void;
   onOpenProfile: () => void;
   onOpenNotifications: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export default function MobileHeader({
@@ -21,7 +22,17 @@ export default function MobileHeader({
   onOpenAddCustomer,
   onOpenProfile,
   onOpenNotifications,
+  onOpenAdmin,
 }: MobileHeaderProps) {
+  const handleAdminClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onOpenAdmin) {
+      onOpenAdmin();
+    } else if (typeof window !== 'undefined') {
+      window.location.hash = 'admin';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] border-b border-[#dfbe7e] px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-between shadow-2xs">
       {/* Left: Avatar & Admin Link */}
@@ -43,13 +54,14 @@ export default function MobileHeader({
           </div>
         </div>
 
-        <Link
-          href="/admin"
-          className="px-2 py-0.5 bg-slate-900 text-amber-400 text-[10px] font-black rounded-full border border-slate-800 shrink-0 shadow-2xs"
+        <button
+          type="button"
+          onClick={handleAdminClick}
+          className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-amber-400 text-[10px] font-black rounded-full border border-slate-800 shrink-0 shadow-2xs cursor-pointer active:scale-95 transition-all"
           title="Admin Panel Control Center"
         >
           Admin
-        </Link>
+        </button>
       </div>
 
       {/* Right: Wallet pill (with enlarged Wallet icon), + Customer button, enlarged History, enlarged Notification Bell */}

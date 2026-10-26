@@ -22,6 +22,7 @@ interface ProfileScreenProps {
   onOpenHistory: () => void;
   onOpenWithdraw: () => void;
   onOpenDeposit: () => void;
+  onOpenAdmin?: () => void;
   onLogout?: () => void;
 }
 
@@ -30,6 +31,7 @@ export default function ProfileScreen({
   onOpenHistory,
   onOpenWithdraw,
   onOpenDeposit,
+  onOpenAdmin,
   onLogout,
 }: ProfileScreenProps) {
   return (
@@ -135,6 +137,27 @@ export default function ProfileScreen({
             Active
           </span>
         </div>
+
+        {onOpenAdmin && (
+          <button
+            type="button"
+            onClick={onOpenAdmin}
+            className="w-full flex items-center justify-between p-4 hover:bg-[#fff9eb] transition-colors text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center border border-slate-800 shadow-xs">
+                <Crown className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-serif font-black text-xs text-[#46280b] block">Admin Control Center</span>
+                <span className="text-[10px] text-[#8a5b28]">Manage Users, Withdrawals, Deposits & Settings</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-black text-amber-900 bg-amber-200 border border-amber-300 px-2 py-0.5 rounded-full">
+              Open Admin
+            </span>
+          </button>
+        )}
 
         <div className="w-full flex items-center justify-between p-4 hover:bg-[#fff9eb] transition-colors text-left cursor-pointer">
           <div className="flex items-center gap-3">

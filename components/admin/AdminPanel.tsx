@@ -386,13 +386,19 @@ export default function AdminPanel() {
 
         {/* Back to User App Button */}
         <div className="pt-4 border-t border-slate-100 mt-4">
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.hash = '';
+                window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
+              }
+            }}
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>यूजर ऐप खोलें (User App)</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

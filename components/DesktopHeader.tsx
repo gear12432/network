@@ -16,6 +16,7 @@ interface DesktopHeaderProps {
   onOpenAddCustomer?: () => void;
   onOpenCustomerList?: () => void;
   onToggleMobileLayout?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export default function DesktopHeader({
@@ -29,7 +30,16 @@ export default function DesktopHeader({
   onOpenAddCustomer,
   onOpenCustomerList,
   onToggleMobileLayout,
+  onOpenAdmin,
 }: DesktopHeaderProps) {
+  const handleAdminClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onOpenAdmin) {
+      onOpenAdmin();
+    } else if (typeof window !== 'undefined') {
+      window.location.hash = 'admin';
+    }
+  };
   return (
     <div className="sticky top-0 z-20 w-full bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] border-b border-[#dfbe7e] shadow-xs text-[#46280b]">
       {/* 1. Main Top Header Bar */}
@@ -115,14 +125,15 @@ export default function DesktopHeader({
           </button>
 
           {/* Admin Panel Quick Link */}
-          <Link
-            href="/admin"
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800 transition-all shadow-xs border border-slate-800"
+          <button
+            type="button"
+            onClick={handleAdminClick}
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition-all shadow-xs border border-slate-800 cursor-pointer active:scale-95"
             title="Admin Panel Control Center"
           >
             <Settings className="w-3.5 h-3.5 text-amber-400" />
             <span>Admin</span>
-          </Link>
+          </button>
 
           {/* Settings / Configuration */}
           <button

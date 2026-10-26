@@ -460,6 +460,7 @@ export default function InvestmentApp() {
                 onOpenAddCustomer={() => setActiveModal('add-customer')}
                 onOpenCustomerList={() => setActiveModal('customer-list')}
                 onToggleMobileLayout={() => setManualLayout('mobile')}
+                onOpenAdmin={() => setIsAdminRoute(true)}
               />
             )}
 
@@ -526,6 +527,7 @@ export default function InvestmentApp() {
                   onOpenHistory={() => setActiveModal('history')}
                   onOpenWithdraw={() => setActiveModal('withdraw')}
                   onOpenDeposit={() => setActiveModal('deposit')}
+                  onOpenAdmin={() => setIsAdminRoute(true)}
                   onLogout={handleLogout}
                 />
               )}
@@ -549,6 +551,7 @@ export default function InvestmentApp() {
               onOpenAddCustomer={() => setActiveModal('add-customer')}
               onOpenProfile={() => setActiveTab('profile')}
               onOpenNotifications={() => setActiveModal('notifications')}
+              onOpenAdmin={() => setIsAdminRoute(true)}
             />
           )}
 
@@ -607,6 +610,7 @@ export default function InvestmentApp() {
                 onOpenHistory={() => setActiveModal('history')}
                 onOpenWithdraw={() => setActiveModal('withdraw')}
                 onOpenDeposit={() => setActiveModal('deposit')}
+                onOpenAdmin={() => setIsAdminRoute(true)}
                 onLogout={handleLogout}
               />
             )}
