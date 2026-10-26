@@ -321,298 +321,547 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col md:flex-row antialiased">
-      {/* Sidebar Navigation - White Minimal Clean Theme */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 p-4 flex flex-col justify-between shrink-0 shadow-xs">
-        <div>
-          {/* Admin Header Brand */}
-          <div className="flex items-center gap-3 px-2 py-3 border-b border-slate-100 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center font-black text-lg shadow-sm">
-              N
+    <div className="min-h-screen bg-[#edf1f5] text-slate-800 font-sans flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+      {/* =========================================================================
+          1. TOP CYAN HEADER BAR (Matching FAB ADMIN Design)
+          ========================================================================= */}
+      <header className="bg-[#009aaa] text-white px-4 py-2.5 flex items-center justify-between shadow-md z-30 shrink-0">
+        {/* Left: Logo Brand & Dropdown Control */}
+        <div className="flex items-center gap-4">
+          {/* Brand Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center font-black text-white text-base shadow-2xs">
+              ⚡
             </div>
-            <div>
-              <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none">
-                Admin Control Center
-              </h1>
-              <span className="text-[10px] text-emerald-600 font-bold tracking-wider uppercase">
-                Firebase Live Sync 🟢
+            <span className="font-extrabold text-base tracking-tight font-sans text-white">
+              NETWORKJOIN <span className="text-cyan-200 font-normal text-xs uppercase tracking-wider">ADMIN</span>
+            </span>
+          </div>
+
+          {/* Sidebar Toggle & Dropdown Selector */}
+          <div className="hidden sm:flex items-center gap-2 border-l border-cyan-400/40 pl-4">
+            <button
+              onClick={refreshData}
+              title="Refresh Data"
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as any)}
+                className="bg-white/15 hover:bg-white/25 text-white border border-white/25 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none cursor-pointer appearance-none pr-7 transition-all"
+              >
+                <option value="dashboard" className="text-slate-900">Dashboard ▾</option>
+                <option value="users" className="text-slate-900">Users Directory ▾</option>
+                <option value="deposits" className="text-slate-900">Add Money (Deposits) ▾</option>
+                <option value="withdrawals" className="text-slate-900">Withdrawals ▾</option>
+                <option value="plans" className="text-slate-900">Investment Plans ▾</option>
+                <option value="sliders" className="text-slate-900">Home Sliders ▾</option>
+                <option value="gateway" className="text-slate-900">Payment Gateway ▾</option>
+              </select>
+              <ChevronRight className="w-3.5 h-3.5 text-cyan-100 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Search, Notifications, Badges & Admin Avatar */}
+        <div className="flex items-center gap-3">
+          {/* Search Bar */}
+          <div className="relative hidden md:block w-48">
+            <Search className="w-3.5 h-3.5 text-cyan-200 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              placeholder="Search user, mobile..."
+              className="w-full pl-8 pr-3 py-1 bg-white/15 border border-white/25 rounded-full text-xs text-white placeholder-cyan-200/80 focus:outline-none focus:bg-white/25 transition-all"
+            />
+          </div>
+
+          {/* Live Sync Status Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-300/40 text-emerald-100 text-[10px] font-bold">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>Firebase Live 🟢</span>
+          </div>
+
+          {/* Quick Icons */}
+          <button
+            onClick={() => setActiveTab('deposits')}
+            className="relative p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+            title="Pending Add Money Requests"
+          >
+            <ArrowDownLeft className="w-4 h-4" />
+            {pendingDepositsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {pendingDepositsCount}
               </span>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            {[
-              { id: 'dashboard', label: 'डैशबोर्ड (Dashboard)', icon: LayoutDashboard },
-              { id: 'users', label: 'यूजर्स (Users)', icon: Users, badge: users.length },
-              { id: 'deposits', label: 'एड मनी (Add Money)', icon: ArrowDownLeft, badge: pendingDepositsCount },
-              { id: 'withdrawals', label: 'विड्रोल (Withdrawals)', icon: ArrowUpRight, badge: pendingWithdrawalsCount },
-              { id: 'plans', label: 'प्लांस (Plans)', icon: Layers },
-              { id: 'sliders', label: 'एट स्लाइडर (Sliders)', icon: Sliders },
-              { id: 'gateway', label: 'पेमेंट गेटवे (Gateway)', icon: CreditCard },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
-                    <span>{tab.label}</span>
-                  </div>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
-                        isActive
-                          ? 'bg-amber-400 text-slate-900'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Back to User App Button */}
-        <div className="pt-4 border-t border-slate-100 mt-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.location.hash = '';
-                window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
-              }
-            }}
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>यूजर ऐप खोलें (User App)</span>
+            )}
           </button>
-        </div>
-      </aside>
 
-      {/* Main Content Viewport - White Theme */}
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto max-w-7xl mx-auto w-full">
-        {/* Top Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 mb-5 border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab('withdrawals')}
+            className="relative p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+            title="Pending Withdrawal Requests"
+          >
+            <ArrowUpRight className="w-4 h-4" />
+            {pendingWithdrawalsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {pendingWithdrawalsCount}
+              </span>
+            )}
+          </button>
+
+          {/* Admin User Avatar */}
+          <div className="flex items-center gap-2 pl-2 border-l border-cyan-400/40">
+            <div className="relative">
+              <div className="w-8 h-8 rounded-full bg-cyan-200 text-cyan-900 font-extrabold flex items-center justify-center text-xs shadow-xs border border-white/40">
+                AD
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#009aaa]" />
+            </div>
+            <span className="hidden sm:inline text-xs font-bold text-white tracking-tight">
+              Admin Superuser
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {/* =========================================================================
+          2. MAIN DESKTOP BODY: SIDEBAR + CONTENT VIEWPORT
+          ========================================================================= */}
+      <div className="flex flex-1 min-h-0 w-full overflow-hidden">
+        {/* -----------------------------------------------------------------------
+            LEFT DARK SIDEBAR (Matching FAB ADMIN Design)
+            ----------------------------------------------------------------------- */}
+        <aside className="w-60 bg-[#232b38] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg border-r border-slate-800 overflow-y-auto">
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight capitalize">
-              {activeTab === 'dashboard' && 'Dashboard Overview & Real-Time Stats'}
-              {activeTab === 'users' && 'User Management & Accounts Directory'}
-              {activeTab === 'deposits' && 'Add Money / Wallet Deposit Submissions'}
-              {activeTab === 'withdrawals' && 'Withdrawal Requests & Bank Approvals'}
-              {activeTab === 'plans' && 'Investment Yield Plans Manager'}
-              {activeTab === 'sliders' && 'Home Screen Banner Sliders'}
-              {activeTab === 'gateway' && 'Payment Gateway & UPI QR Settings'}
-            </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Manage application data in real-time synced directly with Firebase Firestore.
-            </p>
-          </div>
-
-          <button
-            onClick={refreshData}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-2xs cursor-pointer self-start sm:self-auto"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>रिफ्रेश (Refresh)</span>
-          </button>
-        </div>
-
-        {/* =========================================================================
-            1. DASHBOARD TAB
-            ========================================================================= */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Stat Cards Grid (White Theme) */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {/* Total Users */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    टोटल यूजर (Total Users)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <Users className="w-4 h-4" />
-                  </div>
+            {/* Top User Profile Card */}
+            <div className="p-3 bg-[#1d2430] border-b border-slate-700/60 flex items-center gap-3">
+              <div className="relative shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-400 text-white font-extrabold flex items-center justify-center text-sm shadow-md border border-cyan-300/30">
+                  AD
                 </div>
-                <span className="text-2xl font-black text-slate-900 font-mono">
-                  {totalUsersCount}
-                </span>
-                <span className="text-[10px] text-emerald-600 font-bold mt-1">
-                  Registered accounts
-                </span>
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#1d2430]" />
               </div>
-
-              {/* Total Add Money */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    टोटल एड मनी (Total Add Money)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                    <ArrowDownLeft className="w-4 h-4" />
-                  </div>
-                </div>
-                <span className="text-2xl font-black text-emerald-700 font-mono">
-                  ₹{totalDepositAmount.toLocaleString('en-IN')}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium mt-1">Approved deposits</span>
-              </div>
-
-              {/* Total Withdrawals */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    टोटल विड्रोल (Total Withdrawals)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
-                </div>
-                <span className="text-2xl font-black text-slate-900 font-mono">
-                  ₹{totalWithdrawalAmount.toLocaleString('en-IN')}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium mt-1">Approved payouts</span>
-              </div>
-
-              {/* Pending Add Money */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    पेंडिंग एड मनी (Pending Add Money)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                </div>
-                <span className="text-2xl font-black text-amber-700 font-mono">
-                  {pendingDepositsCount}
-                </span>
-                <span className="text-[10px] text-amber-600 font-bold mt-1">Pending approvals</span>
-              </div>
-
-              {/* Pending Withdrawals */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    पेंडिंग विड्रोल (Pending Withdrawals)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
-                    <ShieldAlert className="w-4 h-4" />
-                  </div>
-                </div>
-                <span className="text-2xl font-black text-rose-700 font-mono">
-                  {pendingWithdrawalsCount}
-                </span>
-                <span className="text-[10px] text-rose-600 font-bold mt-1">Awaiting approval</span>
-              </div>
-
-              {/* Today Registered Users */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    टुडे रजिस्टर यूजर (Today Registered)
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                </div>
-                <span className="text-2xl font-black text-purple-700 font-mono">
-                  {todayUsers.length}
-                </span>
-                <span className="text-[10px] text-purple-600 font-bold mt-1">Today signups</span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-xs font-black text-white truncate">Super Admin</h3>
+                <span className="text-[10px] text-emerald-400 font-semibold block">Online • Full Control</span>
               </div>
             </div>
 
-            {/* Recent Registered Users List View */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                <h3 className="text-sm font-black text-slate-900">
-                  रिसेंट रजिस्टर यूजर (Recent Registered Users)
-                </h3>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-bold cursor-pointer"
-                >
-                  ऑल यूजर देखें (View All) →
-                </button>
-              </div>
-
-              {users.length === 0 ? (
-                <div className="text-center py-6 text-slate-400 text-xs">
-                  कोई यूजर नहीं मिला (No users registered yet)
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-100 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-2 px-3">यूज़र (User)</th>
-                        <th className="py-2 px-3">UID</th>
-                        <th className="py-2 px-3">मोबाइल (Mobile)</th>
-                        <th className="py-2 px-3">बैलेंस (Balance)</th>
-                        <th className="py-2 px-3">स्टेटस (Status)</th>
-                        <th className="py-2 px-3 text-right">एक्शन (Action)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
-                      {users.slice(0, 5).map((u) => (
-                        <tr key={u.loginUid} className="hover:bg-slate-50 transition-all">
-                          <td className="py-2.5 px-3 flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-slate-900 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0">
-                              {u.fullName?.[0] || 'U'}
-                            </div>
-                            <span className="font-bold text-slate-900">{u.fullName}</span>
-                          </td>
-                          <td className="py-2.5 px-3 font-mono font-bold text-slate-700">
-                            {u.loginUid}
-                          </td>
-                          <td className="py-2.5 px-3">{u.mobile}</td>
-                          <td className="py-2.5 px-3 font-mono font-bold text-emerald-700">
-                            ₹{(u.balance || 0).toLocaleString('en-IN')}
-                          </td>
-                          <td className="py-2.5 px-3">
+            {/* Sidebar Categorized Menu */}
+            <div className="py-3 px-2 space-y-4">
+              {/* Category 1: PERSONAL */}
+              <div>
+                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                  PERSONAL
+                </span>
+                <nav className="space-y-0.5">
+                  {[
+                    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                    { id: 'users', label: 'Users Directory', icon: Users, badge: users.length },
+                    { id: 'deposits', label: 'Add Money (Deposits)', icon: ArrowDownLeft, badge: pendingDepositsCount },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id as any)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {item.badge !== undefined && item.badge > 0 && (
                             <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                u.status === 'blocked'
-                                  ? 'bg-rose-100 text-rose-700'
-                                  : 'bg-emerald-100 text-emerald-700'
+                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                               }`}
                             >
-                              {u.status === 'blocked' ? 'Blocked 🔴' : 'Active 🟢'}
+                              {item.badge}
                             </span>
-                          </td>
-                          <td className="py-2.5 px-3 text-right">
-                            <button
-                              onClick={() => {
-                                setSelectedUser(u);
-                                setEditBalanceInput(String(u.balance || 0));
-                                setActiveTab('users');
-                              }}
-                              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded-lg cursor-pointer"
+                          )}
+                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Category 2: FINANCE & PAYOUTS */}
+              <div>
+                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                  FINANCE & PAYOUTS
+                </span>
+                <nav className="space-y-0.5">
+                  {[
+                    { id: 'withdrawals', label: 'Withdrawal Payouts', icon: ArrowUpRight, badge: pendingWithdrawalsCount },
+                    { id: 'plans', label: 'Yield Plans', icon: Layers },
+                    { id: 'gateway', label: 'Payment Gateway', icon: CreditCard },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id as any)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              }`}
                             >
-                              व्यू (View)
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              {item.badge}
+                            </span>
+                          )}
+                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Category 3: CMS & APP */}
+              <div>
+                <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                  CMS & APP
+                </span>
+                <nav className="space-y-0.5">
+                  {[
+                    { id: 'sliders', label: 'Home Sliders', icon: Sliders },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id as any)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Exit to User App Button */}
+          <div className="p-3 border-t border-slate-700/60 bg-[#1d2430]">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.hash = '';
+                  window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
+                }
+              }}
+              className="flex items-center justify-center gap-2 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-black rounded-lg transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-300" />
+              <span>User Application</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* -----------------------------------------------------------------------
+            RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
+            ----------------------------------------------------------------------- */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+          {/* Sub-Header / Breadcrumb Bar */}
+          <div className="bg-white rounded-xl p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
+                <span>
+                  {activeTab === 'dashboard' && 'Dashboard'}
+                  {activeTab === 'users' && 'Users Directory'}
+                  {activeTab === 'deposits' && 'Add Money / Deposit Requests'}
+                  {activeTab === 'withdrawals' && 'Withdrawal Requests'}
+                  {activeTab === 'plans' && 'Yield Plans Manager'}
+                  {activeTab === 'sliders' && 'Home Screen Sliders'}
+                  {activeTab === 'gateway' && 'Payment Gateway Settings'}
+                </span>
+                <span className="text-xs font-normal text-slate-400">Control panel</span>
+              </h2>
+            </div>
+
+            {/* Breadcrumb Path */}
+            <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 self-start sm:self-auto">
+              <span>🏠 Home</span>
+              <span>›</span>
+              <span className="text-cyan-600 font-bold capitalize">{activeTab}</span>
+            </div>
+          </div>
+
+          {/* =========================================================================
+              TAB CONTENT 1: DASHBOARD OVERVIEW
+              ========================================================================= */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-5">
+              {/* 4 COLORFUL VIBRANT STAT CARDS (Matching FAB ADMIN Design) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Card 1: TOTAL USERS (Purple Icon) */}
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center gap-4 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-[#8e44ad] text-white flex items-center justify-center font-black text-xl shrink-0 shadow-xs">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800 font-mono block leading-none">
+                      {totalUsersCount}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mt-1">
+                      TOTAL USERS
+                    </span>
+                  </div>
                 </div>
-              )}
+
+                {/* Card 2: TOTAL ADD MONEY (Amber Icon) */}
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center gap-4 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-[#f39c12] text-white flex items-center justify-center font-black text-xl shrink-0 shadow-xs">
+                    <ArrowDownLeft className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800 font-mono block leading-none">
+                      ₹{totalDepositAmount.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mt-1">
+                      TOTAL ADD MONEY
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 3: TOTAL WITHDRAWALS (Blue Icon) */}
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center gap-4 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-[#2980b9] text-white flex items-center justify-center font-black text-xl shrink-0 shadow-xs">
+                    <ArrowUpRight className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800 font-mono block leading-none">
+                      ₹{totalWithdrawalAmount.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mt-1">
+                      TOTAL WITHDRAWALS
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 4: PENDING APPROVALS (Teal/Cyan Icon) */}
+                <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center gap-4 hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-[#16a085] text-white flex items-center justify-center font-black text-xl shrink-0 shadow-xs">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-[#16a085] font-mono block leading-none">
+                      {pendingDepositsCount + pendingWithdrawalsCount}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mt-1">
+                      PENDING REQUESTS
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* DUAL COLUMN WIDGET GRID (Matching FAB ADMIN Layout) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Left Column: Quick Vitals & Financial Activity Chart (4 Cols) */}
+                <div className="lg:col-span-4 space-y-5">
+                  {/* Quick System Vitals Box */}
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-2xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <h3 className="text-sm font-extrabold text-slate-800">System Vitals</h3>
+                      <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        100% Operational
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-center">
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Today Registered</span>
+                        <span className="text-lg font-black text-slate-800 font-mono">{todayUsers.length}</span>
+                      </div>
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Active Yield Plans</span>
+                        <span className="text-lg font-black text-slate-800 font-mono">{plans.length}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-[#f0fbfd] rounded-xl border border-cyan-200 text-xs text-cyan-900 font-semibold space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span>Gateway Status:</span>
+                        <span className="font-extrabold text-[#009aaa]">Active ({gateway.upiId})</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-cyan-800">
+                        <span>Min Deposit / Withdrawal:</span>
+                        <span>₹{gateway.minDeposit} / ₹{gateway.minWithdrawal}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Financial Activity Chart Simulation */}
+                  <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <h3 className="text-sm font-extrabold text-slate-800">Monthly Volume</h3>
+                      <div className="flex items-center gap-2 text-[10px] font-bold">
+                        <span className="flex items-center gap-1 text-emerald-600">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Deposit
+                        </span>
+                        <span className="flex items-center gap-1 text-rose-600">
+                          <span className="w-2 h-2 rounded-full bg-rose-500" /> Payout
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bar Chart Bars */}
+                    <div className="h-36 flex items-end justify-between gap-2 pt-2 px-1">
+                      {[
+                        { month: 'Jun', dep: 60, wth: 35 },
+                        { month: 'Jul', dep: 80, wth: 50 },
+                        { month: 'Aug', dep: 70, wth: 40 },
+                        { month: 'Sep', dep: 90, wth: 65 },
+                        { month: 'Oct', dep: 100, wth: 75 },
+                      ].map((bar, idx) => (
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                          <div className="w-full flex items-end justify-center gap-1 h-28">
+                            <div
+                              style={{ height: `${bar.dep}%` }}
+                              className="w-3.5 bg-[#00a8cc] rounded-t-sm transition-all"
+                              title={`Deposit: ${bar.dep}%`}
+                            />
+                            <div
+                              style={{ height: `${bar.wth}%` }}
+                              className="w-3.5 bg-amber-500 rounded-t-sm transition-all"
+                              title={`Payout: ${bar.wth}%`}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-400">{bar.month}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Registered Users Quick Table & Real-Time Directory (8 Cols) */}
+                <div className="lg:col-span-8 space-y-5">
+                  <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                    {/* Table Header Row */}
+                    <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-black text-slate-800">
+                          Recent Registered Users ({users.length})
+                        </h3>
+                        <p className="text-xs text-slate-400">Live Firebase synced accounts directory</p>
+                      </div>
+
+                      <button
+                        onClick={() => setActiveTab('users')}
+                        className="text-xs text-[#009aaa] hover:text-[#007b8e] font-extrabold flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                      >
+                        <span>View All Users Directory</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Table Data Content */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#f8fafc] text-slate-500 font-extrabold uppercase border-b border-slate-200/80">
+                          <tr>
+                            <th className="p-3">User Details</th>
+                            <th className="p-3">Mobile / Email</th>
+                            <th className="p-3">Wallet Balance</th>
+                            <th className="p-3">Status</th>
+                            <th className="p-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                          {users.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="p-8 text-center text-slate-400 font-semibold">
+                                No registered users found in Firestore database.
+                              </td>
+                            </tr>
+                          ) : (
+                            users.slice(0, 5).map((u, i) => (
+                              <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="p-3">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-cyan-100 text-cyan-800 font-bold flex items-center justify-center text-xs shrink-0">
+                                      {u.fullName ? u.fullName.substring(0, 2).toUpperCase() : 'GK'}
+                                    </div>
+                                    <div>
+                                      <span className="font-extrabold text-slate-900 block">{u.fullName || 'User'}</span>
+                                      <span className="text-[10px] text-slate-400 font-mono">UID: {u.loginUid}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  <span className="font-mono block text-slate-800">+91 {u.mobile}</span>
+                                  <span className="text-[10px] text-slate-400 block truncate max-w-[120px]">{u.email}</span>
+                                </td>
+                                <td className="p-3 font-mono font-black text-emerald-700 text-sm">
+                                  ₹{(u.balance ?? 0).toLocaleString('en-IN')}
+                                </td>
+                                <td className="p-3">
+                                  {u.status === 'blocked' ? (
+                                    <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[10px] border border-rose-200">
+                                      Blocked
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-200">
+                                      Active
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedUser(u);
+                                      setEditBalanceInput(String(u.balance ?? 0));
+                                    }}
+                                    className="px-2.5 py-1 bg-cyan-50 hover:bg-cyan-100 text-[#008198] font-bold text-xs rounded-lg transition-colors border border-cyan-200 cursor-pointer"
+                                  >
+                                    View Details
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         )}
@@ -1414,5 +1663,6 @@ export default function AdminPanel() {
         )}
       </main>
     </div>
-  );
+  </div>
+);
 }
