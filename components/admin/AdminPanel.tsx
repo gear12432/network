@@ -93,15 +93,65 @@ export default function AdminPanel() {
   // Image Modal Preview for Payment Screenshots
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // 20 Predefined Plan Name Options with Icons
+  const PLAN_NAME_OPTIONS = [
+    'Basic Investment Plan ⚡',
+    'Starter Investment Plan 🚀',
+    'Silver Investment Plan 🥈',
+    'Gold Investment Plan 🥇',
+    'Platinum Investment Plan 💠',
+    'Diamond Investment Plan 💎',
+    'Premium Investment Plan 👑',
+    'Smart Investment Plan 🎯',
+    'Growth Investment Plan 📈',
+    'Wealth Builder Plan 💰',
+    'Monthly Income Plan 📅',
+    'Smart Saver Plan 🛡️',
+    'Royal Investment Plan 🏰',
+    'Elite Investment Plan ✨',
+    'Ultimate Investment Plan 🌟',
+    'Power Investment Plan ⚡',
+    'Pro Investment Plan 💼',
+    'Mega Investment Plan 🔥',
+    'Future Wealth Plan 🔮',
+    'Infinity Investment Plan ♾️',
+    'Custom Plan Name...',
+  ];
+
   // New Plan Form State
   const [newPlan, setNewPlan] = useState({
-    name: '',
+    name: 'Basic Investment Plan ⚡',
+    customName: '',
     category: 'VIP',
-    price: '',
-    dailyReturn: '',
+    price: '1000',
+    dailyReturn: '100',
     validityDays: '30',
+    estProfit: '3000',
+    totalReturn: '4000',
   });
   const [planMsg, setPlanMsg] = useState('');
+
+  // Handle Input Changes & Auto-Calculation for Investment Plan
+  const handlePlanInputChange = (field: string, value: string) => {
+    setNewPlan((prev) => {
+      const updated = { ...prev, [field]: value };
+      const priceNum = parseFloat(field === 'price' ? value : prev.price) || 0;
+      const dailyNum = parseFloat(field === 'dailyReturn' ? value : prev.dailyReturn) || 0;
+      const daysNum = parseInt(field === 'validityDays' ? value : prev.validityDays) || 0;
+
+      const calcEst = dailyNum * daysNum;
+      const calcTotal = priceNum + calcEst;
+
+      if (field !== 'estProfit') {
+        updated.estProfit = String(calcEst);
+      }
+      if (field !== 'totalReturn') {
+        updated.totalReturn = String(calcTotal);
+      }
+
+      return updated;
+    });
+  };
 
   // New Slider Form State
   const [newSlider, setNewSlider] = useState({
@@ -247,7 +297,7 @@ export default function AdminPanel() {
       )
     );
     setSelectedUser({ ...selectedUser, balance: newBal });
-    setBalanceMsg('बैलेंस सफलतापूर्वक अपडेट हो गया!');
+    setBalanceMsg('Wallet balance updated successfully!');
 
     await updateUserBalanceInFirestore(selectedUser.loginUid, newBal);
     setTimeout(() => setBalanceMsg(''), 2500);
@@ -274,28 +324,45 @@ export default function AdminPanel() {
   // Handle Add New Plan
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPlan.name || !newPlan.price || !newPlan.dailyReturn) return;
+    const finalName =
+      newPlan.name === 'Custom Plan Name...'
+        ? newPlan.customName || 'Custom Investment Plan'
+        : newPlan.name;
 
-    const priceNum = parseFloat(newPlan.price);
-    const returnNum = parseFloat(newPlan.dailyReturn);
+    if (!finalName || !newPlan.price || !newPlan.dailyReturn) return;
+
+    const priceNum = parseFloat(newPlan.price) || 0;
+    const returnNum = parseFloat(newPlan.dailyReturn) || 0;
     const daysNum = parseInt(newPlan.validityDays) || 30;
+    const estProfitNum = parseFloat(newPlan.estProfit) || returnNum * daysNum;
+    const totalReturnNum = parseFloat(newPlan.totalReturn) || priceNum + estProfitNum;
 
     const planObj = {
       id: `PLAN_${Date.now()}`,
-      name: newPlan.name,
+      name: finalName,
       category: newPlan.category,
       price: priceNum,
       dailyReturn: returnNum,
       validityDays: daysNum,
-      totalReturn: returnNum * daysNum,
+      estProfit: estProfitNum,
+      totalReturn: totalReturnNum,
       colorGradient: 'from-amber-600 via-orange-600 to-amber-700',
       tag: 'NEW EXCLUSIVE',
     };
 
     setPlans((prev) => [planObj, ...prev]);
     await saveCustomPlanToFirestore(planObj);
-    setPlanMsg('प्लांस सफलतापूर्वक फायरबेस में सेव हो गया!');
-    setNewPlan({ name: '', category: 'VIP', price: '', dailyReturn: '', validityDays: '30' });
+    setPlanMsg('Investment plan saved successfully!');
+    setNewPlan({
+      name: PLAN_NAME_OPTIONS[0],
+      customName: '',
+      category: 'VIP',
+      price: '1000',
+      dailyReturn: '100',
+      validityDays: '30',
+      estProfit: '3000',
+      totalReturn: '4000',
+    });
     setTimeout(() => setPlanMsg(''), 3000);
   };
 
@@ -962,7 +1029,7 @@ export default function AdminPanel() {
                 type="text"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="यूज़र का नाम, मोबाइल नंबर या Login UID सर्च करें..."
+                placeholder="Search user by name, mobile number, or Login UID..."
                 className="w-full text-xs font-bold text-slate-900 bg-transparent border-none focus:outline-none placeholder:text-slate-400"
               />
               {userSearch && (
@@ -979,26 +1046,26 @@ export default function AdminPanel() {
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 className="text-sm font-black text-slate-900">
-                  ऑल यूज़र लिस्ट (User Directory - Total: {filteredUsers.length})
+                  All Users Directory (Total: {filteredUsers.length})
                 </h3>
               </div>
 
               {filteredUsers.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs">
-                  कोई यूज़र नहीं मिला (No users match search)
+                  No registered users match your search criteria.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-2.5 px-3">प्रोफाइल पिक्चर & नाम</th>
+                        <th className="py-2.5 px-3">Profile Picture & Name</th>
                         <th className="py-2.5 px-3">UID</th>
-                        <th className="py-2.5 px-3">मोबाइल नंबर</th>
-                        <th className="py-2.5 px-3">ईमेल</th>
-                        <th className="py-2.5 px-3">बैलेंस</th>
-                        <th className="py-2.5 px-3">स्टेटस</th>
-                        <th className="py-2.5 px-3 text-right">एक्शन (Action)</th>
+                        <th className="py-2.5 px-3">Mobile Number</th>
+                        <th className="py-2.5 px-3">Email</th>
+                        <th className="py-2.5 px-3">Balance</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -1049,7 +1116,7 @@ export default function AdminPanel() {
                                     : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
                                 }`}
                               >
-                                {u.status === 'blocked' ? 'अनब्लॉक (Unblock)' : 'ब्लॉक (Block)'}
+                                {u.status === 'blocked' ? 'Unblock' : 'Block'}
                               </button>
 
                               {/* View Button */}
@@ -1060,7 +1127,7 @@ export default function AdminPanel() {
                                 }}
                                 className="px-2.5 py-1 bg-slate-900 text-white text-[11px] font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
                               >
-                                व्यू (View)
+                                View Details
                               </button>
 
                               {/* Delete Button */}
@@ -1095,11 +1162,11 @@ export default function AdminPanel() {
                   className="flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer border border-white/30"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>← ऑल यूज़र लिस्ट (Back to Users List)</span>
+                  <span>Back to Users Directory</span>
                 </button>
                 <div className="hidden sm:flex items-center gap-2 border-l border-white/30 pl-3">
                   <span className="text-sm font-extrabold text-white">
-                    यूज़र प्रोफाइल डिटेल्स ({selectedUser.fullName})
+                    User Profile Details ({selectedUser.fullName})
                   </span>
                 </div>
               </div>
@@ -1135,7 +1202,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <p className="text-xs font-mono font-bold text-slate-500 mt-1">
-                      UID: <span className="text-cyan-700">{selectedUser.loginUid}</span> | रजिस्टर्ड: {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-IN') : 'Recently'}
+                      UID: <span className="text-cyan-700">{selectedUser.loginUid}</span> | Registered: {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-IN') : 'Recently'}
                     </p>
                   </div>
                 </div>
@@ -1150,13 +1217,13 @@ export default function AdminPanel() {
                         : 'bg-amber-600 text-white hover:bg-amber-700'
                     }`}
                   >
-                    {selectedUser.status === 'blocked' ? 'अनब्लॉक यूज़र (Unblock)' : 'ब्लॉक यूज़र (Block Account)'}
+                    {selectedUser.status === 'blocked' ? 'Unblock Account' : 'Block Account'}
                   </button>
                   <button
                     onClick={() => handleDeleteUser(selectedUser.loginUid)}
                     className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                   >
-                    डिलीट यूज़र (Delete Account)
+                    Delete Account
                   </button>
                 </div>
               </div>
@@ -1166,7 +1233,7 @@ export default function AdminPanel() {
                 {/* WALLET BALANCE & EDIT CARD */}
                 <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
                   <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block border-b border-slate-100 pb-2">
-                    वॉलेट बैलेंस मैनेजमेंट (Wallet Management)
+                    Wallet Management
                   </span>
                   <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80 text-center">
                     <span className="text-xs font-bold text-emerald-800 uppercase block mb-1">
@@ -1179,7 +1246,7 @@ export default function AdminPanel() {
 
                   <div className="space-y-2 pt-1">
                     <label className="text-xs font-bold text-slate-700 block">
-                      बैलेंस अपडेट / एडिट करें (Set New Balance):
+                      Edit / Update Wallet Balance:
                     </label>
                     <div className="flex items-center gap-2">
                       <input
@@ -1187,13 +1254,13 @@ export default function AdminPanel() {
                         value={editBalanceInput}
                         onChange={(e) => setEditBalanceInput(e.target.value)}
                         className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold text-slate-900 w-full focus:outline-none focus:border-cyan-600 focus:bg-white"
-                        placeholder="अमाउंट दर्ज करें..."
+                        placeholder="Enter amount..."
                       />
                       <button
                         onClick={handleSaveUserBalance}
                         className="px-4 py-2 bg-[#009aaa] hover:bg-cyan-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
                       >
-                        सेव करें (Save)
+                        Save
                       </button>
                     </div>
                     {balanceMsg && (
@@ -1205,14 +1272,14 @@ export default function AdminPanel() {
                 {/* PERSONAL INFORMATION & CONTACT DETAILS */}
                 <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
                   <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block border-b border-slate-100 pb-2">
-                    व्यक्तिगत एवं संपर्क विवरण (Personal & Contact Information)
+                    Personal & Contact Information
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center gap-3">
                       <Phone className="w-5 h-5 text-cyan-600 shrink-0" />
                       <div>
-                        <span className="text-[10px] text-slate-400 block font-normal">मोबाइल नंबर</span>
+                        <span className="text-[10px] text-slate-400 block font-normal">Mobile Number</span>
                         <span className="text-slate-900 font-mono text-sm">{selectedUser.mobile || 'N/A'}</span>
                       </div>
                     </div>
@@ -1220,7 +1287,7 @@ export default function AdminPanel() {
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center gap-3">
                       <Mail className="w-5 h-5 text-cyan-600 shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 block font-normal">ईमेल एड्रेस</span>
+                        <span className="text-[10px] text-slate-400 block font-normal">Email Address</span>
                         <span className="text-slate-900 font-mono text-xs truncate block">{selectedUser.email || 'N/A'}</span>
                       </div>
                     </div>
@@ -1228,11 +1295,11 @@ export default function AdminPanel() {
                     <div className="sm:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200/60 flex items-start gap-3">
                       <MapPin className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                       <div>
-                        <span className="text-[10px] text-slate-400 block font-normal">पूरा पता (Full Address Details)</span>
+                        <span className="text-[10px] text-slate-400 block font-normal">Full Address Details</span>
                         <span className="text-slate-900 text-xs font-bold">
                           {selectedUser.addressDetails
                             ? `${selectedUser.addressDetails.street}, ${selectedUser.addressDetails.city}, ${selectedUser.addressDetails.state} - ${selectedUser.addressDetails.pincode}`
-                            : 'कोई पता उपलब्ध नहीं है (Address Not Provided)'}
+                            : 'Address Not Provided'}
                         </span>
                       </div>
                     </div>
@@ -1244,21 +1311,21 @@ export default function AdminPanel() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    टोटल कस्टमर (Customers)
+                    Total Customers
                   </span>
                   <span className="text-2xl font-black text-slate-900 font-mono block">12</span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    परचेज प्लान (Plans)
+                    Purchased Plans
                   </span>
                   <span className="text-2xl font-black text-blue-600 font-mono block">₹15,000</span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    टोटल विड्रोल (Withdrawals)
+                    Total Withdrawals
                   </span>
                   <span className="text-2xl font-black text-amber-600 font-mono block">
                     ₹{withdrawals
@@ -1270,7 +1337,7 @@ export default function AdminPanel() {
 
                 <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs text-center space-y-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    टोटल एड मनी (Deposits)
+                    Total Deposits
                   </span>
                   <span className="text-2xl font-black text-emerald-600 font-mono block">
                     ₹{deposits
@@ -1291,25 +1358,25 @@ export default function AdminPanel() {
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
               <h3 className="text-sm font-black text-slate-900 mb-3 pb-2 border-b border-slate-100">
-                एड मनी / डिपॉजिट रिक्वेस्ट्स (Add Money Requests - Total: {deposits.length})
+                Add Money & Deposit Requests (Total: {deposits.length})
               </h3>
 
               {deposits.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs">
-                  कोई एड मनी डिपॉजिट अनुरोध प्राप्त नहीं हुआ (No deposit requests found)
+                  No deposit requests found.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-2.5 px-3">यूज़र (User)</th>
-                        <th className="py-2.5 px-3">अमाउंट (Amount)</th>
-                        <th className="py-2.5 px-3">UTR नंबर (Txn ID)</th>
-                        <th className="py-2.5 px-3">स्क्रीनशॉट (Image)</th>
-                        <th className="py-2.5 px-3">तारीख व समय (Date Time)</th>
-                        <th className="py-2.5 px-3">स्टेटस (Status)</th>
-                        <th className="py-2.5 px-3 text-right">एक्शन (Action)</th>
+                        <th className="py-2.5 px-3">User</th>
+                        <th className="py-2.5 px-3">Amount</th>
+                        <th className="py-2.5 px-3">UTR / Txn ID</th>
+                        <th className="py-2.5 px-3">Screenshot</th>
+                        <th className="py-2.5 px-3">Date & Time</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -1332,7 +1399,7 @@ export default function AdminPanel() {
                                 className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" />
-                                <span>व्यू इमेज</span>
+                                <span>View Proof</span>
                               </button>
                             ) : (
                               <span className="text-slate-400 text-[10px]">No Image</span>
@@ -1359,13 +1426,13 @@ export default function AdminPanel() {
                                   onClick={() => handleDepositAction(dep, 'Approved')}
                                   className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
                                 >
-                                  एप्रूव (Approve)
+                                  Approve
                                 </button>
                                 <button
                                   onClick={() => handleDepositAction(dep, 'Rejected')}
                                   className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
                                 >
-                                  रिजेक्ट (Reject)
+                                  Reject
                                 </button>
                               </div>
                             ) : (
@@ -1386,13 +1453,13 @@ export default function AdminPanel() {
         {previewImage && (
           <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200">
             <div className="w-full max-w-5xl flex items-center justify-between text-white pb-3 border-b border-slate-800">
-              <span className="text-sm font-extrabold tracking-tight">पेमेंट स्क्रीनशॉट - फुल स्क्रीन व्यू (Payment Proof Preview)</span>
+              <span className="text-sm font-extrabold tracking-tight">Payment Proof Screenshot - Full Screen View</span>
               <button
                 onClick={() => setPreviewImage(null)}
                 className="flex items-center gap-2 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl cursor-pointer transition-all active:scale-95"
               >
                 <X className="w-4 h-4" />
-                <span>बंद करें (Close View)</span>
+                <span>Close Preview</span>
               </button>
             </div>
 
@@ -1417,24 +1484,24 @@ export default function AdminPanel() {
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
               <h3 className="text-sm font-black text-slate-900 mb-3 pb-2 border-b border-slate-100">
-                विड्रोल रिक्वेस्ट्स (Withdrawal Requests - Total: {withdrawals.length})
+                Withdrawal Requests (Total: {withdrawals.length})
               </h3>
 
               {withdrawals.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs">
-                  कोई विड्रोल अनुरोध नहीं मिला (No withdrawal requests found)
+                  No withdrawal requests found.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-2.5 px-3">यूज़र (User)</th>
-                        <th className="py-2.5 px-3">अमाउंट (Amount)</th>
-                        <th className="py-2.5 px-3">बैंक/UPI डिटेल्स</th>
-                        <th className="py-2.5 px-3">तारीख व समय</th>
-                        <th className="py-2.5 px-3">स्टेटस</th>
-                        <th className="py-2.5 px-3 text-right">एक्शन</th>
+                        <th className="py-2.5 px-3">User</th>
+                        <th className="py-2.5 px-3">Amount</th>
+                        <th className="py-2.5 px-3">Bank / UPI Details</th>
+                        <th className="py-2.5 px-3">Date & Time</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -1469,13 +1536,13 @@ export default function AdminPanel() {
                                   onClick={() => handleWithdrawalAction(wd, 'Approved')}
                                   className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
                                 >
-                                  एप्रूव (Approve)
+                                  Approve
                                 </button>
                                 <button
                                   onClick={() => handleWithdrawalAction(wd, 'Rejected')}
                                   className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
                                 >
-                                  रिजेक्ट (Reject)
+                                  Reject
                                 </button>
                               </div>
                             ) : (
@@ -1500,70 +1567,123 @@ export default function AdminPanel() {
             {/* Create Plan Form */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
               <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-                नया प्लान जोड़ें (Add New Investment Plan)
+                Create New Investment Plan
               </h3>
               <form onSubmit={handleCreatePlan} className="space-y-3 text-xs">
+                {/* PLAN NAME DROPDOWN WITH ICONS */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">प्लान का नाम (Plan Name)</label>
-                  <input
-                    type="text"
-                    required
-                    value={newPlan.name}
-                    onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                    placeholder="उदा: Platinum High ROI Plan"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-slate-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">कैटेगरी (Category)</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Plan Name (Select Title)
+                  </label>
                   <select
-                    value={newPlan.category}
-                    onChange={(e) => setNewPlan({ ...newPlan, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-slate-900"
+                    value={newPlan.name}
+                    onChange={(e) => handlePlanInputChange('name', e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600 cursor-pointer"
                   >
-                    <option value="VIP">VIP</option>
-                    <option value="Platinum">Platinum</option>
-                    <option value="Gold">Gold</option>
-                    <option value="Silver">Silver</option>
-                    <option value="Bronze">Bronze</option>
+                    {PLAN_NAME_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
+                {/* IF CUSTOM PLAN NAME SELECTED */}
+                {newPlan.name === 'Custom Plan Name...' && (
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      Custom Plan Title
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newPlan.customName}
+                      onChange={(e) => handlePlanInputChange('customName', e.target.value)}
+                      placeholder="Enter custom plan name..."
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600"
+                    />
+                  </div>
+                )}
+
+                {/* CATEGORY */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Category</label>
+                  <select
+                    value={newPlan.category}
+                    onChange={(e) => handlePlanInputChange('category', e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-cyan-600 cursor-pointer"
+                  >
+                    <option value="VIP">VIP Tier</option>
+                    <option value="Platinum">Platinum Tier</option>
+                    <option value="Gold">Gold Tier</option>
+                    <option value="Silver">Silver Tier</option>
+                    <option value="Bronze">Bronze Tier</option>
+                  </select>
+                </div>
+
+                {/* INVESTMENT (₹) & DAILY PROFIT (₹) */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">कीमत ₹ (Price)</label>
+                    <label className="font-bold text-slate-700 block mb-1">Investment (₹)</label>
                     <input
                       type="number"
                       required
                       value={newPlan.price}
-                      onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                      placeholder="5000"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-slate-900"
+                      onChange={(e) => handlePlanInputChange('price', e.target.value)}
+                      placeholder="1000"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">डेली रिटर्न ₹ (Daily)</label>
+                    <label className="font-bold text-slate-700 block mb-1">Daily Profit (₹)</label>
                     <input
                       type="number"
                       required
                       value={newPlan.dailyReturn}
-                      onChange={(e) => setNewPlan({ ...newPlan, dailyReturn: e.target.value })}
-                      placeholder="250"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-slate-900"
+                      onChange={(e) => handlePlanInputChange('dailyReturn', e.target.value)}
+                      placeholder="100"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
                     />
                   </div>
                 </div>
 
+                {/* DURATION (DAYS) */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">वैलिडिटी दिन (Validity Days)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Duration (Days)</label>
                   <input
                     type="number"
                     required
                     value={newPlan.validityDays}
-                    onChange={(e) => setNewPlan({ ...newPlan, validityDays: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-slate-900"
+                    onChange={(e) => handlePlanInputChange('validityDays', e.target.value)}
+                    placeholder="30"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold font-mono focus:outline-none focus:border-cyan-600"
                   />
+                </div>
+
+                {/* EST. PROFIT (₹) & TOTAL (₹) */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  <div>
+                    <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
+                      Est. Profit (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={newPlan.estProfit}
+                      onChange={(e) => handlePlanInputChange('estProfit', e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-black text-amber-700 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 text-[10px] uppercase block mb-1">
+                      Total Return (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={newPlan.totalReturn}
+                      onChange={(e) => handlePlanInputChange('totalReturn', e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-black text-emerald-700 focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 {planMsg && (
@@ -1572,9 +1692,9 @@ export default function AdminPanel() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer"
+                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
                 >
-                  प्लांस सेव करें (Save Plan to Firebase)
+                  Save Plan to Firebase
                 </button>
               </form>
             </div>
@@ -1582,7 +1702,7 @@ export default function AdminPanel() {
             {/* Existing Plans List */}
             <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
               <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-                सक्रिय प्लांस सूची (Active Plans List - Total: {plans.length})
+                Active Plans List (Total: {plans.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {plans.map((p) => (
@@ -1596,7 +1716,7 @@ export default function AdminPanel() {
                         {p.category}
                       </span>
                       <p className="text-[11px] font-mono font-bold text-slate-700 mt-1">
-                        कीमत: ₹{p.price?.toLocaleString('en-IN')} | डेली: ₹{p.dailyReturn}/दिन
+                        Price: ₹{p.price?.toLocaleString('en-IN')} | Daily Profit: ₹{p.dailyReturn}/day
                       </p>
                     </div>
                     <button
@@ -1621,19 +1741,19 @@ export default function AdminPanel() {
             {/* Create Slider Form */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
               <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-                नया होम बैनर स्लाइडर जोड़ें (Add Home Slider)
+                Add New Home Banner Slider
               </h3>
               <form onSubmit={handleCreateSlider} className="space-y-3 text-xs">
                 {/* CHOICE FILE IMAGE BUTTON */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
                   <label className="font-extrabold text-slate-800 block">
-                    चॉइस फाइल (Choice Banner Image File):
+                    Choice Banner Image File:
                   </label>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <label className="flex items-center justify-center gap-2 px-3.5 py-2 bg-[#009aaa] hover:bg-cyan-700 text-white rounded-xl font-black text-xs cursor-pointer transition-all shadow-xs active:scale-95">
                         <Upload className="w-4 h-4" />
-                        <span>चॉइस फाइल (Choice File)</span>
+                        <span>Choice File</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1651,7 +1771,7 @@ export default function AdminPanel() {
                           }}
                           className="px-2.5 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
                         >
-                          हटाएं (Remove Image)
+                          Remove Image
                         </button>
                       )}
                     </div>
@@ -1665,42 +1785,42 @@ export default function AdminPanel() {
                           className="w-full h-full object-cover"
                         />
                         <span className="absolute bottom-1 right-2 bg-black/75 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-white/20">
-                          इमेज सेलेक्ट हो गई 🟢
+                          Image Selected 🟢
                         </span>
                       </div>
                     ) : (
                       <p className="text-[10px] text-slate-500 font-medium">
-                        इमेज चुनने के लिए ऊपर <strong>'चॉइस फाइल'</strong> बटन पर क्लिक करें। (JPG, PNG, WEBP)
+                        Click the <strong>'Choice File'</strong> button above to select a banner image. (JPG, PNG, WEBP)
                       </p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">टाइटल (Banner Title)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Banner Title</label>
                   <input
                     type="text"
                     value={newSlider.title}
                     onChange={(e) => setNewSlider({ ...newSlider, title: e.target.value })}
-                    placeholder="उदा: Double ROI Offer Active"
+                    placeholder="e.g. Double ROI Offer Active"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-slate-900"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">सबटेक्स्ट (Subtext)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Subtext</label>
                   <input
                     type="text"
                     value={newSlider.subtext}
                     onChange={(e) => setNewSlider({ ...newSlider, subtext: e.target.value })}
-                    placeholder="उदा: Earn ₹500 daily directly into wallet"
+                    placeholder="e.g. Earn ₹500 daily directly into wallet"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:outline-none focus:border-slate-900"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">बैज लेफ्ट (Left Tag)</label>
+                    <label className="font-bold text-slate-700 block mb-1">Left Tag</label>
                     <input
                       type="text"
                       value={newSlider.badgeLeft}
@@ -1709,7 +1829,7 @@ export default function AdminPanel() {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">बैज राइट (Right Tag)</label>
+                    <label className="font-bold text-slate-700 block mb-1">Right Tag</label>
                     <input
                       type="text"
                       value={newSlider.badgeRight}
@@ -1720,7 +1840,7 @@ export default function AdminPanel() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">बटन टेक्स्ट (Button Label)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Button Label</label>
                   <input
                     type="text"
                     value={newSlider.btnText}
@@ -1737,7 +1857,7 @@ export default function AdminPanel() {
                   type="submit"
                   className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
                 >
-                  स्लाइडर सेव करें (Save Slider to Firebase)
+                  Save Slider to Firebase
                 </button>
               </form>
             </div>
@@ -1745,11 +1865,11 @@ export default function AdminPanel() {
             {/* Existing Sliders */}
             <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
               <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-                सक्रिय स्लाइडर्स (Active Banner Sliders)
+                Active Banner Sliders
               </h3>
               {sliders.length === 0 ? (
                 <div className="text-center py-6 text-slate-400 text-xs">
-                  कोई कस्टम स्लाइडर नहीं मिला (Default sliders active)
+                  No custom sliders found (Default sliders active)
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1804,13 +1924,13 @@ export default function AdminPanel() {
         {activeTab === 'gateway' && (
           <div className="max-w-xl bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
             <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">
-              पेमेंट गेटवे सेटिंग्स (Payment Gateway & QR Settings)
+              Payment Gateway & QR Settings
             </h3>
 
             <form onSubmit={handleSaveGateway} className="space-y-4 text-xs">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">
-                  UPI ID (जैसे: networkjoinpro@upi)
+                  UPI ID (e.g. networkjoinpro@upi)
                 </label>
                 <input
                   type="text"
@@ -1824,7 +1944,7 @@ export default function AdminPanel() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">
-                    मिनिमम डिपॉजिट ₹ (Min Deposit)
+                    Min Deposit (₹)
                   </label>
                   <input
                     type="number"
@@ -1838,7 +1958,7 @@ export default function AdminPanel() {
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">
-                    मिनिमम विड्रोल ₹ (Min Withdrawal)
+                    Min Withdrawal (₹)
                   </label>
                   <input
                     type="number"
@@ -1860,7 +1980,7 @@ export default function AdminPanel() {
                 type="submit"
                 className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl transition-all shadow-sm cursor-pointer"
               >
-                सेटिंग्स सेव करें (Save Gateway Settings to Firebase)
+                Save Gateway Settings
               </button>
             </form>
           </div>
