@@ -2238,7 +2238,7 @@ export default function AdminPanel() {
                       </div>
                     ) : (
                       <p className="text-[10px] text-slate-500 font-medium">
-                        Click the <strong>'Choice File'</strong> button above to select a banner image. (JPG, PNG, WEBP)
+                        Click the <strong>&apos;Choice File&apos;</strong> button above to select a banner image. (JPG, PNG, WEBP)
                       </p>
                     )}
                   </div>

@@ -1277,7 +1277,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 </h3>
 
                 <p className="text-xs text-[#7a5328] mt-2 px-2 leading-relaxed">
-                  Congratulations! Your account has been successfully created. Now login using this Login UID and Password:
+                  Congratulations! Your data has been submitted successfully. Once the Admin approves your account, your User ID and Password will be activated within 24 hours.
                 </p>
               </div>
 
