@@ -124,17 +124,6 @@ export default function DesktopHeader({
             <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7d511f]" />
           </button>
 
-          {/* Admin Panel Quick Link */}
-          <button
-            type="button"
-            onClick={handleAdminClick}
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition-all shadow-xs border border-slate-800 cursor-pointer active:scale-95"
-            title="Admin Panel Control Center"
-          >
-            <Settings className="w-3.5 h-3.5 text-amber-400" />
-            <span>Admin</span>
-          </button>
-
           {/* Settings / Configuration */}
           <button
             onClick={onOpenProfile}
