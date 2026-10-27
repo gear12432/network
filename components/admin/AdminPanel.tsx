@@ -2444,15 +2444,19 @@ export default function AdminPanel() {
                 />
               </div>
 
-              {/* Custom Payment QR Code Upload */}
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">
-                  Custom Payment QR Code Image
+              {/* Custom Payment QR Code Upload Section */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                <label className="font-extrabold text-slate-800 block text-xs">
+                  Upload Payment QR Code Image (चॉइस फाइल)*
                 </label>
-                <div className="flex items-center gap-3">
-                  <label className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl cursor-pointer flex items-center gap-2 transition-all shadow-xs active:scale-95">
-                    <Upload className="w-4 h-4" />
-                    <span>Choice File</span>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Select a QR code image from your device. This QR code will be displayed to users in the <strong className="text-slate-800 font-bold">Recharge Wallet</strong> screen.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <label className="px-4 py-2.5 bg-[#D0872E] hover:bg-[#b87324] text-white font-black text-xs rounded-xl cursor-pointer flex items-center gap-2 transition-all shadow-md active:scale-95 shrink-0">
+                    <Upload className="w-4 h-4 text-white shrink-0" />
+                    <span>चॉइस फाइल (Choice File)</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -2460,27 +2464,38 @@ export default function AdminPanel() {
                       className="hidden"
                     />
                   </label>
+
+                  <span className="text-xs font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs">
+                    {gatewayForm.qrCodeUrl ? 'इमेज चुनी गई ✓ (QR Selected)' : 'कोई फ़ाइल नहीं चुनी गई (No file chosen)'}
+                  </span>
+
                   {gatewayForm.qrCodeUrl && (
                     <button
                       type="button"
                       onClick={() => setGatewayForm((prev) => ({ ...prev, qrCodeUrl: '' }))}
-                      className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                      className="text-xs font-extrabold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer ml-auto"
                     >
-                      Remove QR Image
+                      Delete QR Image
                     </button>
                   )}
                 </div>
+
                 {gatewayForm.qrCodeUrl ? (
-                  <div className="mt-2.5 relative w-36 h-36 border border-slate-300 rounded-xl overflow-hidden bg-slate-50 p-1.5 shadow-2xs">
-                    <img
-                      src={gatewayForm.qrCodeUrl}
-                      alt="Uploaded Payment QR Code Preview"
-                      className="w-full h-full object-contain rounded-lg"
-                    />
+                  <div className="mt-3 p-3 bg-white border border-slate-300 rounded-xl shadow-xs inline-block space-y-2">
+                    <div className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md text-center border border-emerald-200 uppercase tracking-wider">
+                      User Panel Preview: Active in Recharge Wallet Screen 🟢
+                    </div>
+                    <div className="w-48 h-48 mx-auto border border-slate-200 rounded-lg p-1 bg-white">
+                      <img
+                        src={gatewayForm.qrCodeUrl}
+                        alt="Uploaded Payment QR Code Preview"
+                        className="w-full h-full object-contain rounded-md"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    No custom QR image uploaded. Default dynamic UPI QR Code will be generated for users.
+                  <p className="text-[11px] text-amber-700 font-medium bg-amber-50 border border-amber-200 p-2 rounded-lg mt-1">
+                    ⚡ Note: If no custom QR code image is uploaded, the dynamic UPI QR Code will be automatically generated for users.
                   </p>
                 )}
               </div>

@@ -85,9 +85,17 @@ export default function DepositContent({
   const amountToDeposit = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
 
   // Handle proceed to payment screen
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (amountToDeposit < (gatewaySettings.minDeposit || 100)) return;
     setErrorMessage('');
+    try {
+      const freshSettings = await getGatewaySettingsFromFirestore();
+      if (freshSettings) {
+        setGatewaySettings(freshSettings);
+      }
+    } catch {
+      // fallback
+    }
     setStep('payment');
   };
 

@@ -406,15 +406,33 @@ export interface GatewaySettings {
 }
 
 export async function getGatewaySettingsFromFirestore(): Promise<GatewaySettings> {
+  let settingsFromFirestore: GatewaySettings | null = null;
   try {
     const docRef = doc(db, 'settings', 'gateway');
     const snap = await withTimeout(getDoc(docRef), 3000);
     if (snap.exists()) {
-      return snap.data() as GatewaySettings;
+      settingsFromFirestore = snap.data() as GatewaySettings;
+      if (typeof window !== 'undefined' && settingsFromFirestore) {
+        localStorage.setItem('network_join_pro_gateway_settings', JSON.stringify(settingsFromFirestore));
+      }
+      return settingsFromFirestore;
     }
   } catch (err) {
     console.warn('Error reading gateway settings from Firestore:', err);
   }
+
+  // Fallback to localStorage if Firestore is empty or offline
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_gateway_settings');
+      if (local) {
+        return JSON.parse(local);
+      }
+    } catch {
+      // fallback
+    }
+  }
+
   return {
     upiId: 'networkjoinpro@upi',
     minDeposit: 100,
@@ -425,12 +443,20 @@ export async function getGatewaySettingsFromFirestore(): Promise<GatewaySettings
 export async function saveGatewaySettingsToFirestore(
   settings: GatewaySettings
 ): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('network_join_pro_gateway_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+  }
+
   try {
     const docRef = doc(db, 'settings', 'gateway');
     await withTimeout(setDoc(docRef, settings), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving gateway settings to Firestore:', err);
+    console.warn('Error saving gateway settings to Firestore (saved locally):', err);
     return false;
   }
 }
