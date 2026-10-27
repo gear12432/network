@@ -21,7 +21,6 @@ import {
 import { Users } from 'lucide-react';
 import DesktopSidebar from '@/components/DesktopSidebar';
 import DesktopHeader from '@/components/DesktopHeader';
-import DesktopAnalyticsCards from '@/components/DesktopAnalyticsCards';
 import MobileHeader from '@/components/MobileHeader';
 import MobileBottomNav, { NavTab } from '@/components/MobileBottomNav';
 import HomeScreen from '@/components/screens/HomeScreen';
@@ -466,13 +465,6 @@ export default function InvestmentApp() {
 
             {/* Scrollable Main Area Full Width (Side gaps removed) */}
             <main className="flex-1 px-3 sm:px-4 py-3.5 w-full max-w-full">
-              {/* Desktop Dashboard: Show Finance Summary & Activity Bar Charts */}
-              {activeTab === 'home' && (
-                <DesktopAnalyticsCards
-                  onViewTaxDetails={() => setActiveModal('tax-summary')}
-                />
-              )}
-
               {/* Screens */}
               {activeTab === 'home' && (
                 <HomeScreen

@@ -290,8 +290,27 @@ export default function AdminPanel() {
     upiId: 'networkjoinpro@upi',
     minDeposit: '100',
     minWithdrawal: '200',
+    qrCodeUrl: '',
   });
   const [gatewayMsg, setGatewayMsg] = useState('');
+
+  // Handle QR Image File Selection for Gateway
+  const handleQrImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be under 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setGatewayForm((prev) => ({ ...prev, qrCodeUrl: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Load all Firebase data
   const refreshData = async () => {
@@ -314,6 +333,7 @@ export default function AdminPanel() {
         upiId: g.upiId || 'networkjoinpro@upi',
         minDeposit: String(g.minDeposit || 100),
         minWithdrawal: String(g.minWithdrawal || 200),
+        qrCodeUrl: g.qrCodeUrl || '',
       });
 
       if (p && p.length > 0) {
@@ -518,10 +538,11 @@ export default function AdminPanel() {
       upiId: gatewayForm.upiId.trim(),
       minDeposit: parseFloat(gatewayForm.minDeposit) || 100,
       minWithdrawal: parseFloat(gatewayForm.minWithdrawal) || 200,
+      qrCodeUrl: gatewayForm.qrCodeUrl,
     };
     setGateway(updatedSettings);
     await saveGatewaySettingsToFirestore(updatedSettings);
-    setGatewayMsg('पेमेंट गेटवे सेटिंग्स सफलतापूर्वक अपडेट हो गईं!');
+    setGatewayMsg('Payment gateway & QR settings saved successfully!');
     setTimeout(() => setGatewayMsg(''), 3000);
   };
 
@@ -2421,6 +2442,47 @@ export default function AdminPanel() {
                   onChange={(e) => setGatewayForm({ ...gatewayForm, upiId: e.target.value })}
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:outline-none focus:border-slate-900"
                 />
+              </div>
+
+              {/* Custom Payment QR Code Upload */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Custom Payment QR Code Image
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl cursor-pointer flex items-center gap-2 transition-all shadow-xs active:scale-95">
+                    <Upload className="w-4 h-4" />
+                    <span>Choice File</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleQrImageSelect}
+                      className="hidden"
+                    />
+                  </label>
+                  {gatewayForm.qrCodeUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setGatewayForm((prev) => ({ ...prev, qrCodeUrl: '' }))}
+                      className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                    >
+                      Remove QR Image
+                    </button>
+                  )}
+                </div>
+                {gatewayForm.qrCodeUrl ? (
+                  <div className="mt-2.5 relative w-36 h-36 border border-slate-300 rounded-xl overflow-hidden bg-slate-50 p-1.5 shadow-2xs">
+                    <img
+                      src={gatewayForm.qrCodeUrl}
+                      alt="Uploaded Payment QR Code Preview"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    No custom QR image uploaded. Default dynamic UPI QR Code will be generated for users.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

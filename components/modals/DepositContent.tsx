@@ -17,7 +17,12 @@ import {
 import { triggerConfetti } from '@/lib/confetti';
 import FloatingInput from '@/components/ui/FloatingInput';
 import { UserStats } from '@/types/investment';
-import { saveDepositToFirestore, DepositRecord } from '@/lib/firebase';
+import {
+  saveDepositToFirestore,
+  DepositRecord,
+  getGatewaySettingsFromFirestore,
+  GatewaySettings,
+} from '@/lib/firebase';
 
 interface DepositContentProps {
   currentBalance: number;
@@ -34,6 +39,27 @@ export default function DepositContent({
 }: DepositContentProps) {
   // Step 1: 'amount', Step 2: 'payment'
   const [step, setStep] = useState<'amount' | 'payment'>('amount');
+
+  // Gateway Settings State
+  const [gatewaySettings, setGatewaySettings] = useState<GatewaySettings>({
+    upiId: 'networkjoinpro@upi',
+    minDeposit: 100,
+    minWithdrawal: 200,
+  });
+
+  React.useEffect(() => {
+    async function loadGateway() {
+      try {
+        const settings = await getGatewaySettingsFromFirestore();
+        if (settings) {
+          setGatewaySettings(settings);
+        }
+      } catch (e) {
+        console.warn('Failed to load gateway settings:', e);
+      }
+    }
+    loadGateway();
+  }, []);
 
   // Amount State
   const [selectedAmount, setSelectedAmount] = useState<number>(1000);
@@ -54,13 +80,13 @@ export default function DepositContent({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const presets = [500, 1000, 2500, 5000, 10000];
-  const upiId = 'networkjoinpro@upi';
+  const upiId = gatewaySettings.upiId || 'networkjoinpro@upi';
 
   const amountToDeposit = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
 
   // Handle proceed to payment screen
   const handleProceedToPayment = () => {
-    if (amountToDeposit < 100) return;
+    if (amountToDeposit < (gatewaySettings.minDeposit || 100)) return;
     setErrorMessage('');
     setStep('payment');
   };
@@ -302,13 +328,22 @@ export default function DepositContent({
             <div className="pt-2 flex flex-col items-center justify-center">
               <div className="p-2.5 bg-white rounded-2xl border-2 border-[#dfbe7e] shadow-md inline-block relative">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-                    `upi://pay?pa=${upiId}&pn=NetworkJoinPro&am=${amountToDeposit}&cu=INR`
-                  )}`}
+                  src={
+                    gatewaySettings.qrCodeUrl ||
+                    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                      `upi://pay?pa=${upiId}&pn=NetworkJoinPro&am=${amountToDeposit}&cu=INR`
+                    )}`
+                  }
                   alt="UPI Payment QR Code"
                   className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-xl"
                   onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
+                    if (gatewaySettings.qrCodeUrl) {
+                      (e.currentTarget as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                        `upi://pay?pa=${upiId}&pn=NetworkJoinPro&am=${amountToDeposit}&cu=INR`
+                      )}`;
+                    } else {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                    }
                   }}
                 />
               </div>
