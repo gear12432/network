@@ -9,14 +9,29 @@ function patchHtmlFile(filePath, depth = 0) {
   let content = fs.readFileSync(filePath, 'utf8');
   const prefix = depth > 0 ? '../'.repeat(depth) : './';
 
-  // First normalize any previous relative or absolute _next/ asset references
+  // 1. Normalize relative or absolute _next/ asset references
   content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `$1="${prefix}_next/`);
   content = content.replace(/url\(["']?(\.\.\/|\.\/|\/network\/|\/)?_next\//g, `url("${prefix}_next/`);
   content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?assets\//g, `$1="${prefix}assets/`);
   content = content.replace(/["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `"${prefix}_next/`);
 
+  // 2. Inject helper script into <head> for GitHub Pages subpath and admin route resilience
+  if (!content.includes('window.__IS_ADMIN_ROUTE__')) {
+    const adminScript = `<script>
+      (function() {
+        var p = window.location.pathname.toLowerCase();
+        var h = window.location.hash.toLowerCase();
+        var s = window.location.search.toLowerCase();
+        if (p.includes('admin') || h.includes('admin') || s.includes('admin')) {
+          window.__IS_ADMIN_ROUTE__ = true;
+        }
+      })();
+    </script>`;
+    content = content.replace('<head>', `<head>${adminScript}`);
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
-  console.log(`[GitHub Pages Fix] Patched relative paths in ${filePath} (target depth: ${depth}, prefix: '${prefix}')`);
+  console.log(`[GitHub Pages Fix] Patched relative paths in ${filePath} (depth: ${depth}, prefix: '${prefix}')`);
 }
 
 function processDirectory(dir, relativeDepth = 0) {
@@ -38,7 +53,7 @@ if (fs.existsSync(outDir)) {
   // 1. Process all HTML files recursively in out/
   processDirectory(outDir, 0);
 
-  // 2. Also patch JS chunks in out/_next/static/chunks
+  // 2. Patch JS chunks in out/_next/static/chunks
   const chunksDir = path.join(outDir, '_next', 'static', 'chunks');
   if (fs.existsSync(chunksDir)) {
     const chunkFiles = fs.readdirSync(chunksDir);
@@ -49,15 +64,36 @@ if (fs.existsSync(outDir)) {
     }
   }
 
-  // 3. Ensure 404.html is a copy of index.html so GitHub Pages SPA fallback works for any path
+  // 3. Ensure 404.html is a copy of index.html so GitHub Pages SPA fallback works
   const indexOut = path.join(outDir, 'index.html');
   const errorOut = path.join(outDir, '404.html');
   if (fs.existsSync(indexOut)) {
     fs.copyFileSync(indexOut, errorOut);
+    patchHtmlFile(errorOut, 0);
     console.log('[GitHub Pages Fix] Created 404.html SPA fallback from index.html.');
   }
 
-  // 4. Copy build artifacts directly to project root for simple GitHub Pages branch publishing
+  // 4. Handle out/admin directory and admin.html
+  const outAdminDir = path.join(outDir, 'admin');
+  if (!fs.existsSync(outAdminDir)) {
+    fs.mkdirSync(outAdminDir, { recursive: true });
+  }
+
+  const outAdminIndex = path.join(outAdminDir, 'index.html');
+  const outAdminHtml = path.join(outDir, 'admin.html');
+
+  // If next build produced out/admin/index.html, patch it; if not, use index.html copy
+  if (!fs.existsSync(outAdminIndex) && fs.existsSync(indexOut)) {
+    fs.copyFileSync(indexOut, outAdminIndex);
+  }
+  if (!fs.existsSync(outAdminHtml) && fs.existsSync(indexOut)) {
+    fs.copyFileSync(indexOut, outAdminHtml);
+  }
+
+  patchHtmlFile(outAdminIndex, 1);
+  patchHtmlFile(outAdminHtml, 0);
+
+  // 5. Copy build artifacts directly to project root for branch publishing
   const rootIndex = path.join(projectRoot, 'index.html');
   const root404 = path.join(projectRoot, '404.html');
   const rootNext = path.join(projectRoot, '_next');
@@ -73,16 +109,11 @@ if (fs.existsSync(outDir)) {
     patchHtmlFile(root404, 0);
   }
 
-  // Copy out/_next directly to root/_next
   const outNext = path.join(outDir, '_next');
   if (fs.existsSync(outNext)) {
     fs.cpSync(outNext, rootNext, { recursive: true });
     console.log('[GitHub Pages Fix] Copied out/_next directly to root/_next directory.');
   }
-
-  // Handle out/admin or out/admin.html -> root/admin/index.html & root/admin.html
-  const outAdminHtml = path.join(outDir, 'admin.html');
-  const outAdminIndex = path.join(outDir, 'admin', 'index.html');
 
   if (!fs.existsSync(rootAdminDir)) {
     fs.mkdirSync(rootAdminDir, { recursive: true });
@@ -94,15 +125,8 @@ if (fs.existsSync(outDir)) {
   if (fs.existsSync(outAdminIndex)) {
     fs.copyFileSync(outAdminIndex, rootAdminIndexFile);
     fs.copyFileSync(outAdminIndex, rootAdminHtmlFile);
-  } else if (fs.existsSync(outAdminHtml)) {
-    fs.copyFileSync(outAdminHtml, rootAdminIndexFile);
-    fs.copyFileSync(outAdminHtml, rootAdminHtmlFile);
-  } else if (fs.existsSync(indexOut)) {
-    fs.copyFileSync(indexOut, rootAdminIndexFile);
-    fs.copyFileSync(indexOut, rootAdminHtmlFile);
   }
 
-  // CRITICAL: Re-patch root/admin.html with depth 0 (./_next/) and root/admin/index.html with depth 1 (../_next/)
   patchHtmlFile(rootAdminHtmlFile, 0);
   patchHtmlFile(rootAdminIndexFile, 1);
   console.log('[GitHub Pages Fix] Successfully patched root admin.html (depth 0) and root/admin/index.html (depth 1).');
@@ -111,4 +135,5 @@ if (fs.existsSync(outDir)) {
   fs.writeFileSync(path.join(projectRoot, '.nojekyll'), '');
   console.log('[GitHub Pages Fix] Created .nojekyll in root directory.');
 }
+
 

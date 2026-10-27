@@ -53,6 +53,7 @@ export default function InvestmentApp() {
     const hash = window.location.hash.toLowerCase();
     const search = window.location.search.toLowerCase();
     return (
+      Boolean((window as any).__IS_ADMIN_ROUTE__) ||
       path.includes('admin') ||
       hash.includes('admin') ||
       search.includes('admin')
@@ -65,7 +66,12 @@ export default function InvestmentApp() {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
       const search = window.location.search.toLowerCase();
-      if (path.includes('admin') || hash.includes('admin') || search.includes('admin')) {
+      if (
+        (window as any).__IS_ADMIN_ROUTE__ ||
+        path.includes('admin') ||
+        hash.includes('admin') ||
+        search.includes('admin')
+      ) {
         setIsAdminRoute(true);
       }
     };
