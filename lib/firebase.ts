@@ -499,17 +499,41 @@ export async function getCustomPlansFromFirestore(): Promise<any[]> {
 
 // 10. Custom Home Sliders Management
 export async function saveCustomSliderToFirestore(slider: any): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_sliders');
+      const existing = localStr ? JSON.parse(localStr) : [];
+      const updated = [slider, ...existing.filter((s: any) => String(s.id) !== String(slider.id))];
+      localStorage.setItem('network_join_pro_sliders', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('LocalStorage save slider error:', e);
+    }
+  }
+
   try {
     const docRef = doc(db, 'sliders', String(slider.id));
     await withTimeout(setDoc(docRef, slider), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving slider to Firestore:', err);
+    console.warn('Error saving slider to Firestore (saved locally):', err);
     return false;
   }
 }
 
 export async function deleteCustomSliderFromFirestore(sliderId: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_sliders');
+      if (localStr) {
+        const existing = JSON.parse(localStr);
+        const updated = existing.filter((s: any) => String(s.id) !== String(sliderId));
+        localStorage.setItem('network_join_pro_sliders', JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.warn('LocalStorage delete slider error:', e);
+    }
+  }
+
   try {
     const docRef = doc(db, 'sliders', String(sliderId));
     await withTimeout(deleteDoc(docRef), 4000);
@@ -521,16 +545,33 @@ export async function deleteCustomSliderFromFirestore(sliderId: string): Promise
 }
 
 export async function getCustomSlidersFromFirestore(): Promise<any[]> {
+  let slidersFromFirestore: any[] = [];
   try {
     const ref = collection(db, 'sliders');
     const snap = await withTimeout(getDocs(ref), 3000);
-    const sliders: any[] = [];
-    snap.forEach((docSnap) => sliders.push(docSnap.data()));
-    return sliders;
+    snap.forEach((docSnap) => slidersFromFirestore.push(docSnap.data()));
+    if (slidersFromFirestore.length > 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_sliders', JSON.stringify(slidersFromFirestore));
+      }
+      return slidersFromFirestore;
+    }
   } catch (err) {
     console.warn('Error fetching sliders from Firestore:', err);
-    return [];
   }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_sliders');
+      if (local) {
+        return JSON.parse(local);
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return [];
 }
 
 

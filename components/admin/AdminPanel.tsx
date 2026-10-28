@@ -271,16 +271,47 @@ export default function AdminPanel() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('कृपया 5MB से छोटी इमेज फाइल चुनें (File size must be under 5MB)');
+    if (file.size > 10 * 1024 * 1024) {
+      alert('कृपया 10MB से छोटी इमेज फाइल चुनें (File size must be under 10MB)');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setSliderImagePreview(base64);
-      setNewSlider((prev) => ({ ...prev, imageUrl: base64 }));
+      const rawBase64 = event.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setSliderImagePreview(compressed);
+          setNewSlider((prev) => ({ ...prev, imageUrl: compressed }));
+        } else {
+          setSliderImagePreview(rawBase64);
+          setNewSlider((prev) => ({ ...prev, imageUrl: rawBase64 }));
+        }
+      };
+      img.onerror = () => {
+        setSliderImagePreview(rawBase64);
+        setNewSlider((prev) => ({ ...prev, imageUrl: rawBase64 }));
+      };
+      img.src = rawBase64;
     };
     reader.readAsDataURL(file);
   };
