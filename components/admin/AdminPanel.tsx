@@ -160,6 +160,20 @@ export default function AdminPanel() {
     { title: 'Custom Plan Name...', icon: '✏️', minAmount: 1000, defaultRate: 2 },
   ];
 
+  // 10 Plan Category Options requested by User
+  const PLAN_CATEGORY_OPTIONS = [
+    'Starter',
+    'Basic',
+    'Silver',
+    'Gold',
+    'Platinum',
+    'Diamond',
+    'Premium',
+    'Growth',
+    'Long-Term',
+    'Elite',
+  ];
+
   // Custom Dropdown Open State
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
 
@@ -181,11 +195,11 @@ export default function AdminPanel() {
     return found ? found.icon : '⚡';
   };
 
-  // New Plan Form State (Initially Blank - No Default Selection)
+  // New Plan Form State (Initially Blank - Default Category 'Starter')
   const [newPlan, setNewPlan] = useState({
     name: '',
     customName: '',
-    category: 'VIP',
+    category: 'Starter',
     price: '',
     dailyReturn: '',
     validityDays: '30',
@@ -197,17 +211,26 @@ export default function AdminPanel() {
   // Handle Selection of Plan Option from Dropdown (Auto-fills Minimum Amount & Default Percentage)
   const handleSelectPlanOption = (opt: (typeof PLAN_NAME_OPTIONS)[0]) => {
     setIsPlanDropdownOpen(false);
+
+    // Auto-detect category if matching title, otherwise keep current category
+    let detectedCategory = newPlan.category || 'Starter';
+    const foundCat = PLAN_CATEGORY_OPTIONS.find((c) => opt.title.toLowerCase().includes(c.toLowerCase()));
+    if (foundCat) {
+      detectedCategory = foundCat;
+    }
+
     if (opt.title === 'Custom Plan Name...') {
-      setNewPlan({
+      setNewPlan((prev) => ({
+        ...prev,
         name: 'Custom Plan Name...',
         customName: '',
-        category: 'VIP',
+        category: detectedCategory,
         price: '1000',
         dailyReturn: '2',
         validityDays: '30',
         estProfit: String(1000 * 0.02 * 30),
         totalReturn: String(1000 + 1000 * 0.02 * 30),
-      });
+      }));
       return;
     }
 
@@ -218,16 +241,17 @@ export default function AdminPanel() {
     const calcEst = Math.round(calcDailyInRupees * days * 100) / 100;
     const calcTotal = Math.round((minAmt + calcEst) * 100) / 100;
 
-    setNewPlan({
+    setNewPlan((prev) => ({
+      ...prev,
       name: `${opt.title} ${opt.icon}`,
       customName: '',
-      category: 'VIP',
+      category: detectedCategory,
       price: String(minAmt),
       dailyReturn: String(rate),
       validityDays: String(days),
       estProfit: String(calcEst),
       totalReturn: String(calcTotal),
-    });
+    }));
   };
 
   // Handle Input Changes & Percentage-Based Auto-Calculations for Investment Plan
@@ -493,15 +517,23 @@ export default function AdminPanel() {
     const planObj = {
       id: `PLAN_${Date.now()}`,
       name: finalName,
-      category: newPlan.category || 'VIP',
+      category: newPlan.category || 'Starter',
       price: priceNum,
+      amount: priceNum,
       dailyPercent: ratePercent,
+      roiPercentage: ratePercent,
       dailyReturn: Math.round(dailyProfitRupees * 100) / 100, // Daily profit in ₹
+      dailyEarnings: Math.round(dailyProfitRupees * 100) / 100,
       validityDays: daysNum,
+      durationDays: daysNum,
       estProfit: Math.round(estProfitNum * 100) / 100,
       totalReturn: Math.round(totalReturnNum * 100) / 100,
       colorGradient: 'from-amber-600 via-orange-600 to-amber-700',
-      tag: 'NEW EXCLUSIVE',
+      tag: `${(newPlan.category || 'Starter').toUpperCase()} PLAN`,
+      featured: true,
+      iconType: ['Diamond', 'Platinum', 'Elite'].includes(newPlan.category) ? 'gem' : ['Gold', 'Premium'].includes(newPlan.category) ? 'crown' : ['Silver', 'Growth'].includes(newPlan.category) ? 'badge' : ['Basic', 'Starter'].includes(newPlan.category) ? 'shield' : 'lightning',
+      totalInvestors: Math.floor(100 + Math.random() * 500),
+      description: `${finalName} - ${daysNum} Days ${newPlan.category} plan with guaranteed returns.`,
     };
 
     setPlans((prev) => [planObj, ...prev]);
@@ -512,7 +544,7 @@ export default function AdminPanel() {
     setNewPlan({
       name: '',
       customName: '',
-      category: 'VIP',
+      category: 'Starter',
       price: '',
       dailyReturn: '',
       validityDays: '30',
@@ -2110,6 +2142,24 @@ export default function AdminPanel() {
                     />
                   </div>
                 )}
+
+                {/* 2. PLAN CATEGORY DROPDOWN BOX */}
+                <div>
+                  <label className="font-extrabold text-slate-800 block mb-1 text-xs">
+                    Plan Category (कैटेगरी चुनें)
+                  </label>
+                  <select
+                    value={newPlan.category}
+                    onChange={(e) => handlePlanInputChange('category', e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-extrabold focus:outline-none focus:border-cyan-600 focus:bg-white text-xs text-slate-900 cursor-pointer shadow-2xs"
+                  >
+                    {PLAN_CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat} Category
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 {/* 2. INVESTMENT (₹) & 3. DAILY PROFIT (%) */}
                 <div className="grid grid-cols-2 gap-3">

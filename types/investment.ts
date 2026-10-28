@@ -1,4 +1,17 @@
-export type Category = 'All Plans' | 'VIP' | 'Platinum' | 'Gold' | 'Silver' | 'Bronze';
+export type Category =
+  | 'All Plans'
+  | 'Starter'
+  | 'Basic'
+  | 'Silver'
+  | 'Gold'
+  | 'Platinum'
+  | 'Diamond'
+  | 'Premium'
+  | 'Growth'
+  | 'Long-Term'
+  | 'Elite'
+  | 'VIP'
+  | 'Bronze';
 
 export interface InvestmentPlan {
   id: string;

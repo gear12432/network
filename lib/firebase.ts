@@ -463,19 +463,43 @@ export async function saveGatewaySettingsToFirestore(
 
 // 9. Custom Admin Plans Management
 export async function saveCustomPlanToFirestore(plan: any): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_plans');
+      const existing = localStr ? JSON.parse(localStr) : [];
+      const updated = [plan, ...existing.filter((p: any) => String(p.id) !== String(plan.id))];
+      localStorage.setItem('network_join_pro_plans', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('LocalStorage save plan error:', e);
+    }
+  }
+
   try {
-    const docRef = doc(db, 'plans', plan.id);
+    const docRef = doc(db, 'plans', String(plan.id));
     await withTimeout(setDoc(docRef, plan), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving plan to Firestore:', err);
+    console.warn('Error saving plan to Firestore (saved locally):', err);
     return false;
   }
 }
 
 export async function deleteCustomPlanFromFirestore(planId: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_plans');
+      if (localStr) {
+        const existing = JSON.parse(localStr);
+        const updated = existing.filter((p: any) => String(p.id) !== String(planId));
+        localStorage.setItem('network_join_pro_plans', JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.warn('LocalStorage delete plan error:', e);
+    }
+  }
+
   try {
-    const docRef = doc(db, 'plans', planId);
+    const docRef = doc(db, 'plans', String(planId));
     await withTimeout(deleteDoc(docRef), 4000);
     return true;
   } catch (err) {
@@ -485,16 +509,33 @@ export async function deleteCustomPlanFromFirestore(planId: string): Promise<boo
 }
 
 export async function getCustomPlansFromFirestore(): Promise<any[]> {
+  let plansFromFirestore: any[] = [];
   try {
     const ref = collection(db, 'plans');
     const snap = await withTimeout(getDocs(ref), 3000);
-    const plans: any[] = [];
-    snap.forEach((docSnap) => plans.push(docSnap.data()));
-    return plans;
+    snap.forEach((docSnap) => plansFromFirestore.push(docSnap.data()));
+    if (plansFromFirestore.length > 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_plans', JSON.stringify(plansFromFirestore));
+      }
+      return plansFromFirestore;
+    }
   } catch (err) {
     console.warn('Error fetching plans from Firestore:', err);
-    return [];
   }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_plans');
+      if (local) {
+        return JSON.parse(local);
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return [];
 }
 
 // 10. Custom Home Sliders Management

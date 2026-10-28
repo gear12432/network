@@ -56,7 +56,19 @@ export default function HomeScreen({
   activeInvestments,
   isMobileView = false,
 }: HomeScreenProps) {
-  const categories: Category[] = ['All Plans', 'VIP', 'Platinum', 'Gold', 'Silver', 'Bronze'];
+  const categories: Category[] = [
+    'All Plans',
+    'Starter',
+    'Basic',
+    'Silver',
+    'Gold',
+    'Platinum',
+    'Diamond',
+    'Premium',
+    'Growth',
+    'Long-Term',
+    'Elite',
+  ];
 
   // View Mode: default to 'grid' on desktop, 'list' on mobile
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobileView ? 'list' : 'grid');
