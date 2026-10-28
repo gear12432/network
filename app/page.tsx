@@ -112,40 +112,41 @@ export default function InvestmentApp() {
     }
     return INITIAL_USER_STATS;
   });
-  const [plans, setPlans] = useState<InvestmentPlan[]>(INITIAL_PLANS);
+  const [plans, setPlans] = useState<InvestmentPlan[]>([]);
 
   // Fetch custom admin-created plans from Firestore / LocalStorage on mount
   React.useEffect(() => {
     let isMounted = true;
     getCustomPlansFromFirestore().then((customPlans) => {
-      if (!isMounted || !customPlans || customPlans.length === 0) return;
-      const formattedCustomPlans: InvestmentPlan[] = customPlans.map((p: any) => {
-        const amt = p.amount ?? p.price ?? 0;
-        const days = p.durationDays ?? p.validityDays ?? 30;
-        const roi = p.roiPercentage ?? p.dailyPercent ?? 0;
-        const daily = p.dailyEarnings ?? p.dailyReturn ?? (amt * (roi / 100));
-        const total = p.totalReturn ?? (amt + (daily * days));
-        const cat = p.category || 'VIP';
+      if (!isMounted) return;
+      if (customPlans && customPlans.length > 0) {
+        const formattedCustomPlans: InvestmentPlan[] = customPlans.map((p: any) => {
+          const amt = p.amount ?? p.price ?? 0;
+          const days = p.durationDays ?? p.validityDays ?? 30;
+          const roi = p.roiPercentage ?? p.dailyPercent ?? 0;
+          const daily = p.dailyEarnings ?? p.dailyReturn ?? (amt * (roi / 100));
+          const total = p.totalReturn ?? (amt + (daily * days));
+          const cat = p.category || 'Starter';
 
-        return {
-          id: String(p.id),
-          name: p.name || 'Investment Plan',
-          category: cat,
-          durationDays: days,
-          roiPercentage: roi,
-          amount: amt,
-          dailyEarnings: Math.round(daily * 100) / 100,
-          totalReturn: Math.round(total * 100) / 100,
-          iconType: p.iconType || (cat === 'VIP' ? 'crown' : cat === 'Platinum' ? 'gem' : cat === 'Gold' ? 'badge' : cat === 'Silver' ? 'shield' : 'lightning'),
-          featured: p.featured ?? true,
-          totalInvestors: p.totalInvestors ?? Math.floor(100 + Math.random() * 500),
-          description: p.description || `${p.name} - ${days} Days high return plan.`,
-        };
-      });
-
-      const existingIds = new Set(formattedCustomPlans.map((p) => p.id));
-      const remainingInitial = INITIAL_PLANS.filter((p) => !existingIds.has(p.id));
-      setPlans([...formattedCustomPlans, ...remainingInitial]);
+          return {
+            id: String(p.id),
+            name: p.name || 'Investment Plan',
+            category: cat,
+            durationDays: days,
+            roiPercentage: roi,
+            amount: amt,
+            dailyEarnings: Math.round(daily * 100) / 100,
+            totalReturn: Math.round(total * 100) / 100,
+            iconType: p.iconType || (cat === 'VIP' ? 'crown' : cat === 'Platinum' ? 'gem' : cat === 'Gold' ? 'badge' : cat === 'Silver' ? 'shield' : 'lightning'),
+            featured: p.featured ?? true,
+            totalInvestors: p.totalInvestors ?? Math.floor(100 + Math.random() * 500),
+            description: p.description || `${p.name} - ${days} Days high return plan.`,
+          };
+        });
+        setPlans(formattedCustomPlans);
+      } else {
+        setPlans([]);
+      }
     });
     return () => {
       isMounted = false;

@@ -85,7 +85,7 @@ export default function AdminPanel() {
     minDeposit: 100,
     minWithdrawal: 200,
   });
-  const [plans, setPlans] = useState<any[]>(INITIAL_PLANS);
+  const [plans, setPlans] = useState<any[]>([]);
   const [sliders, setSliders] = useState<any[]>([]);
 
   // Search Query for Users tab
@@ -135,22 +135,24 @@ export default function AdminPanel() {
     setTimeout(() => setKycMsg(''), 3000);
   };
 
-  // 20 Predefined Plan Name Options with Icons & Default Minimum Amounts
+  // Predefined Plan Name Options with Icons & Default Minimum Amounts (Clean names + standalone Krantikari option)
   const PLAN_NAME_OPTIONS = [
-    { title: 'Basic Investment Plan', icon: '⚡', minAmount: 100, defaultRate: 1 },
     { title: 'Starter Investment Plan', icon: '🚀', minAmount: 500, defaultRate: 1.2 },
+    { title: 'Basic Investment Plan', icon: '⚡', minAmount: 100, defaultRate: 1 },
     { title: 'Silver Investment Plan', icon: '🥈', minAmount: 1000, defaultRate: 1.5 },
     { title: 'Gold Investment Plan', icon: '🥇', minAmount: 2500, defaultRate: 2 },
     { title: 'Platinum Investment Plan', icon: '💠', minAmount: 5000, defaultRate: 2.5 },
     { title: 'Diamond Investment Plan', icon: '💎', minAmount: 10000, defaultRate: 3 },
     { title: 'Premium Investment Plan', icon: '👑', minAmount: 15000, defaultRate: 3.5 },
-    { title: 'Smart Investment Plan', icon: '🎯', minAmount: 20000, defaultRate: 4 },
     { title: 'Growth Investment Plan', icon: '📈', minAmount: 25000, defaultRate: 4.5 },
+    { title: 'Elite Investment Plan', icon: '✨', minAmount: 60000, defaultRate: 8 },
+    { title: 'Krantikari Plan', icon: '🔥', minAmount: 5000, defaultRate: 3 },
+    { title: 'क्रांतिकारी Plan', icon: '🚩', minAmount: 5000, defaultRate: 3 },
+    { title: 'Smart Investment Plan', icon: '🎯', minAmount: 20000, defaultRate: 4 },
     { title: 'Wealth Builder Plan', icon: '💰', minAmount: 30000, defaultRate: 5 },
     { title: 'Monthly Income Plan', icon: '📅', minAmount: 35000, defaultRate: 5.5 },
     { title: 'Smart Saver Plan', icon: '🛡️', minAmount: 40000, defaultRate: 6 },
     { title: 'Royal Investment Plan', icon: '🏰', minAmount: 50000, defaultRate: 7 },
-    { title: 'Elite Investment Plan', icon: '✨', minAmount: 60000, defaultRate: 8 },
     { title: 'Ultimate Investment Plan', icon: '🌟', minAmount: 75000, defaultRate: 9 },
     { title: 'Power Investment Plan', icon: '⚡', minAmount: 85000, defaultRate: 10 },
     { title: 'Pro Investment Plan', icon: '💼', minAmount: 100000, defaultRate: 12 },
@@ -394,7 +396,7 @@ export default function AdminPanel() {
       if (p && p.length > 0) {
         setPlans(p);
       } else {
-        setPlans(INITIAL_PLANS);
+        setPlans([]);
       }
 
       if (s && s.length > 0) {

@@ -472,17 +472,21 @@ export default function HomeScreen({
         {filteredPlans.length === 0 ? (
           <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-8 text-center border border-[#dfbe7e]">
             <Layers className="w-10 h-10 text-[#caa050] mx-auto mb-2" />
-            <h5 className="text-sm font-bold text-[#46280b]">No plans found</h5>
-            <p className="text-xs text-[#8a5b28] mt-0.5">Try adjusting your search query or category filter</p>
-            <button
-              onClick={() => {
-                onSearchChange('');
-                onSelectCategory('All Plans');
-              }}
-              className="mt-3 text-xs text-[#8a5b28] hover:text-[#46280b] font-bold underline cursor-pointer"
-            >
-              Reset Filters
-            </button>
+            <h5 className="text-sm font-bold text-[#46280b]">कोई प्लान उपलब्ध नहीं है (No Plans Available)</h5>
+            <p className="text-xs text-[#8a5b28] mt-0.5">
+              एडमिन द्वारा जोड़े गए प्लान यहां दिखाई देंगे। (Plans added by Admin will appear here)
+            </p>
+            {(searchQuery || selectedCategory !== 'All Plans') && (
+              <button
+                onClick={() => {
+                  onSearchChange('');
+                  onSelectCategory('All Plans');
+                }}
+                className="mt-3 text-xs text-[#8a5b28] hover:text-[#46280b] font-bold underline cursor-pointer"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
         ) : viewMode === 'grid' ? (
           /* Multi-column Grid View (Up to 4 columns on large screens) */
