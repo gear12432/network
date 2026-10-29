@@ -14,21 +14,32 @@ import { NavTab } from './MobileBottomNav';
 
 interface DesktopSidebarProps {
   activeTab: NavTab;
-  onChangeTab: (tab: NavTab) => void;
+  onChangeTab?: (tab: NavTab) => void;
+  onTabChange?: (tab: NavTab) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
-  onOpenDeposit: () => void;
-  onOpenWithdraw: () => void;
+  onOpenDeposit?: () => void;
+  onOpenWithdraw?: () => void;
+  userStats?: any;
 }
 
 export default function DesktopSidebar({
   activeTab,
   onChangeTab,
+  onTabChange,
   collapsed,
   onToggleCollapse,
   onOpenDeposit,
   onOpenWithdraw,
 }: DesktopSidebarProps) {
+  const handleTabClick = (tabId: NavTab) => {
+    if (onChangeTab) {
+      onChangeTab(tabId);
+    } else if (onTabChange) {
+      onTabChange(tabId);
+    }
+  };
+
   const primaryNavItems = [
     { id: 'home' as NavTab, label: 'Dashboard', icon: Home },
     { id: 'network' as NavTab, label: 'Network & Team', icon: Users },
@@ -79,7 +90,7 @@ export default function DesktopSidebar({
                 {isActive ? (
                   /* Curved palace tab cutout matching main background bg-[#faf6ee] */
                   <div
-                    onClick={() => onChangeTab(item.id)}
+                    onClick={() => handleTabClick(item.id)}
                     className="relative flex items-center gap-3.5 pl-6 py-3 bg-[#faf6ee] text-[#2b1706] font-serif font-black rounded-l-2xl shadow-xs cursor-pointer select-none"
                   >
                     {/* Top corner reverse curve */}
@@ -104,7 +115,7 @@ export default function DesktopSidebar({
                   </div>
                 ) : (
                   <button
-                    onClick={() => onChangeTab(item.id)}
+                    onClick={() => handleTabClick(item.id)}
                     className={`w-full flex items-center gap-3.5 px-6 py-3 text-white hover:bg-white/10 transition-all rounded-l-xl group ${
                       collapsed ? 'justify-center px-0' : ''
                     }`}
@@ -121,7 +132,6 @@ export default function DesktopSidebar({
             );
           })}
         </div>
-
       </div>
 
       {/* Bottom Promo & Logout */}

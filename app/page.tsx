@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   INITIAL_USER_STATS,
   INITIAL_PLANS,
@@ -18,7 +18,6 @@ import {
   ReferralMember,
   Customer,
 } from '@/types/investment';
-import { Users } from 'lucide-react';
 import DesktopSidebar from '@/components/DesktopSidebar';
 import DesktopHeader from '@/components/DesktopHeader';
 import MobileHeader from '@/components/MobileHeader';
@@ -28,6 +27,7 @@ import NetworkScreen from '@/components/screens/NetworkScreen';
 import EarningsScreen from '@/components/screens/EarningsScreen';
 import WalletScreen from '@/components/screens/WalletScreen';
 import ProfileScreen from '@/components/screens/ProfileScreen';
+import AuthScreen from '@/components/screens/AuthScreen';
 import SlideFullScreenModal from '@/components/modals/SlideFullScreenModal';
 import PlanDetailContent from '@/components/modals/PlanDetailContent';
 import DepositContent from '@/components/modals/DepositContent';
@@ -39,57 +39,81 @@ import FullKycContent from '@/components/modals/FullKycContent';
 import AddCustomerContent from '@/components/modals/AddCustomerContent';
 import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
-import SplashScreen from '@/components/SplashScreen';
-import AuthScreen from '@/components/screens/AuthScreen';
+import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
 import { UserAccountData, testConnection, getCustomPlansFromFirestore } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 
 export default function InvestmentApp() {
-  // Admin Route Detection
-  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
+  // Prevent SSR Hydration Mismatch
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Route & Onboarding States
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [currentUser, setCurrentUser] = useState<UserAccountData | null>(null);
+
+  // Main App State
+  const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS);
+  const [plans, setPlans] = useState<InvestmentPlan[]>([]);
+  const [activeInvestments, setActiveInvestments] = useState<ActiveInvestment[]>(INITIAL_ACTIVE_INVESTMENTS);
+  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [referrals] = useState<ReferralMember[]>(INITIAL_REFERRALS);
+  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+
+  // Navigation & View State
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('All Plans');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [manualLayout, setManualLayout] = useState<'desktop' | 'mobile' | null>(null);
+
+  // Modals & Toast State
+  const [activeModal, setActiveModal] = useState<
+    | 'none'
+    | 'plan-detail'
+    | 'confirm-invest'
+    | 'deposit'
+    | 'withdraw'
+    | 'history'
+    | 'tax-summary'
+    | 'notifications'
+    | 'full-kyc'
+    | 'add-customer'
+    | 'customer-list'
+  >('none');
+  const [selectedPlanForDetail, setSelectedPlanForDetail] = useState<InvestmentPlan | null>(null);
+  const [selectedCustomerForConfirm, setSelectedCustomerForConfirm] = useState<Customer | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Hydration & Client-side Initialization
+  useEffect(() => {
+    setHasMounted(true);
+
+    if (typeof window === 'undefined') return;
+
+    // 1. Check Admin Route
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
     const search = window.location.search.toLowerCase();
-    return (
+    if (
       Boolean((window as any).__IS_ADMIN_ROUTE__) ||
       path.includes('admin') ||
       hash.includes('admin') ||
       search.includes('admin')
-    );
-  });
+    ) {
+      setIsAdminRoute(true);
+    }
 
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const checkRoute = () => {
-      const path = window.location.pathname.toLowerCase();
-      const hash = window.location.hash.toLowerCase();
-      const search = window.location.search.toLowerCase();
-      if (
-        (window as any).__IS_ADMIN_ROUTE__ ||
-        path.includes('admin') ||
-        hash.includes('admin') ||
-        search.includes('admin')
-      ) {
-        setIsAdminRoute(true);
-      }
-    };
-    checkRoute();
-    window.addEventListener('popstate', checkRoute);
-    window.addEventListener('hashchange', checkRoute);
-    return () => {
-      window.removeEventListener('popstate', checkRoute);
-      window.removeEventListener('hashchange', checkRoute);
-    };
-  }, []);
-  // Main State
-  const [userStats, setUserStats] = useState<UserStats>(() => {
-    if (typeof window === 'undefined') return INITIAL_USER_STATS;
+    // 2. Always show Onboarding Slider Screen on App Launch
+    setShowOnboarding(true);
+
+    // 3. Check Logged In User
     try {
       const saved = localStorage.getItem('network_join_pro_user');
       if (saved) {
         const u = JSON.parse(saved);
+        setCurrentUser(u);
         const initials =
           u.fullName
             ?.split(' ')
@@ -97,25 +121,45 @@ export default function InvestmentApp() {
             .join('')
             .substring(0, 2)
             .toUpperCase() || 'GK';
-        return {
-          ...INITIAL_USER_STATS,
-          userName: u.fullName || INITIAL_USER_STATS.userName,
+
+        setUserStats((prev) => ({
+          ...prev,
+          userName: u.fullName || prev.userName,
           userInitials: initials,
           loginUid: u.loginUid,
           email: u.email,
           mobile: u.mobile,
-          walletBalance: u.balance ?? INITIAL_USER_STATS.walletBalance,
-        };
+          walletBalance: u.balance ?? prev.walletBalance,
+        }));
       }
     } catch {
       // fallback
     }
-    return INITIAL_USER_STATS;
-  });
-  const [plans, setPlans] = useState<InvestmentPlan[]>([]);
 
-  // Fetch custom admin-created plans from Firestore / LocalStorage on mount
-  React.useEffect(() => {
+    const handleRouteCheck = () => {
+      const p = window.location.pathname.toLowerCase();
+      const h = window.location.hash.toLowerCase();
+      const s = window.location.search.toLowerCase();
+      if (
+        (window as any).__IS_ADMIN_ROUTE__ ||
+        p.includes('admin') ||
+        h.includes('admin') ||
+        s.includes('admin')
+      ) {
+        setIsAdminRoute(true);
+      }
+    };
+
+    window.addEventListener('popstate', handleRouteCheck);
+    window.addEventListener('hashchange', handleRouteCheck);
+    return () => {
+      window.removeEventListener('popstate', handleRouteCheck);
+      window.removeEventListener('hashchange', handleRouteCheck);
+    };
+  }, []);
+
+  // Fetch Custom Admin-created Plans on Mount
+  useEffect(() => {
     let isMounted = true;
     getCustomPlansFromFirestore().then((customPlans) => {
       if (!isMounted) return;
@@ -152,21 +196,8 @@ export default function InvestmentApp() {
       isMounted = false;
     };
   }, []);
-  const [activeInvestments, setActiveInvestments] = useState<ActiveInvestment[]>(
-    INITIAL_ACTIVE_INVESTMENTS
-  );
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
-  const [referrals] = useState<ReferralMember[]>(INITIAL_REFERRALS);
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
 
-  // Active navigation tab
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('All Plans');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const [manualLayout, setManualLayout] = useState<'desktop' | 'mobile' | null>(null);
-
+  // Sync external window width safely
   const windowWidth = React.useSyncExternalStore(
     (callback) => {
       if (typeof window === 'undefined') return () => {};
@@ -177,46 +208,20 @@ export default function InvestmentApp() {
     () => 1024
   );
 
-  // Determine if desktop layout is active (>= 768px is desktop)
   const isDesktop = manualLayout === 'desktop' || (manualLayout === null && windowWidth >= 768);
 
-  // Full Screen Slide Modals (Right-to-Left animation in mobile)
-  const [activeModal, setActiveModal] = useState<
-    | 'none'
-    | 'plan-detail'
-    | 'confirm-invest'
-    | 'deposit'
-    | 'withdraw'
-    | 'history'
-    | 'tax-summary'
-    | 'notifications'
-    | 'full-kyc'
-    | 'add-customer'
-    | 'customer-list'
-  >('none');
-  const [selectedPlanForDetail, setSelectedPlanForDetail] = useState<InvestmentPlan | null>(null);
-  const [selectedCustomerForConfirm, setSelectedCustomerForConfirm] = useState<Customer | null>(null);
-
-  // Toast Notification Message
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Splash Screen & User Authentication State
-  const [showSplash, setShowSplash] = useState(true);
-  const [currentUser, setCurrentUser] = useState<UserAccountData | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const saved = localStorage.getItem('network_join_pro_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [isAuthChecked] = useState(true);
-
-  // Validate Firestore connection per Skill
-  React.useEffect(() => {
+  // Validate Firestore Connection
+  useEffect(() => {
     testConnection();
   }, []);
+
+  // Handlers
+  const handleOnboardingComplete = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('has_completed_onboarding', 'true');
+    }
+    setShowOnboarding(false);
+  };
 
   const handleLoginSuccess = (user: UserAccountData) => {
     setCurrentUser(user);
@@ -258,7 +263,6 @@ export default function InvestmentApp() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 1. Join a plan (with optional linked customer)
   const handleConfirmInvest = (plan: InvestmentPlan, linkedCustomer?: Customer) => {
     if (userStats.walletBalance < plan.amount) {
       showToast('Insufficient wallet balance. Please add funds.');
@@ -266,7 +270,6 @@ export default function InvestmentApp() {
       return;
     }
 
-    // Deduct from wallet
     setUserStats((prev) => ({
       ...prev,
       walletBalance: prev.walletBalance - plan.amount,
@@ -274,7 +277,6 @@ export default function InvestmentApp() {
       activeInvestmentsCount: prev.activeInvestmentsCount + 1,
     }));
 
-    // Add active investment with customer association
     const newInvestment: ActiveInvestment = {
       id: `act-${Date.now()}`,
       planId: plan.id,
@@ -293,7 +295,6 @@ export default function InvestmentApp() {
     };
     setActiveInvestments((prev) => [newInvestment, ...prev]);
 
-    // Record Transaction
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
       type: 'investment',
@@ -314,14 +315,12 @@ export default function InvestmentApp() {
     );
   };
 
-  // Proceed from Plan Details to the full-screen Confirm Investment screen
   const handleProceedToConfirm = (plan: InvestmentPlan, customer: Customer) => {
     setSelectedPlanForDetail(plan);
     setSelectedCustomerForConfirm(customer);
     setActiveModal('confirm-invest');
   };
 
-  // 2. Deposit Funds
   const handleDepositSuccess = (amount: number, method: string) => {
     setUserStats((prev) => ({
       ...prev,
@@ -343,7 +342,6 @@ export default function InvestmentApp() {
     showToast(`₹${amount.toLocaleString('en-IN')} added to your wallet!`);
   };
 
-  // 3. Withdraw Funds
   const handleWithdrawSuccess = (amount: number, target: string) => {
     if (amount > userStats.walletBalance) {
       showToast('Withdrawal amount exceeds balance');
@@ -371,7 +369,6 @@ export default function InvestmentApp() {
     showToast(`₹${amount.toLocaleString('en-IN')} withdrawn successfully!`);
   };
 
-  // 4. Claim Daily ROI
   const handleClaimDailyRoi = () => {
     if (userStats.unclaimedRoi <= 0) return;
 
@@ -398,430 +395,302 @@ export default function InvestmentApp() {
     showToast(`₹${claimed.toFixed(2)} daily income credited to wallet!`);
   };
 
-  // 5. Save New Customer
   const handleSaveCustomer = (newCustomer: Customer) => {
     setCustomers((prev) => [newCustomer, ...prev]);
     showToast(`Customer ${newCustomer.name} (${newCustomer.id}) registered successfully!`);
   };
 
-  // Helper to open plan detail
   const handleOpenPlanDetail = (plan: InvestmentPlan) => {
     setSelectedPlanForDetail(plan);
     setActiveModal('plan-detail');
   };
 
-  // 0. Direct Admin Route Bypass
+  // Prevent SSR Hydration Mismatch
+  if (!hasMounted) {
+    return <div className="min-h-screen bg-[#111111]" />;
+  }
+
+  // 1. If admin route detected, render Admin Panel directly
   if (isAdminRoute) {
     return <AdminPanel />;
   }
 
-  // 1. Initial Animated Splash Screen
-  if (showSplash) {
-    return (
-      <SplashScreen
-        onComplete={() => {
-          if (typeof window !== 'undefined') {
-            try {
-              const saved = localStorage.getItem('network_join_pro_user');
-              if (saved) {
-                const user = JSON.parse(saved);
-                if (user && (user.loginUid || user.fullName)) {
-                  setCurrentUser(user);
-                  const initials =
-                    user.fullName
-                      ?.split(' ')
-                      .map((n: string) => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase() || 'GK';
-
-                  setUserStats((prev) => ({
-                    ...prev,
-                    userName: user.fullName || prev.userName,
-                    userInitials: initials,
-                    loginUid: user.loginUid,
-                    email: user.email,
-                    mobile: user.mobile,
-                    walletBalance: user.balance ?? prev.walletBalance,
-                  }));
-                }
-              }
-            } catch {
-              // fallback
-            }
-          }
-          setShowSplash(false);
-        }}
-      />
-    );
+  // 2. If onboarding is active, render 3-slide Onboarding Screen
+  if (showOnboarding) {
+    return <OnboardingSlider onComplete={handleOnboardingComplete} />;
   }
 
-  // 2. Full-Screen Login & Multi-step Sign Up Screen if not logged in
-  if (isAuthChecked && !currentUser) {
+  // 3. If user is NOT logged in, render Auth / Login & Sign Up screen
+  if (!currentUser) {
     return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
   }
 
+  // 4. Render Logged In User Dashboard
+  const renderScreenContent = (isMobileView = false) => {
+    switch (activeTab) {
+      case 'home':
+        return (
+          <HomeScreen
+            stats={userStats}
+            plans={plans}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onJoinPlan={handleOpenPlanDetail}
+            onViewPlanDetails={handleOpenPlanDetail}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onOpenWithdraw={() => setActiveModal('withdraw')}
+            onClaimDailyRoi={handleClaimDailyRoi}
+            onOpenFullKyc={() => setActiveModal('full-kyc')}
+            activeInvestments={activeInvestments}
+            isMobileView={isMobileView}
+          />
+        );
+      case 'network':
+        return (
+          <NetworkScreen
+            stats={userStats}
+            referrals={referrals}
+            activeInvestments={activeInvestments}
+            onOpenPlans={() => setActiveTab('home')}
+            onOpenDeposit={() => setActiveModal('deposit')}
+          />
+        );
+      case 'earnings':
+        return (
+          <EarningsScreen
+            stats={userStats}
+            activeInvestments={activeInvestments}
+            onClaimDailyRoi={handleClaimDailyRoi}
+            onOpenPlans={() => setActiveTab('home')}
+          />
+        );
+      case 'wallet':
+        return (
+          <WalletScreen
+            stats={userStats}
+            transactions={transactions}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onOpenWithdraw={() => setActiveModal('withdraw')}
+          />
+        );
+      case 'profile':
+        return (
+          <ProfileScreen
+            stats={userStats}
+            onOpenHistory={() => setActiveModal('history')}
+            onOpenWithdraw={() => setActiveModal('withdraw')}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onOpenAdmin={() => setIsAdminRoute(true)}
+            onLogout={handleLogout}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#faf6ee] font-sans text-[#46280b] antialiased selection:bg-[#d9a54c] selection:text-[#2b1706]">
-      {/* Toast Alert */}
+    <div className="min-h-screen bg-[#111111] text-slate-100 flex flex-col font-sans select-none antialiased">
+      {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#2b1706] text-[#ffeec9] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-2xl border border-[#d9a54c] flex items-center gap-2 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-[#d9a54c]" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1e2330] text-amber-400 text-xs sm:text-sm font-bold py-2.5 px-5 rounded-full border border-amber-500/40 shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <span>✨</span>
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* =========================================================================
-          DESKTOP LAYOUT (When isDesktop === true)
-          - Emerald Green Sidebar is ALWAYS VISIBLE on the left (matches Screenshot 1)
-          - DesktopHeader is at the top
-          - Bottom Navigation Menu is COMPLETELY DELETED / REMOVED!
-          ========================================================================= */}
       {isDesktop ? (
-        <div className="flex min-h-screen w-full bg-[#faf6ee]">
-          {/* 1. Left Royal Palace Dark Bronze Sidebar */}
+        /* Desktop Layout */
+        <div className="flex h-screen overflow-hidden bg-[#0d0f14]">
           <DesktopSidebar
             activeTab={activeTab}
+            onTabChange={setActiveTab}
             onChangeTab={setActiveTab}
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            userStats={userStats}
             onOpenDeposit={() => setActiveModal('deposit')}
             onOpenWithdraw={() => setActiveModal('withdraw')}
           />
-
-          {/* 2. Main Content Viewport Full Screen */}
-          <div className="flex-1 flex flex-col min-w-0 w-full bg-[#faf6ee]">
-            {/* Top Desktop Header (Only shown on Home tab) */}
-            {activeTab === 'home' && (
-              <DesktopHeader
-                stats={userStats}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onOpenDeposit={() => setActiveModal('deposit')}
-                onOpenWithdraw={() => setActiveModal('withdraw')}
-                onOpenHistory={() => setActiveModal('history')}
-                onOpenProfile={() => setActiveTab('profile')}
-                onOpenAddCustomer={() => setActiveModal('add-customer')}
-                onOpenCustomerList={() => setActiveModal('customer-list')}
-                onToggleMobileLayout={() => setManualLayout('mobile')}
-                onOpenAdmin={() => setIsAdminRoute(true)}
-              />
-            )}
-
-            {/* Scrollable Main Area Full Width (Side gaps removed) */}
-            <main className="flex-1 px-3 sm:px-4 py-3.5 w-full max-w-full">
-              {/* Screens */}
-              {activeTab === 'home' && (
-                <HomeScreen
-                  stats={userStats}
-                  plans={plans}
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={setSelectedCategory}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  onJoinPlan={handleOpenPlanDetail}
-                  onViewPlanDetails={handleOpenPlanDetail}
-                  onOpenDeposit={() => setActiveModal('deposit')}
-                  onOpenWithdraw={() => setActiveModal('withdraw')}
-                  onClaimDailyRoi={handleClaimDailyRoi}
-                  onOpenFullKyc={() => setActiveModal('full-kyc')}
-                  activeInvestments={activeInvestments}
-                  isMobileView={false}
-                />
-              )}
-
-              {activeTab === 'network' && (
-                <NetworkScreen
-                  stats={userStats}
-                  referrals={referrals}
-                  activeInvestments={activeInvestments}
-                  onOpenPlans={() => setActiveTab('home')}
-                  onOpenDeposit={() => setActiveModal('deposit')}
-                />
-              )}
-
-              {activeTab === 'earnings' && (
-                <EarningsScreen
-                  stats={userStats}
-                  activeInvestments={activeInvestments}
-                  onClaimDailyRoi={handleClaimDailyRoi}
-                  onOpenPlans={() => setActiveTab('home')}
-                />
-              )}
-
-              {activeTab === 'wallet' && (
-                <WalletScreen
-                  stats={userStats}
-                  transactions={transactions}
-                  onOpenDeposit={() => setActiveModal('deposit')}
-                  onOpenWithdraw={() => setActiveModal('withdraw')}
-                />
-              )}
-
-              {activeTab === 'profile' && (
-                <ProfileScreen
-                  stats={userStats}
-                  onOpenHistory={() => setActiveModal('history')}
-                  onOpenWithdraw={() => setActiveModal('withdraw')}
-                  onOpenDeposit={() => setActiveModal('deposit')}
-                  onOpenAdmin={() => setIsAdminRoute(true)}
-                  onLogout={handleLogout}
-                />
-              )}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <DesktopHeader
+              stats={userStats}
+              userStats={userStats}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onOpenDeposit={() => setActiveModal('deposit')}
+              onOpenWithdraw={() => setActiveModal('withdraw')}
+              onOpenHistory={() => setActiveModal('history')}
+              onOpenProfile={() => setActiveTab('profile')}
+              onOpenNotifications={() => setActiveModal('notifications')}
+              onOpenFullKyc={() => setActiveModal('full-kyc')}
+              onOpenAddCustomer={() => setActiveModal('add-customer')}
+              onOpenCustomerList={() => setActiveModal('customer-list')}
+              onOpenAdmin={() => setIsAdminRoute(true)}
+            />
+            <main className="flex-1 overflow-y-auto p-6 space-y-6">
+              {renderScreenContent(false)}
             </main>
           </div>
         </div>
       ) : (
-        /* =========================================================================
-            MOBILE LAYOUT (When isDesktop === false)
-            - Top Bar has MobileHeader directly at top (SJ avatar, NO VIP PRO text, Wallet, +Customer, History, Notification Bell)
-            - NO SIDEBAR
-            - Bottom Navigation Menu IS DISPLAYED (Home, Network, Earnings, Wallet, Profile)
-            ========================================================================= */
-        <div className="flex flex-col min-h-screen bg-[#faf6ee] text-[#46280b]">
-          {/* Top Mobile Header (Only shown on Home tab) */}
-          {activeTab === 'home' && (
-            <MobileHeader
-              stats={userStats}
-              onOpenDeposit={() => setActiveModal('deposit')}
-              onOpenHistory={() => setActiveModal('history')}
-              onOpenAddCustomer={() => setActiveModal('add-customer')}
-              onOpenProfile={() => setActiveTab('profile')}
-              onOpenNotifications={() => setActiveModal('notifications')}
-              onOpenAdmin={() => setIsAdminRoute(true)}
-            />
-          )}
-
-          {/* Main Mobile Scrollable Content (Reduced top gap) */}
-          <main className="flex-1 px-3 pt-1.5 pb-24 overflow-y-auto max-w-lg mx-auto w-full">
-            {activeTab === 'home' && (
-              <HomeScreen
-                stats={userStats}
-                plans={plans}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onJoinPlan={handleOpenPlanDetail}
-                onViewPlanDetails={handleOpenPlanDetail}
-                onOpenDeposit={() => setActiveModal('deposit')}
-                onOpenWithdraw={() => setActiveModal('withdraw')}
-                onClaimDailyRoi={handleClaimDailyRoi}
-                onOpenFullKyc={() => setActiveModal('full-kyc')}
-                activeInvestments={activeInvestments}
-                isMobileView={true}
-              />
-            )}
-
-            {activeTab === 'network' && (
-              <NetworkScreen
-                stats={userStats}
-                referrals={referrals}
-                activeInvestments={activeInvestments}
-                onOpenPlans={() => setActiveTab('home')}
-                onOpenDeposit={() => setActiveModal('deposit')}
-              />
-            )}
-
-            {activeTab === 'earnings' && (
-              <EarningsScreen
-                stats={userStats}
-                activeInvestments={activeInvestments}
-                onClaimDailyRoi={handleClaimDailyRoi}
-                onOpenPlans={() => setActiveTab('home')}
-              />
-            )}
-
-            {activeTab === 'wallet' && (
-              <WalletScreen
-                stats={userStats}
-                transactions={transactions}
-                onOpenDeposit={() => setActiveModal('deposit')}
-                onOpenWithdraw={() => setActiveModal('withdraw')}
-              />
-            )}
-
-            {activeTab === 'profile' && (
-              <ProfileScreen
-                stats={userStats}
-                onOpenHistory={() => setActiveModal('history')}
-                onOpenWithdraw={() => setActiveModal('withdraw')}
-                onOpenDeposit={() => setActiveModal('deposit')}
-                onOpenAdmin={() => setIsAdminRoute(true)}
-                onLogout={handleLogout}
-              />
-            )}
-          </main>
-
-          {/* Bottom Navigation Menu (Only shown in Mobile layout!) */}
-          <MobileBottomNav
+        /* Mobile Layout */
+        <div className="flex-1 flex flex-col max-w-md mx-auto w-full bg-[#121212] min-h-screen relative pb-20 overflow-x-hidden">
+          <MobileHeader
+            stats={userStats}
+            userStats={userStats}
             activeTab={activeTab}
-            onChangeTab={setActiveTab}
-            unclaimedEarnings={userStats.unclaimedRoi}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onOpenHistory={() => setActiveModal('history')}
+            onOpenAddCustomer={() => setActiveModal('add-customer')}
+            onOpenCustomerList={() => setActiveModal('customer-list')}
+            onOpenProfile={() => setActiveTab('profile')}
+            onOpenNotifications={() => setActiveModal('notifications')}
+            onOpenFullKyc={() => setActiveModal('full-kyc')}
+            onOpenAdmin={() => setIsAdminRoute(true)}
           />
+          <main className="flex-1 px-3.5 pt-3">
+            {renderScreenContent(true)}
+          </main>
+          <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} onChangeTab={setActiveTab} />
         </div>
       )}
 
-      {/* =========================================================================
-          SMOOTH RIGHT-TO-LEFT FULL SCREEN SLIDE MODALS
-          ========================================================================= */}
-      {/* 1. Add New Customer Modal (Triggered by + Customer button) */}
-      <SlideFullScreenModal
-        isOpen={activeModal === 'add-customer'}
-        onClose={() => setActiveModal('none')}
-        title="Add New Customer"
-        subtitle="Customer registration, KYC verification & bank details"
-        headerRight={
-          <button
-            type="button"
-            onClick={() => setActiveModal('customer-list')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-950 hover:bg-blue-900 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all border border-blue-800/40"
-            title="Total Registered Customers"
-          >
-            <Users className="w-3.5 h-3.5 text-blue-300" />
-            <span className="hidden xs:inline text-[11px]">Customers</span>
-            <span className="bg-blue-800/80 text-blue-100 px-1.5 py-0.2 rounded-md text-[10px] font-black">
-              {customers.length}
-            </span>
-          </button>
-        }
-      >
-        <AddCustomerContent
-          onSaveCustomer={handleSaveCustomer}
-          onViewCustomersList={() => setActiveModal('customer-list')}
-          totalCustomersCount={customers.length}
-          onClose={() => setActiveModal('none')}
-          onNavigateHome={() => {
-            setActiveModal('none');
-            setActiveTab('home');
-          }}
-        />
-      </SlideFullScreenModal>
-
-      {/* 2. Customer List Modal (Triggered by View Customers button) */}
-      <SlideFullScreenModal
-        isOpen={activeModal === 'customer-list'}
-        onClose={() => setActiveModal('none')}
-        title="Customer Directory"
-        subtitle={`Total registered customers: ${customers.length}`}
-      >
-        <CustomerListContent
-          customers={customers}
-          onOpenAddCustomer={() => setActiveModal('add-customer')}
-        />
-      </SlideFullScreenModal>
-
-      {/* 3. Plan Details / Confirm Invest */}
+      {/* Slide / Full Screen Modals */}
       <SlideFullScreenModal
         isOpen={activeModal === 'plan-detail'}
         onClose={() => setActiveModal('none')}
-        title={selectedPlanForDetail?.name || 'Investment Plan'}
-        subtitle="Verify customer mobile & enroll in yield plan"
+        title="Plan Details & Activate"
       >
-        <PlanDetailContent
-          plan={selectedPlanForDetail}
-          stats={userStats}
-          customers={customers}
-          onProceedToConfirm={handleProceedToConfirm}
-          onConfirmInvest={handleConfirmInvest}
-          onOpenDeposit={() => setActiveModal('deposit')}
-          onClose={() => setActiveModal('none')}
-        />
+        {selectedPlanForDetail && (
+          <PlanDetailContent
+            plan={selectedPlanForDetail}
+            stats={userStats}
+            userStats={userStats}
+            customers={customers}
+            onProceedToConfirm={(plan, customer) => handleProceedToConfirm(plan, customer)}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onOpenAddCustomer={() => setActiveModal('add-customer')}
+          />
+        )}
       </SlideFullScreenModal>
 
-      {/* 3b. Confirm Investment Screen (Smooth Right-to-Left Full Screen) */}
       <SlideFullScreenModal
         isOpen={activeModal === 'confirm-invest'}
-        onClose={() => setActiveModal('plan-detail')}
-        title="Confirm Investment"
-        subtitle="Review customer & plan details"
+        onClose={() => setActiveModal('none')}
+        title="Confirm Plan Activation"
       >
-        <ConfirmInvestContent
-          plan={selectedPlanForDetail}
-          customer={selectedCustomerForConfirm}
-          stats={userStats}
-          onConfirmInvest={(plan, customer) => {
-            handleConfirmInvest(plan, customer);
-            setActiveModal('none');
-          }}
-          onOpenDeposit={() => setActiveModal('deposit')}
-          onClose={() => setActiveModal('plan-detail')}
-        />
+        {selectedPlanForDetail && selectedCustomerForConfirm && (
+          <ConfirmInvestContent
+            plan={selectedPlanForDetail}
+            customer={selectedCustomerForConfirm}
+            stats={userStats}
+            userStats={userStats}
+            onConfirmInvest={(plan, cust) => {
+              handleConfirmInvest(plan, cust);
+              setActiveModal('none');
+            }}
+            onOpenDeposit={() => setActiveModal('deposit')}
+            onCancel={() => setActiveModal('plan-detail')}
+            onClose={() => setActiveModal('none')}
+          />
+        )}
       </SlideFullScreenModal>
 
-      {/* 4. Deposit Funds Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'deposit'}
         onClose={() => setActiveModal('none')}
         title="Recharge Wallet"
-        subtitle="Instant deposit via UPI 2.0 with 0% platform fee"
       >
         <DepositContent
           currentBalance={userStats.walletBalance}
           userStats={userStats}
-          onDepositSuccess={handleDepositSuccess}
+          onDepositSuccess={(amt, method) => {
+            handleDepositSuccess(amt, method);
+            setActiveModal('none');
+          }}
           onClose={() => setActiveModal('none')}
         />
       </SlideFullScreenModal>
 
-      {/* 5. Withdraw Funds Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'withdraw'}
         onClose={() => setActiveModal('none')}
-        title="Instant Withdrawal"
-        subtitle="Direct 24/7 bank and UPI payout without charges"
+        title="Withdraw Payout"
       >
         <WithdrawContent
-          currentBalance={userStats.walletBalance}
-          onWithdrawSuccess={handleWithdrawSuccess}
-          onClose={() => setActiveModal('none')}
+          userStats={userStats}
+          onWithdrawSuccess={(amt, target) => {
+            handleWithdrawSuccess(amt, target);
+            setActiveModal('none');
+          }}
         />
       </SlideFullScreenModal>
 
-      {/* 6. Transaction History Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'history'}
         onClose={() => setActiveModal('none')}
-        title="Transaction Records"
-        subtitle="Complete ledger of deposits, yields & payouts"
+        title="Transaction History"
       >
         <HistoryContent transactions={transactions} />
       </SlideFullScreenModal>
 
-      {/* 7. Finance & Tax Summary Audit Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'tax-summary'}
         onClose={() => setActiveModal('none')}
-        title="Finance Summary & Tax Audit"
-        subtitle="Official audit review & solvency verification"
+        title="Tax & Earnings Summary"
       >
-        <TaxSummaryContent />
+        <TaxSummaryContent userStats={userStats} activeInvestments={activeInvestments} />
       </SlideFullScreenModal>
 
-      {/* 8. Notification Bell Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'notifications'}
         onClose={() => setActiveModal('none')}
-        title="System Notifications"
-        subtitle="Real-time alerts, daily yields & announcements"
+        title="Notifications"
       >
         <NotificationsContent />
       </SlideFullScreenModal>
 
-      {/* 9. Full KYC Verification Modal */}
       <SlideFullScreenModal
         isOpen={activeModal === 'full-kyc'}
         onClose={() => setActiveModal('none')}
         title="Full KYC Verification"
-        subtitle="Government ID verification for unlimited instant payouts"
       >
         <FullKycContent
-          userName={userStats.userName}
-          onKycComplete={() => {
-            showToast('Full KYC verification active!');
+          userStats={userStats}
+          onKycSubmitted={() => {
+            showToast('KYC Documents submitted for verification!');
             setActiveModal('none');
           }}
-          onClose={() => setActiveModal('none')}
+        />
+      </SlideFullScreenModal>
+
+      <SlideFullScreenModal
+        isOpen={activeModal === 'add-customer'}
+        onClose={() => setActiveModal('none')}
+        title="Add Customer"
+      >
+        <AddCustomerContent
+          onCustomerAdded={(newCust) => {
+            handleSaveCustomer(newCust);
+            setActiveModal('none');
+          }}
+        />
+      </SlideFullScreenModal>
+
+      <SlideFullScreenModal
+        isOpen={activeModal === 'customer-list'}
+        onClose={() => setActiveModal('none')}
+        title="Customer Database"
+      >
+        <CustomerListContent
+          customers={customers}
+          onSelectCustomer={(cust) => {
+            setActiveModal('none');
+            showToast(`Selected ${cust.name}`);
+          }}
         />
       </SlideFullScreenModal>
     </div>

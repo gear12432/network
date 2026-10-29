@@ -4,15 +4,19 @@ import React from 'react';
 import Link from 'next/link';
 import { Search, Bell, Plus, ArrowUpRight, Crown, LayoutGrid, Smartphone, UserPlus, Users, Maximize2, Settings } from 'lucide-react';
 import { UserStats } from '@/types/investment';
+import { INITIAL_USER_STATS } from '@/data/initialData';
 
 interface DesktopHeaderProps {
-  stats: UserStats;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  onOpenDeposit: () => void;
-  onOpenWithdraw: () => void;
-  onOpenHistory: () => void;
-  onOpenProfile: () => void;
+  stats?: UserStats;
+  userStats?: UserStats;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  onOpenDeposit?: () => void;
+  onOpenWithdraw?: () => void;
+  onOpenHistory?: () => void;
+  onOpenProfile?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenFullKyc?: () => void;
   onOpenAddCustomer?: () => void;
   onOpenCustomerList?: () => void;
   onToggleMobileLayout?: () => void;
@@ -21,7 +25,8 @@ interface DesktopHeaderProps {
 
 export default function DesktopHeader({
   stats,
-  searchQuery,
+  userStats,
+  searchQuery = '',
   onSearchChange,
   onOpenDeposit: _onOpenDeposit,
   onOpenWithdraw,
@@ -32,14 +37,8 @@ export default function DesktopHeader({
   onToggleMobileLayout,
   onOpenAdmin,
 }: DesktopHeaderProps) {
-  const handleAdminClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onOpenAdmin) {
-      onOpenAdmin();
-    } else if (typeof window !== 'undefined') {
-      window.location.hash = 'admin';
-    }
-  };
+  const currentStats = stats || userStats || INITIAL_USER_STATS;
+
   return (
     <div className="sticky top-0 z-20 w-full bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] border-b border-[#dfbe7e] shadow-xs text-[#46280b]">
       {/* 1. Main Top Header Bar */}
@@ -62,13 +61,13 @@ export default function DesktopHeader({
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder="Start typing to search plan, amount, or ROI..."
               className="w-full pl-9 pr-4 py-2 bg-white/90 border border-[#dfbe7e] rounded-xl text-xs sm:text-sm text-[#46280b] placeholder-[#a68255] focus:outline-none focus:ring-2 focus:ring-[#d9a54c]/30 focus:border-[#d9a54c] transition-all"
             />
             {searchQuery && (
               <button
-                onClick={() => onSearchChange('')}
+                onClick={() => onSearchChange?.('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8a5b28] hover:text-[#46280b] font-bold"
               >
                 ✕
@@ -91,7 +90,7 @@ export default function DesktopHeader({
             </button>
           )}
 
-          {/* Buy Premium Gold Button (Matching Screenshot 1) */}
+          {/* Buy Premium Gold Button */}
           <button
             onClick={onOpenProfile}
             className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d9a54c] via-[#e5b766] to-[#caa050] hover:brightness-105 active:scale-95 text-[#2b1706] text-xs font-black shadow-xs border border-[#caa050] transition-all cursor-pointer"
@@ -105,7 +104,7 @@ export default function DesktopHeader({
           <div className="flex items-center gap-2 bg-[#fffcf5] border border-[#dfbe7e] rounded-xl px-3 py-1.5 shadow-2xs">
             <span className="text-[10px] font-bold text-[#8a5b28] uppercase tracking-wider">Balance:</span>
             <span className="text-xs sm:text-sm font-extrabold text-[#46280b] font-mono">
-              ₹{stats.walletBalance.toLocaleString('en-IN')}
+              ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
             </span>
           </div>
 
@@ -143,7 +142,7 @@ export default function DesktopHeader({
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#d9a54c]" />
           </button>
 
-          {/* User Avatar (Clean: NO name, NO VIP PRO Member text) */}
+          {/* User Avatar */}
           <div
             onClick={onOpenProfile}
             className="flex items-center pl-0.5 cursor-pointer hover:opacity-85 transition-opacity"
@@ -151,9 +150,9 @@ export default function DesktopHeader({
           >
             <div className="relative">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-[#ffe7b8] to-[#f4d188] border-2 border-[#d9a54c] flex items-center justify-center text-xs font-extrabold text-[#46280b] shadow-2xs">
-                {stats.userInitials}
+                {currentStats?.userInitials || 'GK'}
               </div>
-              {stats.isVip && (
+              {currentStats?.isVip && (
                 <div className="absolute -bottom-1 -right-1 bg-[#d9a54c] text-[#2b1706] p-0.5 rounded-full shadow-xs">
                   <Crown className="w-2.5 h-2.5 fill-[#2b1706]" />
                 </div>
@@ -192,14 +191,16 @@ export default function DesktopHeader({
           )}
 
           {/* Withdraw Button */}
-          <button
-            onClick={onOpenWithdraw}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d9a54c] to-[#be8832] hover:brightness-105 active:scale-95 text-[#2b1706] text-xs font-bold transition-all shadow-xs border border-[#caa050] cursor-pointer"
-            title="Withdraw Funds"
-          >
-            <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Withdraw</span>
-          </button>
+          {onOpenWithdraw && (
+            <button
+              onClick={onOpenWithdraw}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d9a54c] to-[#be8832] hover:brightness-105 active:scale-95 text-[#2b1706] text-xs font-bold transition-all shadow-xs border border-[#caa050] cursor-pointer"
+              title="Withdraw Funds"
+            >
+              <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Withdraw</span>
+            </button>
+          )}
         </div>
 
         {/* Right Info Badge */}

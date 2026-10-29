@@ -8,13 +8,15 @@ export type NavTab = 'home' | 'network' | 'earnings' | 'wallet' | 'profile';
 
 interface MobileBottomNavProps {
   activeTab: NavTab;
-  onChangeTab: (tab: NavTab) => void;
+  onChangeTab?: (tab: NavTab) => void;
+  onTabChange?: (tab: NavTab) => void;
   unclaimedEarnings?: number;
 }
 
 export default function MobileBottomNav({
   activeTab,
   onChangeTab,
+  onTabChange,
   unclaimedEarnings = 0,
 }: MobileBottomNavProps) {
   const tabs = [
@@ -46,6 +48,14 @@ export default function MobileBottomNav({
     },
   ];
 
+  const handleTabClick = (tabId: NavTab) => {
+    if (onChangeTab) {
+      onChangeTab(tabId);
+    } else if (onTabChange) {
+      onTabChange(tabId);
+    }
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#fdfbf6] via-[#f9f3e4] to-[#f6ebd5] border-t border-[#dfbe7e] shadow-lg px-2 py-1.5 max-w-md mx-auto sm:max-w-none">
       <div className="flex items-center justify-around">
@@ -56,8 +66,8 @@ export default function MobileBottomNav({
           return (
             <button
               key={tab.id}
-              onClick={() => onChangeTab(tab.id)}
-              className="relative flex flex-col items-center justify-center flex-1 py-1 transition-all group"
+              onClick={() => handleTabClick(tab.id)}
+              className="relative flex flex-col items-center justify-center flex-1 py-1 transition-all group cursor-pointer"
             >
               {/* Active Circular Glow / Backdrop */}
               <div className="relative flex items-center justify-center">

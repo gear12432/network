@@ -21,22 +21,27 @@ import {
 import { triggerConfetti } from '@/lib/confetti';
 
 interface ConfirmInvestContentProps {
-  plan: InvestmentPlan | null;
-  customer: Customer | null;
-  stats: UserStats;
-  onConfirmInvest: (plan: InvestmentPlan, customer: Customer) => void;
-  onOpenDeposit: () => void;
-  onClose: () => void;
+  plan?: InvestmentPlan | null;
+  customer?: Customer | null;
+  stats?: UserStats;
+  userStats?: UserStats;
+  onConfirmInvest?: (plan: InvestmentPlan, customer: Customer) => void;
+  onOpenDeposit?: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
 }
 
 export default function ConfirmInvestContent({
   plan,
   customer,
   stats,
+  userStats,
   onConfirmInvest,
   onOpenDeposit,
+  onCancel,
   onClose,
 }: ConfirmInvestContentProps) {
+  const currentStats = stats || userStats || { walletBalance: 0, userName: 'Member', userInitials: 'GK' } as any;
   const [isActivating, setIsActivating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 

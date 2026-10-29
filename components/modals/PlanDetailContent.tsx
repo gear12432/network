@@ -19,26 +19,30 @@ import {
 } from 'lucide-react';
 
 interface PlanDetailContentProps {
-  plan: InvestmentPlan | null;
-  stats: UserStats;
-  customers: Customer[];
-  onProceedToConfirm: (plan: InvestmentPlan, customer: Customer) => void;
-  onOpenDeposit: () => void;
+  plan?: InvestmentPlan | null;
+  stats?: UserStats;
+  userStats?: UserStats;
+  customers?: Customer[];
+  onProceedToConfirm?: (plan: InvestmentPlan, customer: Customer) => void;
+  onOpenDeposit?: () => void;
   onOpenAddCustomer?: () => void;
 }
 
 export default function PlanDetailContent({
   plan,
   stats,
-  customers,
+  userStats,
+  customers = [],
   onProceedToConfirm,
   onOpenDeposit,
   onOpenAddCustomer,
 }: PlanDetailContentProps) {
+  const currentStats = stats || userStats || { walletBalance: 0, userName: 'Member', userInitials: 'GK' } as any;
+
   // Mobile search state - pre-populate with first customer if available
-  const [searchMobile, setSearchMobile] = useState(() => (customers.length > 0 ? customers[0].mobile : ''));
+  const [searchMobile, setSearchMobile] = useState(() => (customers && customers.length > 0 ? customers[0].mobile : ''));
   const [isSearching, setIsSearching] = useState(false);
-  const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(() => (customers.length > 0 ? customers[0] : null));
+  const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(() => (customers && customers.length > 0 ? customers[0] : null));
   const [searchFailed, setSearchFailed] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -54,7 +58,7 @@ export default function PlanDetailContent({
 
   if (!plan) return null;
 
-  const isBalanceEnough = stats.walletBalance >= plan.amount;
+  const isBalanceEnough = (currentStats?.walletBalance ?? 0) >= plan.amount;
   const netProfit = (plan.amount * plan.roiPercentage) / 100;
   const totalMaturity = plan.amount + netProfit;
 

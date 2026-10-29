@@ -4,19 +4,25 @@ import React from 'react';
 import Link from 'next/link';
 import { Plus, History, Crown, Bell, UserPlus, Wallet } from 'lucide-react';
 import { UserStats } from '@/types/investment';
+import { INITIAL_USER_STATS } from '@/data/initialData';
 
 interface MobileHeaderProps {
-  stats: UserStats;
-  onOpenDeposit: () => void;
-  onOpenHistory: () => void;
-  onOpenAddCustomer: () => void;
-  onOpenProfile: () => void;
-  onOpenNotifications: () => void;
+  stats?: UserStats;
+  userStats?: UserStats;
+  activeTab?: string;
+  onOpenDeposit?: () => void;
+  onOpenHistory?: () => void;
+  onOpenAddCustomer?: () => void;
+  onOpenCustomerList?: () => void;
+  onOpenProfile?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenFullKyc?: () => void;
   onOpenAdmin?: () => void;
 }
 
 export default function MobileHeader({
   stats,
+  userStats,
   onOpenDeposit,
   onOpenHistory,
   onOpenAddCustomer,
@@ -24,14 +30,7 @@ export default function MobileHeader({
   onOpenNotifications,
   onOpenAdmin,
 }: MobileHeaderProps) {
-  const handleAdminClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onOpenAdmin) {
-      onOpenAdmin();
-    } else if (typeof window !== 'undefined') {
-      window.location.hash = 'admin';
-    }
-  };
+  const currentStats = stats || userStats || INITIAL_USER_STATS;
 
   return (
     <header className="sticky top-0 z-30 bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] border-b border-[#dfbe7e] px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-between shadow-2xs">
@@ -44,9 +43,9 @@ export default function MobileHeader({
         >
           <div className="relative">
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffecc3] via-[#fff4dc] to-[#fadca0] border-2 border-[#d4a852] flex items-center justify-center font-serif font-black text-[#55361e] text-xs shadow-xs">
-              {stats.userInitials}
+              {currentStats?.userInitials || 'GK'}
             </div>
-            {stats.isVip && (
+            {currentStats?.isVip && (
               <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#e5ab48] to-[#b3781e] text-amber-950 p-0.5 rounded-full shadow-xs border border-white">
                 <Crown className="w-2.5 h-2.5 fill-amber-950" />
               </div>
@@ -55,13 +54,13 @@ export default function MobileHeader({
         </div>
       </div>
 
-      {/* Right: Wallet pill (with enlarged Wallet icon), + Customer button, enlarged History, enlarged Notification Bell */}
+      {/* Right: Wallet pill, + Customer button, History, Notification Bell */}
       <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Wallet pill */}
         <div className="flex items-center bg-white/95 border border-[#dfbe7e] rounded-full px-2.5 py-1 text-[#55361e] shadow-2xs">
           <Wallet className="w-5 h-5 text-[#8a5b28] mr-1.5 shrink-0 stroke-[2.2]" />
           <span className="text-xs sm:text-sm font-black text-[#46280b] mr-1.5 font-mono">
-            ₹{stats.walletBalance.toLocaleString('en-IN')}
+            ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
           </span>
           <button
             onClick={onOpenDeposit}
@@ -83,7 +82,7 @@ export default function MobileHeader({
           <span className="xs:hidden text-[11px]">+ Cust</span>
         </button>
 
-        {/* History / Clock button - Enlarged size as marked in screenshot */}
+        {/* History / Clock button */}
         <button
           onClick={onOpenHistory}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
@@ -93,7 +92,7 @@ export default function MobileHeader({
           <History className="w-5.5 h-5.5 stroke-[2.4]" />
         </button>
 
-        {/* Notification Bell Icon - Enlarged size as marked in screenshot */}
+        {/* Notification Bell Icon */}
         <button
           onClick={onOpenNotifications}
           className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#5a3818] border border-[#e8d2a8] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
