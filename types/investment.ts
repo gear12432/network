@@ -23,6 +23,8 @@ export interface InvestmentPlan {
   dailyEarnings: number;
   totalReturn: number;
   iconType: 'lightning' | 'shield' | 'badge' | 'crown' | 'gem';
+  iconUrl?: string;
+  iconEmoji?: string;
   featured?: boolean;
   totalInvestors: number;
   description: string;

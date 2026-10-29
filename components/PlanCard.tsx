@@ -11,52 +11,129 @@ interface PlanCardProps {
   viewMode?: 'grid' | 'list';
 }
 
+function Plan3DIcon({ plan }: { plan: InvestmentPlan }) {
+  if (plan.iconUrl) {
+    return (
+      <img
+        src={plan.iconUrl}
+        alt={plan.name}
+        className="w-11 h-11 rounded-2xl object-cover shadow-md ring-2 ring-amber-400/80 group-hover:scale-105 transition-transform"
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+
+  const nameLower = (plan.name || '').toLowerCase();
+  const catLower = (plan.category || '').toLowerCase();
+
+  // Krantikari / क्रांतिकारी Plan
+  if (nameLower.includes('krantikari') || nameLower.includes('क्रांतिकारी') || catLower.includes('krantikari')) {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#991b1b] via-[#dc2626] to-[#f97316] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-amber-400/90 group-hover:scale-105 transition-transform relative overflow-hidden">
+        <span className="text-2xl filter drop-shadow-md">🚩</span>
+      </div>
+    );
+  }
+
+  // Starter
+  if (nameLower.includes('starter') || catLower === 'starter') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#78350f] via-[#b45309] to-[#f59e0b] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-amber-400/80 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">🚀</span>
+      </div>
+    );
+  }
+
+  // Basic
+  if (nameLower.includes('basic') || catLower === 'basic') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#1e3a8a] via-[#1d4ed8] to-[#06b6d4] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-cyan-400/80 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">⚡</span>
+      </div>
+    );
+  }
+
+  // Silver
+  if (nameLower.includes('silver') || catLower === 'silver') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#334155] via-[#64748b] to-[#cbd5e1] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-slate-200/90 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">🥈</span>
+      </div>
+    );
+  }
+
+  // Gold
+  if (nameLower.includes('gold') || catLower === 'gold') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#78350f] via-[#d97706] to-[#fef08a] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-amber-300/90 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">🥇</span>
+      </div>
+    );
+  }
+
+  // Platinum
+  if (nameLower.includes('platinum') || catLower === 'platinum') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#1e293b] via-[#475569] to-[#e2e8f0] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-sky-300/80 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">💠</span>
+      </div>
+    );
+  }
+
+  // Diamond
+  if (nameLower.includes('diamond') || catLower === 'diamond') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#0c4a6e] via-[#0284c7] to-[#7dd3fc] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-cyan-300/90 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">💎</span>
+      </div>
+    );
+  }
+
+  // Premium
+  if (nameLower.includes('premium') || catLower === 'premium') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#09090b] via-[#27272a] to-[#d97706] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-amber-400/90 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">👑</span>
+      </div>
+    );
+  }
+
+  // Growth
+  if (nameLower.includes('growth') || catLower === 'growth') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#064e3b] via-[#059669] to-[#34d399] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-emerald-400/80 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">📈</span>
+      </div>
+    );
+  }
+
+  // Long-Term
+  if (nameLower.includes('long-term') || nameLower.includes('longterm') || catLower === 'long-term') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#4c1d95] via-[#7e22ce] to-[#e879f9] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-fuchsia-400/80 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">♾️</span>
+      </div>
+    );
+  }
+
+  // Elite
+  if (nameLower.includes('elite') || catLower === 'elite') {
+    return (
+      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#020617] via-[#1e293b] to-[#facc15] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-yellow-400/90 group-hover:scale-105 transition-transform">
+        <span className="text-2xl filter drop-shadow-md">✨</span>
+      </div>
+    );
+  }
+
+  // Default fallback
+  return (
+    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#b45309] to-[#f59e0b] flex items-center justify-center text-white shrink-0 shadow-md ring-2 ring-amber-400/80 group-hover:scale-105 transition-transform">
+      <span className="text-2xl filter drop-shadow-md">⚡</span>
+    </div>
+  );
+}
+
 export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid' }: PlanCardProps) {
-  // Select icon and color scheme based on iconType
-  const getIconConfig = () => {
-    switch (plan.iconType) {
-      case 'lightning':
-        return {
-          icon: Zap,
-          bg: 'bg-amber-500',
-          lightBg: 'bg-amber-50',
-          text: 'text-amber-500',
-        };
-      case 'shield':
-        return {
-          icon: Shield,
-          bg: 'bg-blue-500',
-          lightBg: 'bg-blue-50',
-          text: 'text-blue-500',
-        };
-      case 'badge':
-        return {
-          icon: Award,
-          bg: 'bg-amber-400',
-          lightBg: 'bg-amber-50',
-          text: 'text-amber-600',
-        };
-      case 'crown':
-        return {
-          icon: Crown,
-          bg: 'bg-purple-600',
-          lightBg: 'bg-purple-50',
-          text: 'text-purple-600',
-        };
-      case 'gem':
-      default:
-        return {
-          icon: Gem,
-          bg: 'bg-emerald-500',
-          lightBg: 'bg-emerald-50',
-          text: 'text-emerald-600',
-        };
-    }
-  };
-
-  const config = getIconConfig();
-  const Icon = config.icon;
-
   // 1. Grid View (Modern, Professional Executive Investment Card)
   if (viewMode === 'grid') {
     return (
@@ -66,11 +143,7 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
       >
         {/* Top Header: Icon & Category Badges */}
         <div className="flex items-start justify-between gap-2">
-          <div
-            className={`w-11 h-11 rounded-2xl ${config.bg} flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform`}
-          >
-            <Icon className="w-5 h-5 fill-white/20 stroke-[2.2]" />
-          </div>
+          <Plan3DIcon plan={plan} />
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {plan.featured && (
@@ -147,11 +220,7 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
     >
       {/* Left Icon + Title + Meta */}
       <div className="flex items-center gap-3 min-w-0">
-        <div
-          className={`w-11 h-11 rounded-2xl ${config.bg} flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform`}
-        >
-          <Icon className="w-5 h-5 fill-white/20 stroke-[2.2]" />
-        </div>
+        <Plan3DIcon plan={plan} />
 
         <div className="truncate">
           <div className="flex items-center gap-1.5">
