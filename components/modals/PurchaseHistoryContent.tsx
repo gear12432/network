@@ -177,11 +177,11 @@ export default function PurchaseHistoryContent({
             <ShoppingBag className="w-6 h-6 stroke-[2]" />
           </div>
           <div>
-            <h4 className="font-extrabold text-slate-900 text-sm">कोई परचेज हिस्ट्री नहीं मिली (No Purchases Found)</h4>
+            <h4 className="font-extrabold text-slate-900 text-sm">No Plan History Found</h4>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
               {searchQuery
-                ? `"${searchQuery}" से मेल खाती कोई खरीदारी नहीं मिली।`
-                : 'अपने नए प्लान खरीदें और यहां अपनी पूरी परचेज हिस्ट्री देखें।'}
+                ? `No purchases found matching "${searchQuery}".`
+                : 'Subscribe to new investment plans to view your history here.'}
             </p>
           </div>
           {onOpenPlans && (

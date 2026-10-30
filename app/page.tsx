@@ -710,7 +710,7 @@ export default function InvestmentApp() {
       <SlideFullScreenModal
         isOpen={activeModal === 'purchase-history'}
         onClose={() => setActiveModal('none')}
-        title="Purchase History (परचेज हिस्ट्री)"
+        title="Plan History"
       >
         <PurchaseHistoryContent
           activeInvestments={activeInvestments}

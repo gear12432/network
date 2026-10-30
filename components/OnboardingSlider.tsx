@@ -80,26 +80,26 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0d131f] flex items-center justify-center p-0 sm:p-4 select-none font-sans overflow-hidden">
-      {/* Mobile-first Unified Screen Frame (Used for both Mobile & Centered Desktop view) */}
+    <div className="h-screen h-[100dvh] max-h-[100dvh] w-full bg-[#0d131f] flex items-center justify-center p-0 sm:p-4 select-none font-sans overflow-hidden">
+      {/* Mobile-first Unified Screen Frame */}
       <div
-        className="w-full max-w-md h-screen sm:h-[840px] bg-white sm:rounded-[36px] shadow-2xl flex flex-col justify-between overflow-hidden relative border border-slate-100"
+        className="w-full max-w-md h-full max-h-[100dvh] sm:h-[840px] bg-white sm:rounded-[36px] shadow-2xl flex flex-col justify-between overflow-hidden relative border border-slate-100"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {/* Background Decorative Light-Blue Vector Shapes */}
-        <div className="absolute top-0 left-0 right-0 h-96 overflow-hidden pointer-events-none z-0">
-          <svg className="absolute -top-12 -left-12 w-72 h-72 text-[#A7DFF0]/25" viewBox="0 0 200 200" fill="currentColor">
+        <div className="absolute top-0 left-0 right-0 h-72 overflow-hidden pointer-events-none z-0">
+          <svg className="absolute -top-12 -left-12 w-64 h-64 text-[#A7DFF0]/25" viewBox="0 0 200 200" fill="currentColor">
             <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.6,81.4,29.2,72.9,41.8C64.4,54.4,53,65,39.6,72.8C26.2,80.6,10.8,85.6,-4.8,88.3C-20.4,91,-36.2,91.4,-49.8,85C-63.4,78.6,-74.8,65.4,-82.1,50.3C-89.4,35.2,-92.6,18.2,-91.3,1.8C-90,-14.6,-84.2,-30.4,-74.8,-43.3C-65.4,-56.2,-52.4,-66.2,-38.3,-73.4C-24.2,-80.6,-9,-85,5.1,-87.9C19.2,-90.8,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
           </svg>
-          <svg className="absolute top-20 -right-16 w-80 h-80 text-[#119DB5]/10" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute top-12 -right-16 w-72 h-72 text-[#119DB5]/10" viewBox="0 0 200 200" fill="currentColor">
             <path d="M39.9,-65.7C51.2,-58.5,59.6,-47.5,65.8,-35.2C72,-22.9,76,-9.3,75.4,4.2C74.8,17.7,69.6,31.1,61.1,41.9C52.6,52.7,40.8,60.9,28,66.3C15.2,71.7,1.4,74.3,-12.3,73.1C-26,71.9,-39.6,66.9,-50.7,58.3C-61.8,49.7,-70.4,37.5,-75.1,23.8C-79.8,10.1,-80.6,-5.1,-76.1,-18.8C-71.6,-32.5,-61.8,-44.7,-50.1,-52.1C-38.4,-59.5,-24.8,-62,-11.2,-63.5C2.4,-65,28.6,-72.9,39.9,-65.7Z" transform="translate(100 100)" />
           </svg>
         </div>
 
         {/* Top Header Bar with Tag & Skip Button */}
-        <div className="relative z-10 px-6 pt-6 pb-2 flex justify-between items-center">
+        <div className="relative z-10 px-5 pt-4 pb-1 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-[#119DB5]" />
             <span className="text-xs font-bold tracking-widest uppercase text-[#172B4D]">
@@ -110,7 +110,7 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
           {currentSlide < slides.length - 1 ? (
             <button
               onClick={handleSkip}
-              className="text-[#758195] hover:text-[#172B4D] text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+              className="text-[#758195] hover:text-[#172B4D] text-xs font-semibold px-3 py-1 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
             >
               Skip
             </button>
@@ -120,7 +120,7 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
         </div>
 
         {/* Slide Content Area */}
-        <div className="relative z-10 flex-1 flex flex-col justify-between px-6 pt-2 pb-6">
+        <div className="relative z-10 flex-1 min-h-0 flex flex-col justify-between px-5 pt-1 pb-4 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -128,32 +128,32 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -60 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="flex-1 flex flex-col justify-between"
+              className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden"
             >
               {/* Illustration Container */}
-              <div className="w-full flex-1 min-h-[280px] sm:min-h-[340px] flex items-center justify-center relative my-2">
+              <div className="w-full flex-1 min-h-0 max-h-[220px] xs:max-h-[260px] sm:max-h-[320px] flex items-center justify-center relative my-auto">
                 {/* SLIDE 1: Explore */}
                 {currentSlide === 0 && (
-                  <div className="w-full h-full max-w-[320px] max-h-[320px] flex items-center justify-center relative">
-                    <div className="w-64 h-64 rounded-full bg-[#A7DFF0]/30 border-2 border-[#A7DFF0]/50 absolute flex items-center justify-center">
-                      <div className="w-48 h-48 rounded-full bg-[#119DB5]/10 animate-pulse" />
+                  <div className="w-full h-full max-w-[260px] max-h-[260px] flex items-center justify-center relative">
+                    <div className="w-52 h-52 rounded-full bg-[#A7DFF0]/30 border-2 border-[#A7DFF0]/50 absolute flex items-center justify-center">
+                      <div className="w-40 h-40 rounded-full bg-[#119DB5]/10 animate-pulse" />
                     </div>
 
                     <motion.div
-                      animate={{ y: [0, -8, 0] }}
+                      animate={{ y: [0, -6, 0] }}
                       transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                      className="absolute top-4 right-6 bg-white p-2.5 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2 z-20"
+                      className="absolute top-2 right-2 bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-1.5 z-20"
                     >
-                      <div className="p-2 bg-[#119DB5] text-white rounded-xl">
-                        <MapPin className="w-5 h-5" />
+                      <div className="p-1.5 bg-[#119DB5] text-white rounded-lg">
+                        <MapPin className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold text-[#758195]">Explore</p>
-                        <p className="text-xs font-bold text-[#172B4D]">New Places</p>
+                        <p className="text-[9px] font-semibold text-[#758195]">Explore</p>
+                        <p className="text-[11px] font-bold text-[#172B4D]">New Places</p>
                       </div>
                     </motion.div>
 
-                    <svg className="w-60 h-60 relative z-10 drop-shadow-xl" viewBox="0 0 200 200" fill="none">
+                    <svg className="w-48 h-48 sm:w-56 sm:h-56 relative z-10 drop-shadow-xl" viewBox="0 0 200 200" fill="none">
                       <ellipse cx="100" cy="180" rx="60" ry="8" fill="#172B4D" opacity="0.12" />
                       <g>
                         <rect x="42" y="110" width="34" height="48" rx="6" fill="#119DB5" />
@@ -178,29 +178,29 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
 
                 {/* SLIDE 2: Discover */}
                 {currentSlide === 1 && (
-                  <div className="w-full h-full max-w-[320px] max-h-[320px] flex items-center justify-center relative">
-                    <div className="w-60 h-60 rounded-full bg-[#A7DFF0]/25 absolute flex items-center justify-center">
-                      <div className="w-40 h-40 rounded-full bg-white/80 shadow-inner" />
+                  <div className="w-full h-full max-w-[260px] max-h-[260px] flex items-center justify-center relative">
+                    <div className="w-52 h-52 rounded-full bg-[#A7DFF0]/25 absolute flex items-center justify-center">
+                      <div className="w-36 h-36 rounded-full bg-white/80 shadow-inner" />
                     </div>
 
                     <motion.div
-                      animate={{ y: [0, -10, 0] }}
+                      animate={{ y: [0, -6, 0] }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                      className="absolute top-2 left-4 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-2.5 z-20"
+                      className="absolute top-2 left-2 bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-2 z-20"
                     >
-                      <div className="p-2 bg-[#119DB5] text-white rounded-xl">
-                        <MessageSquare className="w-5 h-5" />
+                      <div className="p-1.5 bg-[#119DB5] text-white rounded-lg">
+                        <MessageSquare className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="flex items-center gap-1">
-                          <p className="text-xs font-bold text-[#172B4D]">Instant Easy</p>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#119DB5]" />
+                          <p className="text-[11px] font-bold text-[#172B4D]">Instant Easy</p>
+                          <CheckCircle2 className="w-3 h-3 text-[#119DB5]" />
                         </div>
-                        <p className="text-[10px] text-[#758195]">Connected Everywhere</p>
+                        <p className="text-[9px] text-[#758195]">Connected Everywhere</p>
                       </div>
                     </motion.div>
 
-                    <svg className="w-60 h-60 relative z-10 drop-shadow-xl" viewBox="0 0 200 200" fill="none">
+                    <svg className="w-48 h-48 sm:w-56 sm:h-56 relative z-10 drop-shadow-xl" viewBox="0 0 200 200" fill="none">
                       <ellipse cx="100" cy="178" rx="50" ry="7" fill="#172B4D" opacity="0.12" />
                       <path d="M92 135 L88 175" stroke="#172B4D" strokeWidth="10" strokeLinecap="round" />
                       <path d="M108 135 L112 175" stroke="#172B4D" strokeWidth="10" strokeLinecap="round" />
@@ -224,26 +224,26 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
 
                 {/* SLIDE 3: Get Started */}
                 {currentSlide === 2 && (
-                  <div className="w-full h-full max-w-[320px] max-h-[320px] flex items-center justify-center relative">
-                    <div className="w-64 h-64 rounded-full bg-[#119DB5]/10 animate-ping opacity-20 absolute" />
-                    <div className="w-56 h-56 rounded-full bg-[#A7DFF0]/30 border border-[#119DB5]/30 absolute" />
+                  <div className="w-full h-full max-w-[260px] max-h-[260px] flex items-center justify-center relative">
+                    <div className="w-52 h-52 rounded-full bg-[#119DB5]/10 animate-ping opacity-20 absolute" />
+                    <div className="w-48 h-48 rounded-full bg-[#A7DFF0]/30 border border-[#119DB5]/30 absolute" />
 
                     <motion.div
-                      animate={{ y: [0, -8, 0] }}
+                      animate={{ y: [0, -6, 0] }}
                       transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                      className="absolute top-2 right-4 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-2.5 z-20"
+                      className="absolute top-2 right-2 bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-2 z-20"
                     >
-                      <div className="p-2 bg-[#172B4D] text-[#A7DFF0] rounded-xl relative">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#119DB5] rounded-full border-2 border-white" />
+                      <div className="p-1.5 bg-[#172B4D] text-[#A7DFF0] rounded-lg relative">
+                        <Bell className="w-4 h-4" />
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#119DB5] rounded-full border-2 border-white" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-[#172B4D]">Ready to Start!</p>
-                        <p className="text-[10px] text-[#758195]">Account Configured</p>
+                        <p className="text-[11px] font-bold text-[#172B4D]">Ready to Start!</p>
+                        <p className="text-[9px] text-[#758195]">Account Configured</p>
                       </div>
                     </motion.div>
 
-                    <svg className="w-64 h-64 relative z-10 drop-shadow-2xl" viewBox="0 0 200 200" fill="none">
+                    <svg className="w-48 h-48 sm:w-56 sm:h-56 relative z-10 drop-shadow-xl" viewBox="0 0 200 200" fill="none">
                       <ellipse cx="100" cy="182" rx="65" ry="8" fill="#172B4D" opacity="0.14" />
                       <g>
                         <rect x="130" y="112" width="36" height="52" rx="7" fill="#172B4D" />
@@ -268,11 +268,11 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               </div>
 
               {/* Text Area */}
-              <div className="text-center px-2 mt-2">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#172B4D] tracking-tight mb-2.5">
+              <div className="text-center px-2 my-auto shrink-0">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#172B4D] tracking-tight mb-1">
                   {slides[currentSlide].title}
                 </h2>
-                <p className="text-sm sm:text-base font-medium text-[#758195] leading-relaxed max-w-xs mx-auto">
+                <p className="text-xs sm:text-sm font-medium text-[#758195] leading-snug max-w-xs mx-auto">
                   {slides[currentSlide].description}
                 </p>
               </div>
@@ -280,14 +280,14 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
           </AnimatePresence>
 
           {/* Bottom Controls */}
-          <div className="w-full mt-6 pt-2 flex flex-col items-center gap-6">
-            <div className="flex items-center justify-center gap-2">
+          <div className="w-full shrink-0 pt-2 flex flex-col items-center gap-3">
+            <div className="flex items-center justify-center gap-1.5">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    currentSlide === idx ? 'w-8 bg-[#119DB5]' : 'w-2.5 bg-[#A7DFF0] hover:bg-[#119DB5]/50'
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentSlide === idx ? 'w-7 bg-[#119DB5]' : 'w-2 bg-[#A7DFF0] hover:bg-[#119DB5]/50'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -296,16 +296,16 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
 
             <div className="w-full">
               {currentSlide < slides.length - 1 ? (
-                <div className="flex items-center justify-between gap-4 w-full">
+                <div className="flex items-center justify-between gap-3 w-full">
                   <button
                     onClick={handleSkip}
-                    className="w-1/3 py-3.5 px-4 rounded-2xl text-slate-600 font-bold text-sm bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                    className="w-1/3 py-3 px-3 rounded-xl text-slate-600 font-bold text-xs bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                   >
                     Skip
                   </button>
                   <button
                     onClick={handleNext}
-                    className="w-2/3 py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-sm shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className="w-2/3 py-3 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />
@@ -314,10 +314,10 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               ) : (
                 <button
                   onClick={handleNext}
-                  className="w-full py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-base shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 transition-all transform cursor-pointer"
+                  className="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all transform cursor-pointer"
                 >
                   <span>Get Started</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>

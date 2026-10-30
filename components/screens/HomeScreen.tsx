@@ -395,16 +395,15 @@ export default function HomeScreen({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Purchase History Button on Left of Grid/List icons */}
+            {/* Plan History Button on Left of Grid/List icons */}
             {onOpenPurchaseHistory && (
               <button
                 onClick={onOpenPurchaseHistory}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-[11px] sm:text-xs shadow-xs transition-all cursor-pointer shrink-0"
-                title="Purchase History"
+                title="Plan History"
               >
                 <ShoppingBag className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-                <span className="hidden xs:inline">परचेज हिस्ट्री (Purchase History)</span>
-                <span className="xs:hidden">परचेज हिस्ट्री</span>
+                <span>Plan History</span>
               </button>
             )}
 
