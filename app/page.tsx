@@ -492,7 +492,7 @@ export default function InvestmentApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[#111111] text-slate-100 flex flex-col font-sans select-none antialiased">
+    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans select-none antialiased">
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1e2330] text-amber-400 text-xs sm:text-sm font-bold py-2.5 px-5 rounded-full border border-amber-500/40 shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
@@ -503,7 +503,7 @@ export default function InvestmentApp() {
 
       {isDesktop ? (
         /* Desktop Layout */
-        <div className="flex h-screen overflow-hidden bg-[#0d0f14]">
+        <div className="flex h-screen overflow-hidden bg-slate-100">
           <DesktopSidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -530,14 +530,14 @@ export default function InvestmentApp() {
               onOpenCustomerList={() => setActiveModal('customer-list')}
               onOpenAdmin={() => setIsAdminRoute(true)}
             />
-            <main className="flex-1 overflow-y-auto p-6 space-y-6">
+            <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
               {renderScreenContent(false)}
             </main>
           </div>
         </div>
       ) : (
-        /* Mobile Layout */
-        <div className="flex-1 flex flex-col max-w-md mx-auto w-full bg-[#121212] min-h-screen relative pb-20 overflow-x-hidden">
+        /* Mobile Layout - Clean White Background */
+        <div className="flex-1 flex flex-col max-w-md mx-auto w-full bg-[#fcfbfa] min-h-screen relative pb-20 overflow-x-hidden shadow-2xl">
           <MobileHeader
             stats={userStats}
             userStats={userStats}

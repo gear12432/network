@@ -629,12 +629,12 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 </span>
               </div>
 
-              {/* Action Button: #D0872E */}
+              {/* Action Button: Vibrant Blue */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="w-full py-3.5 px-5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-[#d0872e]/25 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-blue-500/25 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   {loginLoading ? (
                     <>

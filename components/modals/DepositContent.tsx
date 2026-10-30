@@ -300,11 +300,11 @@ export default function DepositContent({
             disabled={amountToDeposit < 100}
             className={`w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
               amountToDeposit >= 100
-                ? 'bg-[#D0872E] hover:bg-[#b87324] text-white shadow-[#d0872e]/30'
-                : 'bg-[#cfbc9e] text-[#7a5328] cursor-not-allowed'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Zap className="w-4 h-4 text-[#ffd485]" />
+            <Zap className="w-4 h-4 text-blue-200" />
             <span>Pay ₹{amountToDeposit.toLocaleString('en-IN')} Instantly</span>
           </button>
         </div>
@@ -315,26 +315,26 @@ export default function DepositContent({
           <div className="flex items-center justify-between">
             <button
               onClick={() => setStep('amount')}
-              className="flex items-center gap-1 text-xs font-bold text-[#8a5b28] hover:text-[#55361e] bg-[#fbf5e7] border border-[#dfbe7e] px-2.5 py-1 rounded-lg cursor-pointer"
+              className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-blue-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>राशि बदलें (Change Amount)</span>
             </button>
-            <span className="text-xs font-bold text-[#8a5b28]">Step 2 of 2</span>
+            <span className="text-xs font-bold text-slate-500">Step 2 of 2</span>
           </div>
 
           {/* Payable Amount Display Card */}
-          <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-2xl p-4 text-center shadow-xs space-y-2">
-            <span className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
+          <div className="bg-gradient-to-b from-white to-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center shadow-xs space-y-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Payable Amount (भुगतान राशि)
             </span>
-            <div className="text-3xl font-black text-[#8a5b28] font-mono">
+            <div className="text-3xl font-black text-blue-700 font-mono">
               ₹{amountToDeposit.toLocaleString('en-IN')}
             </div>
 
             {/* QR Code */}
             <div className="pt-2 flex flex-col items-center justify-center">
-              <div className="p-2.5 bg-white rounded-2xl border-2 border-[#dfbe7e] shadow-md inline-block relative">
+              <div className="p-2.5 bg-white rounded-2xl border-2 border-slate-200 shadow-md inline-block relative">
                 <img
                   src={
                     gatewaySettings.qrCodeUrl ||
@@ -357,27 +357,27 @@ export default function DepositContent({
               </div>
 
               {/* UPI ID Copy Bar */}
-              <div className="mt-3 flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-[#dfbe7e]">
-                <span className="text-xs font-mono font-bold text-[#46280b]">{upiId}</span>
+              <div className="mt-3 flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+                <span className="text-xs font-mono font-bold text-slate-900">{upiId}</span>
                 <button
                   onClick={handleCopyUpi}
-                  className="text-[11px] font-bold text-[#D0872E] hover:text-[#b87324] flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
                   <Copy className="w-3 h-3" />
                   <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
                 </button>
               </div>
-              <p className="text-[11px] text-[#8a5b28] mt-1 font-medium">
+              <p className="text-[11px] text-slate-500 mt-1 font-medium">
                 Scan using PhonePe, GPay, Paytm or any UPI App
               </p>
             </div>
           </div>
 
           {/* UTR Number Input & Choice File Upload Container */}
-          <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3.5">
+          <div className="bg-gradient-to-b from-white to-slate-50 rounded-2xl p-4 border-2 border-slate-200 shadow-2xs space-y-3.5">
             {/* UTR Input */}
             <div>
-              <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">
                 UTR Number / Txn Ref ID (उतर नंबर)*
               </label>
               <div className="relative">
@@ -386,15 +386,15 @@ export default function DepositContent({
                   value={utrNumber}
                   onChange={(e) => setUtrNumber(e.target.value)}
                   placeholder="Enter 12-digit UTR No. (उदा: 429381029384)"
-                  className="w-full pl-9 pr-3 py-2.5 bg-white border-2 border-[#dfbe7e] rounded-xl text-xs font-mono font-bold text-[#46280b] focus:outline-none focus:border-[#D0872E]"
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
-                <Hash className="w-4 h-4 text-[#8a5b28] absolute left-3 top-3" />
+                <Hash className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
             </div>
 
             {/* Choice File Button */}
             <div>
-              <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">
                 Payment Screenshot (चॉइस फाइल)*
               </label>
               <input
@@ -409,30 +409,30 @@ export default function DepositContent({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-[#D0872E] hover:bg-[#b87324] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>चॉइस फाइल (Choice File)</span>
                 </button>
 
-                <span className="text-xs font-medium text-[#7a5328] truncate">
+                <span className="text-xs font-medium text-slate-600 truncate">
                   {selectedFile ? selectedFile.name : 'कोई फ़ाइल चुनी नहीं गई'}
                 </span>
               </div>
 
               {/* Image Preview if selected */}
               {imagePreview && (
-                <div className="mt-2.5 p-2 bg-white rounded-xl border border-[#dfbe7e] flex items-center gap-3">
+                <div className="mt-2.5 p-2 bg-white rounded-xl border border-slate-200 flex items-center gap-3">
                   <img
                     src={imagePreview}
                     alt="Payment Screenshot Preview"
                     className="w-12 h-12 object-cover rounded-lg border"
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-[#46280b] truncate block">
+                    <span className="text-xs font-bold text-slate-900 truncate block">
                       {selectedFile?.name || 'Screenshot Attached'}
                     </span>
-                    <span className="text-[10px] text-emerald-700 font-bold">Image Attached ✓</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">Image Attached ✓</span>
                   </div>
                   <button
                     onClick={() => {
@@ -459,7 +459,7 @@ export default function DepositContent({
           {/* Submit Button */}
           <div>
             {submitSuccess ? (
-              <div className="w-full py-4 bg-[#22c55e] text-white font-black rounded-xl flex items-center justify-center gap-2 shadow-md">
+              <div className="w-full py-4 bg-emerald-600 text-white font-black rounded-xl flex items-center justify-center gap-2 shadow-md">
                 <CheckCircle2 className="w-5 h-5" />
                 <span>सबमिट हो गया! स्थिति: पेंडिंग (Pending)</span>
               </div>
@@ -467,13 +467,13 @@ export default function DepositContent({
               <button
                 onClick={handleSubmitPayment}
                 disabled={isSubmitting}
-                className="w-full py-4 bg-[#D0872E] hover:bg-[#b87324] active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>सबमिट हो रहा है...</span>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4 text-[#ffd485]" />
+                    <Zap className="w-4 h-4 text-blue-200" />
                     <span>Submit Payment (सबमिट करें)</span>
                   </>
                 )}

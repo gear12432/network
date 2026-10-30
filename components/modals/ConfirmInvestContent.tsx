@@ -294,16 +294,16 @@ export default function ConfirmInvestContent({
         ) : isBalanceEnough ? (
           <button
             onClick={handleConfirm}
-            className="w-full py-4 rounded-xl font-black text-sm bg-[#D0872E] hover:bg-[#b87324] active:scale-98 text-white flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#d0872e]/30 cursor-pointer"
+            className="w-full py-4 rounded-xl font-black text-sm bg-blue-600 hover:bg-blue-700 active:scale-98 text-white flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/30 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-[#fed788]" />
+            <Sparkles className="w-4 h-4 text-blue-200" />
             <span>Confirm Invest (₹{plan.amount.toLocaleString('en-IN')})</span>
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         ) : (
           <button
             onClick={onOpenDeposit}
-            className="w-full py-4 rounded-xl font-black text-sm bg-[#894B0A] hover:bg-[#723e07] active:scale-98 text-white flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#894b0a]/30 cursor-pointer"
+            className="w-full py-4 rounded-xl font-black text-sm bg-blue-800 hover:bg-blue-900 active:scale-98 text-white flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-800/30 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>

@@ -15,7 +15,7 @@ import {
   Building2,
   Sparkles,
   X,
-  Search,
+  UserPlus,
 } from 'lucide-react';
 
 interface PlanDetailContentProps {
@@ -37,12 +37,12 @@ export default function PlanDetailContent({
   onOpenDeposit,
   onOpenAddCustomer,
 }: PlanDetailContentProps) {
-  const currentStats = stats || userStats || { walletBalance: 0, userName: 'Member', userInitials: 'GK' } as any;
+  const currentStats = stats || userStats || ({ walletBalance: 0, userName: 'Member', userInitials: 'GK' } as any);
 
-  // Mobile search state - pre-populate with first customer if available
-  const [searchMobile, setSearchMobile] = useState(() => (customers && customers.length > 0 ? customers[0].mobile : ''));
+  // Mobile search state - STARTS CLEAR/EMPTY as requested by user
+  const [searchMobile, setSearchMobile] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(() => (customers && customers.length > 0 ? customers[0] : null));
+  const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(null);
   const [searchFailed, setSearchFailed] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -62,7 +62,7 @@ export default function PlanDetailContent({
   const netProfit = (plan.amount * plan.roiPercentage) / 100;
   const totalMaturity = plan.amount + netProfit;
 
-  // Search logic triggered on mobile input change
+  // Search logic triggered on 10-digit mobile input
   const triggerCustomerSearch = (mobileDigits: string) => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -88,7 +88,7 @@ export default function PlanDetailContent({
           setMatchedCustomer(null);
           setSearchFailed(true);
         }
-      }, 450);
+      }, 350);
     } else {
       setIsSearching(false);
       setMatchedCustomer(null);
@@ -114,27 +114,23 @@ export default function PlanDetailContent({
     setValidationError(null);
   };
 
-  const handleQuickSelect = (mobile: string) => {
-    const digitsOnly = mobile.replace(/\D/g, '').slice(0, 10);
-    setSearchMobile(digitsOnly);
-    triggerCustomerSearch(digitsOnly);
-  };
-
   const handleJoinClick = () => {
     if (!isBalanceEnough) {
       setValidationError(
-        `Insufficient balance. Please add ₹${(plan.amount - stats.walletBalance).toLocaleString('en-IN')} to your wallet.`
+        `Insufficient balance. Please add ₹${(plan.amount - (currentStats?.walletBalance ?? 0)).toLocaleString('en-IN')} to your wallet.`
       );
       return;
     }
 
     if (!matchedCustomer) {
-      setValidationError('Please enter a valid 10-digit customer mobile number before proceeding.');
+      setValidationError('Please enter a valid 10-digit customer mobile number to view customer data and proceed.');
       return;
     }
 
     setValidationError(null);
-    onProceedToConfirm(plan, matchedCustomer);
+    if (onProceedToConfirm) {
+      onProceedToConfirm(plan, matchedCustomer);
+    }
   };
 
   return (
@@ -150,7 +146,7 @@ export default function PlanDetailContent({
               <Phone className="w-4 h-4" />
             </div>
 
-            {/* Optional Prefix */}
+            {/* Prefix */}
             <span className="absolute left-10 text-xs sm:text-sm font-mono text-[#b87324] font-bold pointer-events-none">
               +91
             </span>
@@ -160,7 +156,7 @@ export default function PlanDetailContent({
               Customer 10-Digit Mobile Number
             </label>
 
-            {/* Native Input */}
+            {/* Native Input - STARTS CLEAR/EMPTY */}
             <input
               type="tel"
               inputMode="numeric"
@@ -169,7 +165,8 @@ export default function PlanDetailContent({
               value={searchMobile}
               onChange={handleMobileInputChange}
               className="w-full bg-transparent text-[#46280b] font-mono font-bold text-sm sm:text-base focus:outline-none pl-18 pr-28 py-2.5 placeholder:text-[#a08a6b]"
-              placeholder="Enter mobile..."
+              placeholder="Enter 10-digit mobile..."
+              autoFocus
             />
 
             {/* Right Action Elements */}
@@ -185,7 +182,7 @@ export default function PlanDetailContent({
                 </button>
               )}
 
-              {/* 1. Circular Spinning Progress Loader */}
+              {/* Spinning Progress Loader */}
               {isSearching && (
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#faecd4] text-[#8a5416] border border-[#dfbe7e] shadow-2xs">
                   <Loader2 className="w-3.5 h-3.5 text-[#b87324] animate-spin" />
@@ -193,7 +190,7 @@ export default function PlanDetailContent({
                 </div>
               )}
 
-              {/* 2. Green Tick Mark when Matched */}
+              {/* Green Tick Mark when Matched */}
               {!isSearching && matchedCustomer && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#22c55e] text-white shadow-2xs">
                   <CheckCircle2 className="w-3.5 h-3.5 text-white stroke-[2.5]" />
@@ -201,7 +198,7 @@ export default function PlanDetailContent({
                 </div>
               )}
 
-              {/* 3. Not Found Indicator */}
+              {/* Not Found Indicator */}
               {!isSearching && searchFailed && searchMobile.length === 10 && (
                 <span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 px-2 py-0.5 rounded-md">
                   Not Found
@@ -210,31 +207,11 @@ export default function PlanDetailContent({
             </div>
           </div>
         </div>
-
-        {/* Quick Test Chips */}
-        {!matchedCustomer && customers.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap text-xs pt-0.5 transition-all">
-            <span className="text-[11px] font-medium text-[#7a5328]">Quick select:</span>
-            {customers.slice(0, 3).map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => handleQuickSelect(c.mobile)}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition-all border cursor-pointer ${
-                  searchMobile === c.mobile
-                    ? 'bg-[#d0872e] text-white border-[#d0872e] font-bold shadow-xs'
-                    : 'bg-[#fff8ea] text-[#6d3e16] border-[#dfbe7e] hover:bg-[#faecd4]'
-                }`}
-              >
-                {c.mobile} ({c.name.split(' ')[0]})
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* =========================================================================
           MATCHED CUSTOMER DETAILS CARD (PHOTO, NAME, MOBILE, ACCOUNT NUMBER)
+          Shown automatically when 10-digit mobile matches a customer
           ========================================================================= */}
       {matchedCustomer ? (
         <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-2xl p-4 shadow-2xs space-y-3">
@@ -322,28 +299,27 @@ export default function PlanDetailContent({
           </div>
         </div>
       ) : searchFailed && searchMobile.length === 10 ? (
-        <div className="bg-rose-50 border border-rose-300 rounded-2xl p-3.5 text-xs text-rose-800 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <div>
-            <div className="font-bold">No Registered Customer (+91 {searchMobile})</div>
-            <div className="text-rose-700/90 mt-0.5 leading-relaxed">
-              No registered customer was found with this 10-digit mobile number. Please double check the number or register this customer first from the Add Customer screen.
-            </div>
+        <div className="bg-rose-50 border border-rose-300 rounded-2xl p-4 text-xs text-rose-800 space-y-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span className="font-bold text-sm">No Registered Customer (+91 {searchMobile})</span>
           </div>
+          <p className="text-rose-700/90 leading-relaxed">
+            No customer was found with this 10-digit mobile number. You can register this customer first.
+          </p>
+          {onOpenAddCustomer && (
+            <button
+              onClick={onOpenAddCustomer}
+              className="mt-1 flex items-center gap-1.5 px-3 py-1.5 bg-[#4e2e0f] text-[#ffebbe] rounded-xl font-bold text-xs hover:bg-[#3b220a] transition-all cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ Add New Customer</span>
+            </button>
+          )}
         </div>
-      ) : (
-        <div className="bg-[#fff8ea] border-2 border-[#dfbe7e] rounded-2xl p-3.5 text-xs text-[#55361e] flex items-start gap-2.5">
-          <Phone className="w-4 h-4 text-[#8a5416] shrink-0 mt-0.5" />
-          <div>
-            <div className="font-bold text-[#46280b]">Customer Enrollment Search</div>
-            <div className="text-[#7a5328] mt-0.5 leading-relaxed">
-              Enter any 10-digit mobile number above. The system will search in real time and display the verified profile picture, name, mobile, and bank account details.
-            </div>
-          </div>
-        </div>
-      )}
+      ) : null}
 
-      {/* Selected Plan Snapshot Bar - Deep Bronze Hero Style matching Home Screen */}
+      {/* Selected Plan Snapshot Bar */}
       <div className="bg-gradient-to-r from-[#2c180a] via-[#4a280e] to-[#6d3e16] text-white rounded-2xl p-3.5 flex items-center justify-between border-2 border-[#dfbe7e] shadow-sm">
         <div>
           <span className="text-[10px] font-bold text-[#fed788] uppercase tracking-wider block">
@@ -361,7 +337,7 @@ export default function PlanDetailContent({
         </div>
       </div>
 
-      {/* Yield Breakdown Calculator - Palace Gold Card matching Home Screen */}
+      {/* Yield Breakdown Calculator */}
       <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3">
         <h4 className="font-bold text-[#46280b] text-sm flex items-center gap-1.5 font-serif">
           <Coins className="w-4 h-4 text-[#8a5416]" />
@@ -409,12 +385,12 @@ export default function PlanDetailContent({
           <div>
             <span className="text-xs text-[#7a5328] block">Your Wallet Balance</span>
             <span className="text-sm font-black text-[#46280b] font-mono">
-              ₹{stats.walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           </div>
         </div>
 
-        {!isBalanceEnough && (
+        {!isBalanceEnough && onOpenDeposit && (
           <button
             onClick={onOpenDeposit}
             className="flex items-center gap-1 text-xs font-bold bg-[#D0872E] hover:bg-[#b87324] text-white px-3 py-1.5 rounded-lg transition-all shadow-xs cursor-pointer"
@@ -433,23 +409,23 @@ export default function PlanDetailContent({
         </div>
       )}
 
-      {/* Confirm & Join Button CTA -> #D0872E */}
+      {/* Confirm & Join Button CTA -> Vibrant Blue */}
       <div className="pt-1">
         <button
           onClick={handleJoinClick}
           className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
             isBalanceEnough
-              ? 'bg-[#D0872E] hover:bg-[#b87324] text-white shadow-[#d0872e]/30'
-              : 'bg-[#894B0A] hover:bg-[#723e07] text-white shadow-[#894b0a]/30'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
+              : 'bg-blue-800 hover:bg-blue-900 text-white shadow-blue-800/30'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-[#fed788]" />
+          <Sparkles className="w-4 h-4 text-blue-200" />
           <span>
             {isBalanceEnough
               ? matchedCustomer
                 ? `Confirm & Join for ${matchedCustomer.name.split(' ')[0]} (₹${plan.amount.toLocaleString('en-IN')})`
                 : `Confirm & Join Plan (₹${plan.amount.toLocaleString('en-IN')})`
-              : `Insufficient Balance (Add ₹${(plan.amount - stats.walletBalance).toLocaleString('en-IN')})`}
+              : `Insufficient Balance (Add ₹${(plan.amount - (currentStats?.walletBalance ?? 0)).toLocaleString('en-IN')})`}
           </span>
           <ArrowRight className="w-4 h-4 stroke-[2.5]" />
         </button>

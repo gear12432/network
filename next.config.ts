@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  trailingSlash: true,
+  trailingSlash: isExport ? true : undefined,
   basePath: basePath || undefined,
   assetPrefix: basePath ? `${basePath}/` : undefined,
   output: isExport ? 'export' : 'standalone',

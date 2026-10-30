@@ -299,13 +299,13 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
                 <div className="flex items-center justify-between gap-4 w-full">
                   <button
                     onClick={handleSkip}
-                    className="w-1/3 py-3.5 px-4 rounded-2xl text-[#758195] font-bold text-sm bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                    className="w-1/3 py-3.5 px-4 rounded-2xl text-slate-600 font-bold text-sm bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                   >
                     Skip
                   </button>
                   <button
                     onClick={handleNext}
-                    className="w-2/3 py-3.5 px-6 rounded-2xl bg-[#119DB5] hover:bg-[#0e889d] active:scale-[0.98] text-white font-bold text-sm shadow-lg shadow-[#119DB5]/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className="w-2/3 py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-sm shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />
@@ -314,7 +314,7 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               ) : (
                 <button
                   onClick={handleNext}
-                  className="w-full py-4 px-6 rounded-2xl bg-[#119DB5] hover:bg-[#0e889d] active:scale-[0.98] text-white font-extrabold text-base shadow-xl shadow-[#119DB5]/30 flex items-center justify-center gap-2 transition-all transform cursor-pointer"
+                  className="w-full py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-base shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 transition-all transform cursor-pointer"
                 >
                   <span>Get Started</span>
                   <ArrowRight className="w-5 h-5" />
