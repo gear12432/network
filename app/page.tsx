@@ -39,10 +39,25 @@ import FullKycContent from '@/components/modals/FullKycContent';
 import AddCustomerContent from '@/components/modals/AddCustomerContent';
 import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
+import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
 import { UserAccountData, testConnection, getCustomPlansFromFirestore } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
+
+function subscribeWindowResize(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('resize', callback);
+  return () => window.removeEventListener('resize', callback);
+}
+
+function getWindowWidthSnapshot() {
+  return typeof window !== 'undefined' ? window.innerWidth : 1024;
+}
+
+function getWindowWidthServerSnapshot() {
+  return 1024;
+}
 
 export default function InvestmentApp() {
   // Prevent SSR Hydration Mismatch
@@ -81,6 +96,7 @@ export default function InvestmentApp() {
     | 'full-kyc'
     | 'add-customer'
     | 'customer-list'
+    | 'purchase-history'
   >('none');
   const [selectedPlanForDetail, setSelectedPlanForDetail] = useState<InvestmentPlan | null>(null);
   const [selectedCustomerForConfirm, setSelectedCustomerForConfirm] = useState<Customer | null>(null);
@@ -199,13 +215,9 @@ export default function InvestmentApp() {
 
   // Sync external window width safely
   const windowWidth = React.useSyncExternalStore(
-    (callback) => {
-      if (typeof window === 'undefined') return () => {};
-      window.addEventListener('resize', callback);
-      return () => window.removeEventListener('resize', callback);
-    },
-    () => (typeof window !== 'undefined' ? window.innerWidth : 1024),
-    () => 1024
+    subscribeWindowResize,
+    getWindowWidthSnapshot,
+    getWindowWidthServerSnapshot
   );
 
   const isDesktop = manualLayout === 'desktop' || (manualLayout === null && windowWidth >= 768);
@@ -443,6 +455,7 @@ export default function InvestmentApp() {
             onOpenWithdraw={() => setActiveModal('withdraw')}
             onClaimDailyRoi={handleClaimDailyRoi}
             onOpenFullKyc={() => setActiveModal('full-kyc')}
+            onOpenPurchaseHistory={() => setActiveModal('purchase-history')}
             activeInvestments={activeInvestments}
             isMobileView={isMobileView}
           />
@@ -690,6 +703,20 @@ export default function InvestmentApp() {
           onSelectCustomer={(cust) => {
             setActiveModal('none');
             showToast(`Selected ${cust.name}`);
+          }}
+        />
+      </SlideFullScreenModal>
+
+      <SlideFullScreenModal
+        isOpen={activeModal === 'purchase-history'}
+        onClose={() => setActiveModal('none')}
+        title="Purchase History (परचेज हिस्ट्री)"
+      >
+        <PurchaseHistoryContent
+          activeInvestments={activeInvestments}
+          onOpenPlans={() => {
+            setActiveModal('none');
+            setActiveTab('home');
           }}
         />
       </SlideFullScreenModal>
