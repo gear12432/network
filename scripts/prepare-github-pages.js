@@ -53,16 +53,7 @@ if (fs.existsSync(outDir)) {
   // 1. Process all HTML files recursively in out/
   processDirectory(outDir, 0);
 
-  // 2. Patch JS chunks in out/_next/static/chunks
-  const chunksDir = path.join(outDir, '_next', 'static', 'chunks');
-  if (fs.existsSync(chunksDir)) {
-    const chunkFiles = fs.readdirSync(chunksDir);
-    for (const file of chunkFiles) {
-      if (file.endsWith('.js')) {
-        patchHtmlFile(path.join(chunksDir, file), 0);
-      }
-    }
-  }
+  // 2. (Skipped: Never patch .js files directly to keep Webpack runtime intact)
 
   // 3. Ensure 404.html is a copy of index.html so GitHub Pages SPA fallback works
   const indexOut = path.join(outDir, 'index.html');
