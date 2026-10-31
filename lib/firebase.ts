@@ -615,4 +615,60 @@ export async function getCustomSlidersFromFirestore(): Promise<any[]> {
   return [];
 }
 
+// 11. Customer Firestore Management
+export async function saveCustomerToFirestore(
+  customerData: any
+): Promise<{ success: boolean; error?: string }> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_customers');
+      const existing = localStr ? JSON.parse(localStr) : [];
+      const updated = [customerData, ...existing.filter((c: any) => String(c.id) !== String(customerData.id))];
+      localStorage.setItem('network_join_pro_customers', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('LocalStorage save customer error:', e);
+    }
+  }
+
+  try {
+    const docRef = doc(db, 'customers', String(customerData.id));
+    await withTimeout(setDoc(docRef, customerData), 4000);
+    return { success: true };
+  } catch (err: unknown) {
+    console.warn('Warning saving customer to Firestore (saved locally):', err);
+    const message = err instanceof Error ? err.message : 'Failed to save customer to Firestore';
+    return { success: false, error: message };
+  }
+}
+
+export async function getAllCustomersFromFirestore(): Promise<any[]> {
+  let customersFromFirestore: any[] = [];
+  try {
+    const ref = collection(db, 'customers');
+    const snap = await withTimeout(getDocs(ref), 3000);
+    snap.forEach((docSnap) => customersFromFirestore.push(docSnap.data()));
+    if (customersFromFirestore.length > 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_customers', JSON.stringify(customersFromFirestore));
+      }
+      return customersFromFirestore;
+    }
+  } catch (err) {
+    console.warn('Error fetching customers from Firestore:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_customers');
+      if (local) {
+        return JSON.parse(local);
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return [];
+}
+
 

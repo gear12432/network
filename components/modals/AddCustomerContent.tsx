@@ -13,12 +13,12 @@ import {
   Sparkles,
   Check,
   ArrowRight,
-  CheckCircle2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerConfetti } from '@/lib/confetti';
 import FloatingInput from '@/components/ui/FloatingInput';
 import FloatingTextarea from '@/components/ui/FloatingTextarea';
+import { saveCustomerToFirestore } from '@/lib/firebase';
 
 interface AddCustomerContentProps {
   onSaveCustomer: (customer: Customer) => void;
@@ -35,8 +35,8 @@ const generateCustomerId = () => {
 
 export default function AddCustomerContent({
   onSaveCustomer,
-  onViewCustomersList,
-  totalCustomersCount,
+  onViewCustomersList: _onViewCustomersList,
+  totalCustomersCount: _totalCustomersCount,
   onClose,
   onNavigateHome,
 }: AddCustomerContentProps) {
@@ -116,7 +116,7 @@ export default function AddCustomerContent({
     setCustomerId(generateCustomerId());
   };
 
-  const handleStartSave = (e: React.FormEvent) => {
+  const handleStartSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setErrorMsg('Please enter customer full legal name');
@@ -156,6 +156,11 @@ export default function AddCustomerContent({
     setSavedCustomerData(newCustomer);
     setIsSaving(true);
     setSaveSecondsLeft(4);
+
+    // Save Customer to Firestore database asynchronously
+    saveCustomerToFirestore(newCustomer).catch((err) => {
+      console.warn('Firestore customer save fallback:', err);
+    });
 
     // 4-Second Circular Progress Timer
     let seconds = 4;
@@ -220,7 +225,7 @@ export default function AddCustomerContent({
   ];
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="space-y-4 pb-10 bg-slate-50/50 p-1 sm:p-2 rounded-2xl">
       {errorMsg && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
           <span>⚠️</span>
@@ -229,25 +234,25 @@ export default function AddCustomerContent({
       )}
 
       <form onSubmit={handleStartSave} className="space-y-4">
-        {/* BOX 1: Customer Personal Details */}
-        <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#dfbe7e]/40">
-            <h4 className="font-extrabold text-[#46280b] text-xs sm:text-sm flex items-center gap-1.5">
-              <User className="w-4 h-4 text-[#8a5416]" />
+        {/* BOX 1: Customer Personal Details - CLEAN WHITE BACKGROUND */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+              <User className="w-4 h-4 text-blue-600" />
               <span>Customer Personal Details</span>
             </h4>
 
             {/* Auto Generated Customer ID */}
-            <div className="flex items-center gap-1.5 bg-[#faecd4] border border-[#dfbe7e] px-2.5 py-1 rounded-lg">
-              <span className="text-[10px] font-bold text-[#7a5328] uppercase">ID:</span>
-              <span className="text-xs font-mono font-black text-[#8a5416]">
+            <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
+              <span className="text-[10px] font-extrabold text-blue-700 uppercase">ID:</span>
+              <span className="text-xs font-mono font-black text-blue-900">
                 {customerId}
               </span>
               <button
                 type="button"
                 onClick={handleRegenerateId}
                 disabled={isSaving}
-                className="text-[#7a5328] hover:text-[#d0872e] p-0.5 transition-colors cursor-pointer"
+                className="text-blue-600 hover:text-blue-800 p-0.5 transition-colors cursor-pointer"
                 title="Regenerate ID"
               >
                 <RefreshCw className="w-3 h-3" />
@@ -264,8 +269,8 @@ export default function AddCustomerContent({
               disabled={isSaving}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              focusColor="gold"
-              inputClassName="font-bold text-[#46280b]"
+              focusColor="blue"
+              inputClassName="font-bold text-slate-900 bg-white"
             />
 
             {/* Mobile Number with +91 Prefix */}
@@ -281,8 +286,8 @@ export default function AddCustomerContent({
               leftPrefix="+91"
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-              focusColor="gold"
-              inputClassName="font-mono font-bold text-[#46280b]"
+              focusColor="blue"
+              inputClassName="font-mono font-bold text-slate-900 bg-white"
             />
 
             {/* Address */}
@@ -292,8 +297,8 @@ export default function AddCustomerContent({
               disabled={isSaving}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              focusColor="gold"
-              textareaClassName="font-semibold text-[#46280b]"
+              focusColor="blue"
+              textareaClassName="font-semibold text-slate-900 bg-white"
             />
 
             {/* State, District, PIN Code Grid */}
@@ -304,7 +309,7 @@ export default function AddCustomerContent({
                   value={stateName}
                   disabled={isSaving}
                   onChange={(e) => setStateName(e.target.value)}
-                  className="w-full h-12 px-3 bg-white border-2 border-[#dfbe7e] rounded-xl font-bold text-xs text-[#46280b] focus:outline-none focus:border-[#d0872e] focus:ring-2 focus:ring-[#d0872e]/20"
+                  className="w-full h-12 px-3 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20"
                 >
                   {indianStates.map((st) => (
                     <option key={st} value={st}>
@@ -312,7 +317,7 @@ export default function AddCustomerContent({
                     </option>
                   ))}
                 </select>
-                <label className="absolute -top-2 left-3 bg-[#faf6ee] px-1.5 text-[10px] font-bold text-[#8a5416] border border-[#dfbe7e] rounded pointer-events-none select-none">
+                <label className="absolute -top-2 left-3 bg-white px-1.5 text-[10px] font-bold text-slate-600 border border-slate-200 rounded pointer-events-none select-none">
                   State / Region
                 </label>
               </div>
@@ -323,8 +328,8 @@ export default function AddCustomerContent({
                 disabled={isSaving}
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                focusColor="gold"
-                inputClassName="font-semibold text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-semibold text-slate-900 bg-white"
               />
 
               {/* PIN Code */}
@@ -334,32 +339,32 @@ export default function AddCustomerContent({
                 maxLength={6}
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                focusColor="gold"
-                inputClassName="font-mono font-bold text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-mono font-bold text-slate-900 bg-white"
               />
             </div>
           </div>
         </div>
 
-        {/* BOX 2: KYC Form & Document Uploads */}
-        <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#dfbe7e]/40">
-            <h4 className="font-extrabold text-[#46280b] text-xs sm:text-sm flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#8a5416]" />
+        {/* BOX 2: KYC Form & Document Uploads - CLEAN WHITE BACKGROUND */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
               <span>KYC Form & Documents</span>
             </h4>
-            <span className="text-[10px] bg-[#faecd4] text-[#8a5416] font-bold px-2 py-0.5 rounded-full border border-[#dfbe7e]">
+            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full border border-emerald-200">
               Safe & Encrypted
             </span>
           </div>
 
           <div className="space-y-3 text-xs">
             {/* 1. Customer Passport Photo */}
-            <div className="p-3 bg-white/80 rounded-xl border border-[#dfbe7e]/80">
-              <label className="text-[#46280b] font-bold block mb-1 flex items-center justify-between">
+            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200">
+              <label className="text-slate-800 font-bold mb-1 flex items-center justify-between">
                 <span>Customer Photo</span>
                 {photo && (
-                  <span className="text-[#22c55e] text-[10px] font-bold">Uploaded ✓</span>
+                  <span className="text-emerald-600 text-[10px] font-bold">Uploaded ✓</span>
                 )}
               </label>
 
@@ -368,17 +373,17 @@ export default function AddCustomerContent({
                   <img
                     src={photo}
                     alt="Customer Preview"
-                    className="w-12 h-12 rounded-xl object-cover border-2 border-[#dfbe7e] shadow-xs"
+                    className="w-12 h-12 rounded-xl object-cover border-2 border-blue-500 shadow-xs"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-[#faecd4] border border-[#dfbe7e] flex items-center justify-center text-[#8a5416]">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
                     <Camera className="w-5 h-5" />
                   </div>
                 )}
 
                 <div className="flex-1">
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fff7ea] border-2 border-[#dfbe7e] hover:bg-[#faecd4] active:scale-95 text-[#8a5416] rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                    <Upload className="w-3.5 h-3.5 text-[#d0872e]" />
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 active:scale-95 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
+                    <Upload className="w-3.5 h-3.5 text-blue-600" />
                     <span>Choose Photo File</span>
                     <input
                       type="file"
@@ -389,7 +394,7 @@ export default function AddCustomerContent({
                     />
                   </label>
                   {photoFileName && (
-                    <span className="text-[10px] text-[#7a5328] block mt-1 truncate max-w-xs">
+                    <span className="text-[10px] text-slate-500 block mt-1 truncate max-w-xs">
                       {photoFileName}
                     </span>
                   )}
@@ -398,18 +403,18 @@ export default function AddCustomerContent({
             </div>
 
             {/* 2. PAN Card Details & Image File */}
-            <div className="p-3 bg-white/80 rounded-xl border border-[#dfbe7e]/80 space-y-2">
+            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
               <FloatingInput
                 label="PAN Card Number"
                 maxLength={10}
                 disabled={isSaving}
                 value={panNumber}
                 onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                focusColor="gold"
-                inputClassName="font-mono uppercase font-bold text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-mono uppercase font-bold text-slate-900 bg-white"
                 rightElement={
                   panImage ? (
-                    <span className="text-[#22c55e] bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
+                    <span className="text-emerald-700 bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
                       File Attached ✓
                     </span>
                   ) : null
@@ -417,8 +422,8 @@ export default function AddCustomerContent({
               />
 
               <div className="flex items-center justify-between pt-1">
-                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#fff7ea] border-2 border-[#dfbe7e] hover:bg-[#faecd4] text-[#8a5416] rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                  <ImageIcon className="w-3.5 h-3.5 text-[#d0872e]" />
+                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
+                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
                   <span>Choose PAN Image File</span>
                   <input
                     type="file"
@@ -433,25 +438,25 @@ export default function AddCustomerContent({
                   <img
                     src={panImage}
                     alt="PAN"
-                    className="w-9 h-7 rounded border border-[#dfbe7e] object-cover"
+                    className="w-9 h-7 rounded border border-slate-300 object-cover"
                   />
                 )}
               </div>
             </div>
 
             {/* 3. Aadhaar Card Details & Image File */}
-            <div className="p-3 bg-white/80 rounded-xl border border-[#dfbe7e]/80 space-y-2">
+            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
               <FloatingInput
                 label="Aadhaar Card Number"
                 maxLength={14}
                 disabled={isSaving}
                 value={aadhaarNumber}
                 onChange={(e) => setAadhaarNumber(e.target.value)}
-                focusColor="gold"
-                inputClassName="font-mono font-bold text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-mono font-bold text-slate-900 bg-white"
                 rightElement={
                   aadhaarImage ? (
-                    <span className="text-[#22c55e] bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
+                    <span className="text-emerald-700 bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
                       File Attached ✓
                     </span>
                   ) : null
@@ -459,8 +464,8 @@ export default function AddCustomerContent({
               />
 
               <div className="flex items-center justify-between pt-1">
-                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#fff7ea] border-2 border-[#dfbe7e] hover:bg-[#faecd4] text-[#8a5416] rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                  <ImageIcon className="w-3.5 h-3.5 text-[#d0872e]" />
+                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
+                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
                   <span>Choose Aadhaar Image File</span>
                   <input
                     type="file"
@@ -475,7 +480,7 @@ export default function AddCustomerContent({
                   <img
                     src={aadhaarImage}
                     alt="Aadhaar"
-                    className="w-9 h-7 rounded border border-[#dfbe7e] object-cover"
+                    className="w-9 h-7 rounded border border-slate-300 object-cover"
                   />
                 )}
               </div>
@@ -483,14 +488,14 @@ export default function AddCustomerContent({
           </div>
         </div>
 
-        {/* BOX 3: Bank Details Box */}
-        <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-[#dfbe7e]/40">
-            <h4 className="font-extrabold text-[#46280b] text-xs sm:text-sm flex items-center gap-1.5">
-              <Building className="w-4 h-4 text-[#8a5416]" />
+        {/* BOX 3: Bank Details Box - CLEAN WHITE BACKGROUND */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+              <Building className="w-4 h-4 text-blue-600" />
               <span>Bank Settlement Details</span>
             </h4>
-            <span className="text-[10px] text-[#7a5328]">Direct Payout Account</span>
+            <span className="text-[10px] text-slate-500 font-semibold">Direct Payout Account</span>
           </div>
 
           <div className="space-y-3 pt-1">
@@ -500,8 +505,8 @@ export default function AddCustomerContent({
               disabled={isSaving}
               value={bankHolderName}
               onChange={(e) => setBankHolderName(e.target.value)}
-              focusColor="gold"
-              inputClassName="font-bold text-[#46280b]"
+              focusColor="blue"
+              inputClassName="font-bold text-slate-900 bg-white"
             />
 
             {/* Bank Name */}
@@ -510,8 +515,8 @@ export default function AddCustomerContent({
               disabled={isSaving}
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              focusColor="gold"
-              inputClassName="font-semibold text-[#46280b]"
+              focusColor="blue"
+              inputClassName="font-semibold text-slate-900 bg-white"
             />
 
             {/* Account Number & IFSC Grid */}
@@ -521,8 +526,8 @@ export default function AddCustomerContent({
                 disabled={isSaving}
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                focusColor="gold"
-                inputClassName="font-mono font-bold text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-mono font-bold text-slate-900 bg-white"
               />
 
               <FloatingInput
@@ -531,20 +536,20 @@ export default function AddCustomerContent({
                 disabled={isSaving}
                 value={ifscCode}
                 onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                focusColor="gold"
-                inputClassName="font-mono font-bold uppercase text-[#46280b]"
+                focusColor="blue"
+                inputClassName="font-mono font-bold uppercase text-slate-900 bg-white"
               />
             </div>
           </div>
         </div>
 
-        {/* BOTTOM SECTION: Save Customer Button placed on RIGHT SIDE with #D0872E Theme */}
-        <div className="pt-3 pb-6 flex items-center justify-end gap-3 border-t border-[#dfbe7e]/50">
+        {/* BOTTOM SECTION: Save Customer Button placed on RIGHT SIDE with VIBRANT BLUE Theme */}
+        <div className="pt-3 pb-6 flex items-center justify-end gap-3 border-t border-slate-200">
           <button
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="px-4 py-2.5 rounded-xl border-2 border-[#dfbe7e] bg-[#fff7ea] hover:bg-[#faecd4] text-[#7a5328] font-bold text-xs transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -552,7 +557,7 @@ export default function AddCustomerContent({
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-3 rounded-xl bg-[#D0872E] hover:bg-[#b87324] active:scale-95 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2.5 shadow-md shadow-[#d0872e]/25 transition-all disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer"
+            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-md shadow-blue-500/25 transition-all disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSaving ? (
               <>
@@ -574,7 +579,7 @@ export default function AddCustomerContent({
                     />
                   </svg>
                 </div>
-                <span>Saving Customer ({saveSecondsLeft}s)...</span>
+                <span>Saving to Firestore ({saveSecondsLeft}s)...</span>
               </>
             ) : (
               <>
@@ -587,8 +592,7 @@ export default function AddCustomerContent({
       </form>
 
       {/* =========================================================================
-          LOTTIE CELEBRATION & SUCCESS MESSAGE DIALOG
-          Auto-closes in 3 seconds and navigates to the Home screen
+          CELEBRATION & SUCCESS MESSAGE DIALOG (CLEAN CRISP WHITE STYLE)
           ========================================================================= */}
       <AnimatePresence>
         {showSuccessDialog && (
@@ -598,37 +602,26 @@ export default function AddCustomerContent({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
               transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-              className="bg-[#faf6ee] rounded-3xl p-6 sm:p-7 max-w-sm w-full text-center shadow-2xl border-2 border-[#dfbe7e] relative overflow-hidden space-y-4"
+              className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full text-center shadow-2xl border border-slate-200 relative overflow-hidden space-y-4"
             >
-              {/* Subtle decorative background gradient */}
-              <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#dfbe7e]/30 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-[#d0872e]/20 rounded-full blur-2xl pointer-events-none" />
+              {/* Subtle background glow */}
+              <div className="absolute -top-16 -right-16 w-36 h-36 bg-blue-100/50 rounded-full blur-2xl pointer-events-none" />
 
-              {/* Lottie-style Animated Celebratory Checkmark Icon */}
+              {/* Animated Checkmark Icon */}
               <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
-                {/* Ripple wave 1 */}
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0.8 }}
                   animate={{ scale: [1, 1.4, 1.6], opacity: [0.6, 0.2, 0] }}
                   transition={{ repeat: Infinity, duration: 2, ease: 'easeOut' }}
-                  className="absolute inset-0 rounded-full bg-[#d0872e]/20"
-                />
-                {/* Ripple wave 2 */}
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0.8 }}
-                  animate={{ scale: [1, 1.3, 1.5], opacity: [0.5, 0.15, 0] }}
-                  transition={{ repeat: Infinity, duration: 2, delay: 0.4, ease: 'easeOut' }}
-                  className="absolute inset-0 rounded-full bg-[#dfbe7e]/30"
+                  className="absolute inset-0 rounded-full bg-blue-500/20"
                 />
 
-                {/* Gold Circular Badge */}
                 <motion.div
                   initial={{ scale: 0, rotate: -45 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', damping: 14, stiffness: 220 }}
-                  className="relative z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-[#894b0a] via-[#d0872e] to-[#ffd485] flex items-center justify-center shadow-xl shadow-[#d0872e]/30 border-2 border-[#dfbe7e]"
+                  className="relative z-10 w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/30 border-2 border-white"
                 >
-                  {/* Animated Checkmark Drawing Stroke */}
                   <svg
                     className="w-10 h-10 text-white"
                     viewBox="0 0 24 24"
@@ -647,66 +640,57 @@ export default function AddCustomerContent({
                   </svg>
                 </motion.div>
 
-                {/* Floating sparkle stars */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: [0, 1.2, 1], rotate: [0, 180] }}
                   transition={{ delay: 0.3, duration: 0.8 }}
-                  className="absolute -top-1 right-2 text-amber-500 text-base"
+                  className="absolute -top-1 right-2 text-blue-500 text-base"
                 >
                   ✨
-                </motion.div>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.2, 1], rotate: [0, -180] }}
-                  transition={{ delay: 0.5, duration: 0.8 }}
-                  className="absolute -bottom-1 left-2 text-[#d0872e] text-sm"
-                >
-                  ⭐
                 </motion.div>
               </div>
 
               {/* Congratulatory Text */}
               <div className="space-y-1.5 pt-1">
-                <span className="inline-block px-3 py-0.5 rounded-full bg-[#faecd4] border border-[#dfbe7e] text-[10px] font-black uppercase tracking-wider text-[#8a5416]">
-                  Data Saved Successfully
+                <span className="inline-block px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-black uppercase tracking-wider text-blue-700">
+                  Data Saved in Firestore
                 </span>
-                <h3 className="text-xl font-black text-[#46280b] tracking-tight">
-                  Congratulations!
+                <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                  Customer Saved!
                 </h3>
-                <p className="text-xs font-semibold text-[#7a5328] leading-relaxed max-w-xs mx-auto">
-                  Your customer data has been saved and is active now. This customer can now join investment plans.
+                <p className="text-xs font-semibold text-slate-600 leading-relaxed max-w-xs mx-auto">
+                  Customer details have been saved to Firestore. This customer can now join investment plans.
                 </p>
               </div>
 
               {/* Customer Saved Summary Card */}
               {savedCustomerData && (
-                <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] border-2 border-[#dfbe7e] rounded-2xl p-3 flex items-center gap-3 text-left shadow-xs">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center gap-3 text-left shadow-2xs">
                   {savedCustomerData.photo ? (
                     <img
                       src={savedCustomerData.photo}
                       alt={savedCustomerData.name}
-                      className="w-11 h-11 rounded-xl object-cover border-2 border-[#dfbe7e]"
+                      className="w-11 h-11 rounded-xl object-cover border border-slate-200"
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-r from-[#2c180a] to-[#4a280e] text-[#ffd485] font-bold text-xs flex items-center justify-center shrink-0 border border-[#dfbe7e]">
+                    <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
                       {savedCustomerData.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-extrabold text-xs text-[#46280b] truncate">
+                    <h5 className="font-black text-xs text-slate-900 truncate">
                       {savedCustomerData.name}
                     </h5>
-                    <p className="text-[11px] font-mono text-[#7a5328]">
+                    <p className="text-[11px] font-mono text-slate-600">
                       +91 {savedCustomerData.mobile}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-mono font-bold text-[#8a5416] bg-[#faecd4] border border-[#dfbe7e] px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded">
                         {savedCustomerData.id}
                       </span>
-                      <span className="text-[10px] font-bold text-[#22c55e] flex items-center gap-0.5">
-                        <Check className="w-3 h-3 text-[#22c55e]" /> Active
+                      <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
+                        <Check className="w-3 h-3 text-emerald-600" /> Saved
                       </span>
                     </div>
                   </div>
@@ -715,25 +699,24 @@ export default function AddCustomerContent({
 
               {/* 3-Second Auto Redirect Progress & Button */}
               <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between text-[11px] text-[#7a5328] font-bold px-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 font-bold px-1">
                   <span>Redirecting to Home</span>
-                  <span className="font-mono text-[#8a5416]">{dialogSecondsLeft}s</span>
+                  <span className="font-mono text-blue-600">{dialogSecondsLeft}s</span>
                 </div>
 
-                {/* Progress bar shrinking over 3 seconds */}
-                <div className="w-full h-1.5 bg-[#dfbe7e]/30 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: '100%' }}
                     animate={{ width: '0%' }}
                     transition={{ duration: 3, ease: 'linear' }}
-                    className="h-full bg-[#D0872E] rounded-full"
+                    className="h-full bg-blue-600 rounded-full"
                   />
                 </div>
 
                 <button
                   type="button"
                   onClick={handleInstantGoHome}
-                  className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#D0872E] hover:bg-[#b87324] active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#d0872e]/20 transition-all cursor-pointer"
+                  className="w-full mt-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
                 >
                   <span>Go to Home Screen Now</span>
                   <ArrowRight className="w-3.5 h-3.5" />

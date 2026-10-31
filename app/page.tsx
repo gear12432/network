@@ -42,7 +42,7 @@ import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
 import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, getCustomPlansFromFirestore } from '@/lib/firebase';
+import { UserAccountData, testConnection, getCustomPlansFromFirestore, getAllCustomersFromFirestore } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 
 function subscribeWindowResize(callback: () => void) {
@@ -206,6 +206,27 @@ export default function InvestmentApp() {
         setPlans(formattedCustomPlans);
       } else {
         setPlans([]);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch Saved Customers from Firestore on Mount
+  useEffect(() => {
+    let isMounted = true;
+    getAllCustomersFromFirestore().then((custs) => {
+      if (isMounted && custs && custs.length > 0) {
+        setCustomers((prev) => {
+          const merged = [...custs];
+          prev.forEach((p) => {
+            if (!merged.some((m) => m.id === p.id)) {
+              merged.push(p);
+            }
+          });
+          return merged;
+        });
       }
     });
     return () => {
