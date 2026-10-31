@@ -707,10 +707,11 @@ export default function InvestmentApp() {
         title="Add Customer"
       >
         <AddCustomerContent
-          onCustomerAdded={(newCust) => {
+          onSaveCustomer={(newCust) => {
             handleSaveCustomer(newCust);
-            setActiveModal('none');
           }}
+          onClose={() => setActiveModal('none')}
+          onNavigateHome={() => setActiveTab('home')}
         />
       </SlideFullScreenModal>
 

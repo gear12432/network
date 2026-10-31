@@ -18,6 +18,8 @@ import {
   UserPlus,
 } from 'lucide-react';
 
+import { getAllCustomersFromFirestore } from '@/lib/firebase';
+
 interface PlanDetailContentProps {
   plan?: InvestmentPlan | null;
   stats?: UserStats;
@@ -74,11 +76,43 @@ export default function PlanDetailContent({
       setSearchFailed(false);
       setMatchedCustomer(null);
 
-      searchTimeoutRef.current = setTimeout(() => {
-        const found = customers.find((c) => {
-          const rawMobile = c.mobile.replace(/\D/g, '');
+      searchTimeoutRef.current = setTimeout(async () => {
+        // 1. Search in props customers array
+        let found = customers.find((c) => {
+          const rawMobile = (c.mobile || '').replace(/\D/g, '');
           return rawMobile === mobileDigits || rawMobile.endsWith(mobileDigits);
         });
+
+        // 2. Search in localStorage
+        if (!found && typeof window !== 'undefined') {
+          try {
+            const localStr = localStorage.getItem('network_join_pro_customers');
+            if (localStr) {
+              const localCusts: Customer[] = JSON.parse(localStr);
+              found = localCusts.find((c) => {
+                const rawMobile = (c.mobile || '').replace(/\D/g, '');
+                return rawMobile === mobileDigits || rawMobile.endsWith(mobileDigits);
+              });
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        // 3. Search in Firestore database
+        if (!found) {
+          try {
+            const firestoreCusts = await getAllCustomersFromFirestore();
+            if (firestoreCusts && firestoreCusts.length > 0) {
+              found = firestoreCusts.find((c) => {
+                const rawMobile = (c.mobile || '').replace(/\D/g, '');
+                return rawMobile === mobileDigits || rawMobile.endsWith(mobileDigits);
+              });
+            }
+          } catch {
+            // ignore
+          }
+        }
 
         setIsSearching(false);
         if (found) {
@@ -88,7 +122,7 @@ export default function PlanDetailContent({
           setMatchedCustomer(null);
           setSearchFailed(true);
         }
-      }, 350);
+      }, 300);
     } else {
       setIsSearching(false);
       setMatchedCustomer(null);

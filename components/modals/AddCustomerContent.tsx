@@ -5,11 +5,7 @@ import { Customer } from '@/types/investment';
 import {
   User,
   Building,
-  Upload,
   RefreshCw,
-  Camera,
-  Image as ImageIcon,
-  ShieldCheck,
   Sparkles,
   Check,
   ArrowRight,
@@ -21,10 +17,11 @@ import FloatingTextarea from '@/components/ui/FloatingTextarea';
 import { saveCustomerToFirestore } from '@/lib/firebase';
 
 interface AddCustomerContentProps {
-  onSaveCustomer: (customer: Customer) => void;
-  onViewCustomersList: () => void;
-  totalCustomersCount: number;
-  onClose: () => void;
+  onSaveCustomer?: (customer: Customer) => void;
+  onCustomerAdded?: (customer: Customer) => void;
+  onViewCustomersList?: () => void;
+  totalCustomersCount?: number;
+  onClose?: () => void;
   onNavigateHome?: () => void;
 }
 
@@ -33,48 +30,9 @@ const generateCustomerId = () => {
   return `CUST-${Math.floor(100000 + Math.random() * 900000)}`;
 };
 
-// Lightweight Image Compression helper to prevent LocalStorage/Firestore payload limit errors
-function compressImage(file: File, maxWidth = 350, maxHeight = 350, quality = 0.6): Promise<string> {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } else {
-          resolve((e.target?.result as string) || '');
-        }
-      };
-      img.onerror = () => resolve((e.target?.result as string) || '');
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function AddCustomerContent({
   onSaveCustomer,
+  onCustomerAdded,
   onViewCustomersList: _onViewCustomersList,
   totalCustomersCount: _totalCustomersCount,
   onClose,
@@ -88,18 +46,6 @@ export default function AddCustomerContent({
   const [stateName, setStateName] = useState('Uttar Pradesh');
   const [district, setDistrict] = useState('');
   const [pincode, setPincode] = useState('');
-
-  // KYC State
-  const [panNumber, setPanNumber] = useState('');
-  const [panImage, setPanImage] = useState<string | null>(null);
-  const [panFileName, setPanFileName] = useState('');
-
-  const [aadhaarNumber, setAadhaarNumber] = useState('');
-  const [aadhaarImage, setAadhaarImage] = useState<string | null>(null);
-  const [aadhaarFileName, setAadhaarFileName] = useState('');
-
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [photoFileName, setPhotoFileName] = useState('');
 
   // Bank State
   const [bankHolderName, setBankHolderName] = useState('');
@@ -123,31 +69,6 @@ export default function AddCustomerContent({
       if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
     };
   }, []);
-
-  // Handle Image File Uploads with Automatic Compression
-  const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: 'pan' | 'aadhaar' | 'photo'
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const compressedDataUrl = await compressImage(file, 350, 350, 0.6);
-      if (type === 'pan') {
-        setPanImage(compressedDataUrl);
-        setPanFileName(file.name);
-      } else if (type === 'aadhaar') {
-        setAadhaarImage(compressedDataUrl);
-        setAadhaarFileName(file.name);
-      } else if (type === 'photo') {
-        setPhoto(compressedDataUrl);
-        setPhotoFileName(file.name);
-      }
-    } catch (err) {
-      console.warn('Error compressing image file:', err);
-    }
-  };
 
   const handleRegenerateId = () => {
     setCustomerId(generateCustomerId());
@@ -175,11 +96,6 @@ export default function AddCustomerContent({
       state: stateName,
       district: district.trim() || 'N/A',
       pincode: pincode.trim() || 'N/A',
-      panNumber: panNumber.trim().toUpperCase() || 'N/A',
-      panImage: panImage || '',
-      aadhaarNumber: aadhaarNumber.trim() || 'N/A',
-      aadhaarImage: aadhaarImage || '',
-      photo: photo || '',
       bankHolderName: bankHolderName.trim() || name.trim(),
       bankName: bankName.trim() || 'State Bank of India',
       accountNumber: accountNumber.trim() || 'N/A',
@@ -202,7 +118,12 @@ export default function AddCustomerContent({
     }
 
     // Save customer into parent React state immediately
-    onSaveCustomer(newCustomer);
+    if (onSaveCustomer) {
+      onSaveCustomer(newCustomer);
+    }
+    if (onCustomerAdded) {
+      onCustomerAdded(newCustomer);
+    }
 
     // Transition smoothly to Success Dialog
     setIsSaving(false);
@@ -219,8 +140,8 @@ export default function AddCustomerContent({
       if (dialogCountdown <= 0) {
         if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
         setShowSuccessDialog(false);
-        onClose();
-        onNavigateHome?.();
+        if (onClose) onClose();
+        if (onNavigateHome) onNavigateHome();
       }
     }, 1000);
   };
@@ -228,8 +149,8 @@ export default function AddCustomerContent({
   const handleInstantGoHome = () => {
     if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
     setShowSuccessDialog(false);
-    onClose();
-    onNavigateHome?.();
+    if (onClose) onClose();
+    if (onNavigateHome) onNavigateHome();
   };
 
   const indianStates = [
@@ -378,149 +299,7 @@ export default function AddCustomerContent({
           </div>
         </div>
 
-        {/* BOX 2: KYC Form & Document Uploads - CLEAN WHITE BACKGROUND */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span>KYC Form & Documents</span>
-            </h4>
-            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full border border-emerald-200">
-              Safe & Encrypted
-            </span>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            {/* 1. Customer Passport Photo */}
-            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200">
-              <label className="text-slate-800 font-bold mb-1 flex items-center justify-between">
-                <span>Customer Photo</span>
-                {photo && (
-                  <span className="text-emerald-600 text-[10px] font-bold">Uploaded ✓</span>
-                )}
-              </label>
-
-              <div className="flex items-center gap-3 mt-1.5">
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt="Customer Preview"
-                    className="w-12 h-12 rounded-xl object-cover border-2 border-blue-500 shadow-xs"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
-                    <Camera className="w-5 h-5" />
-                  </div>
-                )}
-
-                <div className="flex-1">
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 active:scale-95 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                    <Upload className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Choose Photo File</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      disabled={isSaving}
-                      onChange={(e) => handleFileUpload(e, 'photo')}
-                      className="hidden"
-                    />
-                  </label>
-                  {photoFileName && (
-                    <span className="text-[10px] text-slate-500 block mt-1 truncate max-w-xs">
-                      {photoFileName}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 2. PAN Card Details & Image File */}
-            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
-              <FloatingInput
-                label="PAN Card Number"
-                maxLength={10}
-                disabled={isSaving}
-                value={panNumber}
-                onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                focusColor="blue"
-                inputClassName="font-mono uppercase font-bold text-slate-900 bg-white"
-                rightElement={
-                  panImage ? (
-                    <span className="text-emerald-700 bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
-                      File Attached ✓
-                    </span>
-                  ) : null
-                }
-              />
-
-              <div className="flex items-center justify-between pt-1">
-                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Choose PAN Image File</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={isSaving}
-                    onChange={(e) => handleFileUpload(e, 'pan')}
-                    className="hidden"
-                  />
-                </label>
-
-                {panImage && (
-                  <img
-                    src={panImage}
-                    alt="PAN"
-                    className="w-9 h-7 rounded border border-slate-300 object-cover"
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* 3. Aadhaar Card Details & Image File */}
-            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
-              <FloatingInput
-                label="Aadhaar Card Number"
-                maxLength={14}
-                disabled={isSaving}
-                value={aadhaarNumber}
-                onChange={(e) => setAadhaarNumber(e.target.value)}
-                focusColor="blue"
-                inputClassName="font-mono font-bold text-slate-900 bg-white"
-                rightElement={
-                  aadhaarImage ? (
-                    <span className="text-emerald-700 bg-emerald-50 text-[10px] font-black px-2 py-0.5 rounded border border-emerald-200">
-                      File Attached ✓
-                    </span>
-                  ) : null
-                }
-              />
-
-              <div className="flex items-center justify-between pt-1">
-                <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg font-bold text-xs cursor-pointer shadow-2xs transition-all">
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Choose Aadhaar Image File</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={isSaving}
-                    onChange={(e) => handleFileUpload(e, 'aadhaar')}
-                    className="hidden"
-                  />
-                </label>
-
-                {aadhaarImage && (
-                  <img
-                    src={aadhaarImage}
-                    alt="Aadhaar"
-                    className="w-9 h-7 rounded border border-slate-300 object-cover"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* BOX 3: Bank Details Box - CLEAN WHITE BACKGROUND */}
+        {/* BOX 2: Bank Settlement Details Box - CLEAN WHITE BACKGROUND */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
@@ -577,14 +356,16 @@ export default function AddCustomerContent({
 
         {/* BOTTOM SECTION: Save Customer Button placed on RIGHT SIDE with VIBRANT BLUE Theme */}
         <div className="pt-3 pb-6 flex items-center justify-end gap-3 border-t border-slate-200">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSaving}
-            className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          )}
 
           <button
             type="submit"
@@ -698,17 +479,9 @@ export default function AddCustomerContent({
               {/* Customer Saved Summary Card */}
               {savedCustomerData && (
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center gap-3 text-left shadow-2xs">
-                  {savedCustomerData.photo ? (
-                    <img
-                      src={savedCustomerData.photo}
-                      alt={savedCustomerData.name}
-                      className="w-11 h-11 rounded-xl object-cover border border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
-                      {savedCustomerData.name.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
+                  <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                    {savedCustomerData.name.slice(0, 2).toUpperCase()}
+                  </div>
 
                   <div className="flex-1 min-w-0">
                     <h5 className="font-black text-xs text-slate-900 truncate">
