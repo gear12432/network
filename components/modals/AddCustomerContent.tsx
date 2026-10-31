@@ -33,6 +33,46 @@ const generateCustomerId = () => {
   return `CUST-${Math.floor(100000 + Math.random() * 900000)}`;
 };
 
+// Lightweight Image Compression helper to prevent LocalStorage/Firestore payload limit errors
+function compressImage(file: File, maxWidth = 350, maxHeight = 350, quality = 0.6): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve((e.target?.result as string) || '');
+        }
+      };
+      img.onerror = () => resolve((e.target?.result as string) || '');
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AddCustomerContent({
   onSaveCustomer,
   onViewCustomersList: _onViewCustomersList,
@@ -69,47 +109,44 @@ export default function AddCustomerContent({
 
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Saving Workflow States (4s circular progress + 3s success dialog)
+  // Saving Workflow States
   const [isSaving, setIsSaving] = useState(false);
-  const [saveSecondsLeft, setSaveSecondsLeft] = useState(4);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [dialogSecondsLeft, setDialogSecondsLeft] = useState(3);
   const [savedCustomerData, setSavedCustomerData] = useState<Customer | null>(null);
 
-  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const dialogIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
-      if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
       if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
     };
   }, []);
 
-  // Handle Image File Uploads
-  const handleFileUpload = (
+  // Handle Image File Uploads with Automatic Compression
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: 'pan' | 'aadhaar' | 'photo'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
+    try {
+      const compressedDataUrl = await compressImage(file, 350, 350, 0.6);
       if (type === 'pan') {
-        setPanImage(result);
+        setPanImage(compressedDataUrl);
         setPanFileName(file.name);
       } else if (type === 'aadhaar') {
-        setAadhaarImage(result);
+        setAadhaarImage(compressedDataUrl);
         setAadhaarFileName(file.name);
       } else if (type === 'photo') {
-        setPhoto(result);
+        setPhoto(compressedDataUrl);
         setPhotoFileName(file.name);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Error compressing image file:', err);
+    }
   };
 
   const handleRegenerateId = () => {
@@ -128,6 +165,8 @@ export default function AddCustomerContent({
     }
 
     setErrorMsg('');
+    setIsSaving(true);
+
     const newCustomer: Customer = {
       id: customerId,
       name: name.trim(),
@@ -137,10 +176,10 @@ export default function AddCustomerContent({
       district: district.trim() || 'N/A',
       pincode: pincode.trim() || 'N/A',
       panNumber: panNumber.trim().toUpperCase() || 'N/A',
-      panImage: panImage || undefined,
+      panImage: panImage || '',
       aadhaarNumber: aadhaarNumber.trim() || 'N/A',
-      aadhaarImage: aadhaarImage || undefined,
-      photo: photo || undefined,
+      aadhaarImage: aadhaarImage || '',
+      photo: photo || '',
       bankHolderName: bankHolderName.trim() || name.trim(),
       bankName: bankName.trim() || 'State Bank of India',
       accountNumber: accountNumber.trim() || 'N/A',
@@ -154,46 +193,39 @@ export default function AddCustomerContent({
     };
 
     setSavedCustomerData(newCustomer);
-    setIsSaving(true);
-    setSaveSecondsLeft(4);
 
-    // Save Customer to Firestore database asynchronously
-    saveCustomerToFirestore(newCustomer).catch((err) => {
-      console.warn('Firestore customer save fallback:', err);
-    });
+    // Save Customer to Firestore database + LocalStorage asynchronously
+    try {
+      await saveCustomerToFirestore(newCustomer);
+    } catch (err) {
+      console.warn('Firestore async save customer note:', err);
+    }
 
-    // 4-Second Circular Progress Timer
-    let seconds = 4;
-    saveIntervalRef.current = setInterval(() => {
-      seconds -= 1;
-      setSaveSecondsLeft(seconds);
-      if (seconds <= 0) {
-        if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
-        // Save customer data into app state
-        onSaveCustomer(newCustomer);
-        setIsSaving(false);
-        setShowSuccessDialog(true);
-        triggerConfetti();
+    // Save customer into parent React state immediately
+    onSaveCustomer(newCustomer);
 
-        // 3-Second Countdown for Success Dialog
-        let dialogCountdown = 3;
-        setDialogSecondsLeft(3);
-        dialogIntervalRef.current = setInterval(() => {
-          dialogCountdown -= 1;
-          setDialogSecondsLeft(dialogCountdown);
-          if (dialogCountdown <= 0) {
-            if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
-            setShowSuccessDialog(false);
-            onClose();
-            onNavigateHome?.();
-          }
-        }, 1000);
+    // Transition smoothly to Success Dialog
+    setIsSaving(false);
+    setShowSuccessDialog(true);
+    triggerConfetti();
+
+    // 3-Second Countdown for Success Celebration Dialog
+    let dialogCountdown = 3;
+    setDialogSecondsLeft(3);
+    if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
+    dialogIntervalRef.current = setInterval(() => {
+      dialogCountdown -= 1;
+      setDialogSecondsLeft(dialogCountdown);
+      if (dialogCountdown <= 0) {
+        if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
+        setShowSuccessDialog(false);
+        onClose();
+        onNavigateHome?.();
       }
     }, 1000);
   };
 
   const handleInstantGoHome = () => {
-    if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
     if (dialogIntervalRef.current) clearInterval(dialogIntervalRef.current);
     setShowSuccessDialog(false);
     onClose();
@@ -579,7 +611,7 @@ export default function AddCustomerContent({
                     />
                   </svg>
                 </div>
-                <span>Saving to Firestore ({saveSecondsLeft}s)...</span>
+                <span>Saving Customer...</span>
               </>
             ) : (
               <>

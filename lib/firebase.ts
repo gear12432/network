@@ -619,11 +619,19 @@ export async function getCustomSlidersFromFirestore(): Promise<any[]> {
 export async function saveCustomerToFirestore(
   customerData: any
 ): Promise<{ success: boolean; error?: string }> {
+  // Clean payload: remove any undefined keys so Firestore never rejects setDoc
+  const cleanData: Record<string, any> = {};
+  Object.keys(customerData).forEach((key) => {
+    if (customerData[key] !== undefined) {
+      cleanData[key] = customerData[key];
+    }
+  });
+
   if (typeof window !== 'undefined') {
     try {
       const localStr = localStorage.getItem('network_join_pro_customers');
       const existing = localStr ? JSON.parse(localStr) : [];
-      const updated = [customerData, ...existing.filter((c: any) => String(c.id) !== String(customerData.id))];
+      const updated = [cleanData, ...existing.filter((c: any) => String(c.id) !== String(cleanData.id))];
       localStorage.setItem('network_join_pro_customers', JSON.stringify(updated));
     } catch (e) {
       console.warn('LocalStorage save customer error:', e);
@@ -631,8 +639,8 @@ export async function saveCustomerToFirestore(
   }
 
   try {
-    const docRef = doc(db, 'customers', String(customerData.id));
-    await withTimeout(setDoc(docRef, customerData), 4000);
+    const docRef = doc(db, 'customers', String(cleanData.id));
+    await withTimeout(setDoc(docRef, cleanData), 4000);
     return { success: true };
   } catch (err: unknown) {
     console.warn('Warning saving customer to Firestore (saved locally):', err);
