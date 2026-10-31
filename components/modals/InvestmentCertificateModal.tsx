@@ -4,7 +4,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, ShieldCheck, Award, CheckCircle2, Phone, MapPin, Building2, QrCode } from 'lucide-react';
 import { Customer, InvestmentPlan } from '@/types/investment';
-import html2canvas from 'html2canvas';
 
 interface InvestmentCertificateModalProps {
   isOpen: boolean;
@@ -55,6 +54,8 @@ export default function InvestmentCertificateModal({
     if (!certRef.current) return;
     setIsDownloading(true);
     try {
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
       const canvas = await html2canvas(certRef.current, {
         scale: 2,
         useCORS: true,

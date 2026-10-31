@@ -1,23 +1,27 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ChevronRight,
   ArrowRight,
-  Sparkles,
   MapPin,
   MessageSquare,
   Bell,
   CheckCircle2,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 
 interface OnboardingSliderProps {
   onComplete?: () => void;
+  isLoggedIn?: boolean;
 }
 
-export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) {
+export default function OnboardingSlider({ onComplete, isLoggedIn = false }: OnboardingSliderProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [progress, setProgress] = useState(0); // 0 to 100 over 3 seconds
+  const [isTimerActive, setIsTimerActive] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -42,17 +46,45 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
     },
   ];
 
+  // 3-Second Countdown & Progress Logic on Launch
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animationFrameId: number;
+
+    const updateProgress = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const duration = 3000; // 3 seconds
+
+      const currentProgress = Math.min((elapsed / duration) * 100, 100);
+      setProgress(currentProgress);
+
+      if (currentProgress < 100) {
+        animationFrameId = requestAnimationFrame(updateProgress);
+      } else {
+        setIsTimerActive(false);
+        // Check if user is already logged in
+        const savedUser = typeof window !== 'undefined' ? localStorage.getItem('network_join_pro_user') : null;
+        if (isLoggedIn || savedUser) {
+          // Already logged in user -> Auto open Home Screen after 3 seconds
+          if (onComplete) onComplete();
+        }
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(updateProgress);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isLoggedIn, onComplete]);
+
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide((prev) => prev + 1);
     } else {
       if (onComplete) onComplete();
     }
-  };
-
-  const handleSkip = () => {
-    // Requirement 3: Clicking Skip on slide 1 or slide 2 moves directly to slide 3
-    setCurrentSlide(2);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -98,7 +130,7 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
           </svg>
         </div>
 
-        {/* Top Header Bar with Tag & Skip Button */}
+        {/* Top Header Bar with Tag */}
         <div className="relative z-10 px-5 pt-4 pb-1 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-[#119DB5]" />
@@ -106,17 +138,6 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               {slides[currentSlide].tag}
             </span>
           </div>
-
-          {currentSlide < slides.length - 1 ? (
-            <button
-              onClick={handleSkip}
-              className="text-[#758195] hover:text-[#172B4D] text-xs font-semibold px-3 py-1 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              Skip
-            </button>
-          ) : (
-            <div className="w-12" />
-          )}
         </div>
 
         {/* Slide Content Area */}
@@ -279,8 +300,9 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
             </motion.div>
           </AnimatePresence>
 
-          {/* Bottom Controls */}
+          {/* Bottom Controls (DELETED Left Skip Button, LARGE FULL WIDTH Next Button with 3s Progress) */}
           <div className="w-full shrink-0 pt-2 flex flex-col items-center gap-3">
+            {/* Pagination Dots */}
             <div className="flex items-center justify-center gap-1.5">
               {slides.map((_, idx) => (
                 <button
@@ -294,32 +316,38 @@ export default function OnboardingSlider({ onComplete }: OnboardingSliderProps) 
               ))}
             </div>
 
+            {/* FULL WIDTH Prominent Action Button with Progress Bar */}
             <div className="w-full">
-              {currentSlide < slides.length - 1 ? (
-                <div className="flex items-center justify-between gap-3 w-full">
-                  <button
-                    onClick={handleSkip}
-                    className="w-1/3 py-3 px-3 rounded-xl text-slate-600 font-bold text-xs bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
-                  >
-                    Skip
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="w-2/3 py-3 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleNext}
-                  className="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all transform cursor-pointer"
-                >
-                  <span>Get Started</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
+              <button
+                onClick={handleNext}
+                className="w-full relative overflow-hidden py-3.5 sm:py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+              >
+                {/* 3-Second Background Progress Animation Bar */}
+                {isTimerActive && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-blue-500/40 pointer-events-none transition-all duration-75 ease-linear"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+
+                <span className="relative z-10 flex items-center gap-2">
+                  {isTimerActive ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white/90" />
+                      <span>Opening Network Join Pro...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}</span>
+                      {currentSlide === slides.length - 1 ? (
+                        <ArrowRight className="w-4.5 h-4.5" />
+                      ) : (
+                        <ChevronRight className="w-4.5 h-4.5" />
+                      )}
+                    </>
+                  )}
+                </span>
+              </button>
             </div>
           </div>
         </div>

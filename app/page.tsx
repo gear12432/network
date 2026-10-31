@@ -460,9 +460,9 @@ export default function InvestmentApp() {
     return <AdminPanel />;
   }
 
-  // 2. If onboarding is active, render 3-slide Onboarding Screen
+  // 2. If onboarding is active, render Onboarding Screen
   if (showOnboarding) {
-    return <OnboardingSlider onComplete={handleOnboardingComplete} />;
+    return <OnboardingSlider onComplete={handleOnboardingComplete} isLoggedIn={Boolean(currentUser)} />;
   }
 
   // 3. If user is NOT logged in, render Auth / Login & Sign Up screen
