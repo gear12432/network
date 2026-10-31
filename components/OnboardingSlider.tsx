@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Bell,
   CheckCircle2,
-  Loader2,
   Sparkles,
 } from 'lucide-react';
 
@@ -80,11 +79,17 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
   }, [isLoggedIn, onComplete]);
 
   const handleNext = () => {
+    setIsTimerActive(false);
     if (currentSlide < slides.length - 1) {
       setCurrentSlide((prev) => prev + 1);
     } else {
       if (onComplete) onComplete();
     }
+  };
+
+  const handleSkip = () => {
+    setIsTimerActive(false);
+    if (onComplete) onComplete();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -102,8 +107,10 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
     const isSwipeRight = distance < -50;
 
     if (isSwipeLeft && currentSlide < slides.length - 1) {
+      setIsTimerActive(false);
       setCurrentSlide((prev) => prev + 1);
     } else if (isSwipeRight && currentSlide > 0) {
+      setIsTimerActive(false);
       setCurrentSlide((prev) => prev - 1);
     }
 
@@ -130,7 +137,7 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
           </svg>
         </div>
 
-        {/* Top Header Bar with Tag */}
+        {/* Top Header Bar with Tag and Top Right Skip */}
         <div className="relative z-10 px-5 pt-4 pb-1 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-[#119DB5]" />
@@ -138,10 +145,17 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
               {slides[currentSlide].tag}
             </span>
           </div>
+
+          <button
+            onClick={handleSkip}
+            className="text-xs font-bold text-slate-500 hover:text-[#172B4D] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
+          >
+            Skip
+          </button>
         </div>
 
         {/* Slide Content Area */}
-        <div className="relative z-10 flex-1 min-h-0 flex flex-col justify-between px-5 pt-1 pb-4 overflow-hidden">
+        <div className="relative z-10 flex-1 min-h-0 flex flex-col justify-between px-5 pt-1 pb-5 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -300,15 +314,18 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
             </motion.div>
           </AnimatePresence>
 
-          {/* Bottom Controls (DELETED Left Skip Button, LARGE FULL WIDTH Next Button with 3s Progress) */}
+          {/* Bottom Controls (Pagination Dots + Side by Side Skip & Next Buttons matching screenshot) */}
           <div className="w-full shrink-0 pt-2 flex flex-col items-center gap-3">
             {/* Pagination Dots */}
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-1.5 mb-1">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  onClick={() => {
+                    setIsTimerActive(false);
+                    setCurrentSlide(idx);
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                     currentSlide === idx ? 'w-7 bg-[#119DB5]' : 'w-2 bg-[#A7DFF0] hover:bg-[#119DB5]/50'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
@@ -316,37 +333,32 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
               ))}
             </div>
 
-            {/* FULL WIDTH Prominent Action Button with Progress Bar */}
-            <div className="w-full">
+            {/* Bottom Action Bar: Skip Button + Blue Next Button matching Screenshot_20261101-001913_bf71f855.jpg */}
+            <div className="w-full flex items-center gap-3">
+              <button
+                onClick={handleSkip}
+                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#F0F4F8] hover:bg-[#e2e8f0] active:scale-[0.98] text-[#172B4D] font-bold text-sm tracking-wide text-center transition-all cursor-pointer border border-slate-200/60 shadow-xs"
+              >
+                Skip
+              </button>
+
               <button
                 onClick={handleNext}
-                className="w-full relative overflow-hidden py-3.5 sm:py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                className="flex-[2] py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-sm tracking-wide shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer relative overflow-hidden"
               >
-                {/* 3-Second Background Progress Animation Bar */}
+                {/* Subtle top 3s progress indicator bar */}
                 {isTimerActive && (
                   <div
-                    className="absolute inset-y-0 left-0 bg-blue-500/40 pointer-events-none transition-all duration-75 ease-linear"
+                    className="absolute top-0 left-0 h-1 bg-white/40 transition-all duration-75 ease-linear pointer-events-none"
                     style={{ width: `${progress}%` }}
                   />
                 )}
-
-                <span className="relative z-10 flex items-center gap-2">
-                  {isTimerActive ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-white/90" />
-                      <span>Opening Network Join Pro...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>{currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}</span>
-                      {currentSlide === slides.length - 1 ? (
-                        <ArrowRight className="w-4.5 h-4.5" />
-                      ) : (
-                        <ChevronRight className="w-4.5 h-4.5" />
-                      )}
-                    </>
-                  )}
-                </span>
+                <span>{currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}</span>
+                {currentSlide === slides.length - 1 ? (
+                  <ArrowRight className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -355,3 +367,4 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
     </div>
   );
 }
+
