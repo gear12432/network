@@ -40,6 +40,7 @@ import AddCustomerContent from '@/components/modals/AddCustomerContent';
 import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
 import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
+import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
 import { UserAccountData, testConnection, getCustomPlansFromFirestore, getAllCustomersFromFirestore } from '@/lib/firebase';
@@ -101,6 +102,11 @@ export default function InvestmentApp() {
   const [selectedPlanForDetail, setSelectedPlanForDetail] = useState<InvestmentPlan | null>(null);
   const [selectedCustomerForConfirm, setSelectedCustomerForConfirm] = useState<Customer | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Certificate Modal State
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [certificatePlan, setCertificatePlan] = useState<InvestmentPlan | null>(null);
+  const [certificateCustomer, setCertificateCustomer] = useState<Customer | null>(null);
 
   // Hydration & Client-side Initialization
   useEffect(() => {
@@ -346,6 +352,12 @@ export default function InvestmentApp() {
         ? `Plan "${plan.name}" successfully activated for ${linkedCustomer.name} (+91 ${linkedCustomer.mobile})!`
         : `Successfully subscribed to ${plan.name}!`
     );
+
+    if (linkedCustomer) {
+      setCertificatePlan(plan);
+      setCertificateCustomer(linkedCustomer);
+      setShowCertificateModal(true);
+    }
   };
 
   const handleProceedToConfirm = (plan: InvestmentPlan, customer: Customer) => {
@@ -742,6 +754,14 @@ export default function InvestmentApp() {
           }}
         />
       </SlideFullScreenModal>
+
+      {/* Official Government Investment Certificate Modal */}
+      <InvestmentCertificateModal
+        isOpen={showCertificateModal}
+        onClose={() => setShowCertificateModal(false)}
+        plan={certificatePlan}
+        customer={certificateCustomer}
+      />
     </div>
   );
 }

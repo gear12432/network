@@ -185,18 +185,18 @@ export default function DepositContent({
   };
 
   return (
-    <div className="space-y-4 text-[#46280b]">
+    <div className="space-y-4 text-slate-900">
       {/* Current Balance Banner */}
-      <div className="bg-gradient-to-r from-[#2c180a] via-[#4a280e] to-[#6d3e16] text-white rounded-2xl p-3.5 flex items-center justify-between border-2 border-[#dfbe7e] shadow-xs">
+      <div className="bg-blue-600 text-white rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
         <div>
-          <span className="text-[11px] text-[#fed788] block">Current Balance</span>
-          <span className="text-xl font-black text-[#ffd485] font-mono">
+          <span className="text-[11px] text-blue-100 block">Current Balance</span>
+          <span className="text-xl font-black text-white font-mono">
             ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[#dfbe7e] block">Gateway</span>
-          <span className="text-xs font-bold text-[#55361e] bg-[#faecd4] border border-[#dfbe7e] px-2 py-0.5 rounded-md">
+          <span className="text-[10px] text-blue-200 block">Gateway</span>
+          <span className="text-xs font-bold text-blue-900 bg-white px-2 py-0.5 rounded-md">
             Fast UPI 2.0
           </span>
         </div>
@@ -206,8 +206,8 @@ export default function DepositContent({
         /* ================= STEP 1: AMOUNT & METHOD SELECTION ================= */
         <div className="space-y-4">
           {/* Preset Amounts */}
-          <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-3">
-            <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+            <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
               Select Deposit Amount (INR)
             </label>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -220,10 +220,10 @@ export default function DepositContent({
                       setSelectedAmount(amt);
                       setCustomAmount('');
                     }}
-                    className={`py-2 px-1 text-center rounded-xl border-2 text-xs font-mono font-bold transition-all cursor-pointer ${
+                    className={`py-2 px-1 text-center rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#D0872E] text-white border-[#dfbe7e] shadow-xs'
-                        : 'bg-white/95 text-[#46280b] border-[#dfbe7e]/60 hover:bg-[#faecd4]'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     ₹{amt.toLocaleString('en-IN')}
@@ -243,14 +243,14 @@ export default function DepositContent({
                   setSelectedAmount(0);
                 }}
                 leftPrefix="₹"
-                inputClassName="font-mono font-bold text-[#46280b] text-sm"
+                inputClassName="font-mono font-bold text-slate-900 text-sm bg-white"
               />
             </div>
           </div>
 
           {/* Payment Gateway Options */}
-          <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-4 border-2 border-[#dfbe7e] shadow-2xs space-y-2.5">
-            <label className="text-xs font-bold text-[#7a5328] uppercase tracking-wider block">
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-2.5">
+            <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
               Select Payment Method
             </label>
             <div className="grid grid-cols-2 gap-2.5">
@@ -265,19 +265,19 @@ export default function DepositContent({
                   <div
                     key={m.id}
                     onClick={() => setPaymentMethod(m.id as any)}
-                    className={`p-3 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
+                    className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-[#fffdf9] border-[#D0872E] ring-1 ring-[#D0872E]/30 shadow-xs'
-                        : 'bg-white/85 border-[#dfbe7e]/50 hover:bg-white'
+                        ? 'bg-blue-50/60 border-blue-600 ring-1 ring-blue-500/30 shadow-xs'
+                        : 'bg-white border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     <div>
-                      <span className="text-xs font-bold text-[#46280b] block">{m.name}</span>
-                      <span className="text-[10px] text-[#b87324] font-semibold">{m.badge}</span>
+                      <span className="text-xs font-bold text-slate-900 block">{m.name}</span>
+                      <span className="text-[10px] text-blue-600 font-semibold">{m.badge}</span>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        isSelected ? 'border-[#D0872E] bg-[#D0872E]' : 'border-[#dfbe7e]'
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
                       }`}
                     >
                       {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -289,8 +289,8 @@ export default function DepositContent({
           </div>
 
           {/* Zero Fee Guarantee Note */}
-          <div className="bg-[#fff8ea] text-[#55361e] rounded-xl p-3 text-xs flex items-center gap-2 border-2 border-[#dfbe7e]">
-            <ShieldCheck className="w-4 h-4 text-[#8a5416] shrink-0" />
+          <div className="bg-blue-50 text-blue-900 rounded-xl p-3 text-xs flex items-center gap-2 border border-blue-100">
+            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
             <span className="font-medium">100% Secure Payment • 0% Deposit Fee • Instant Auto-Credit</span>
           </div>
 

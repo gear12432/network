@@ -443,7 +443,7 @@ export default function PlanDetailContent({
         </div>
       )}
 
-      {/* Confirm & Join Button CTA -> Vibrant Blue */}
+      {/* Confirm Button CTA -> Clean Blue */}
       <div className="pt-1">
         <button
           onClick={handleJoinClick}
@@ -454,13 +454,7 @@ export default function PlanDetailContent({
           }`}
         >
           <Sparkles className="w-4 h-4 text-blue-200" />
-          <span>
-            {isBalanceEnough
-              ? matchedCustomer
-                ? `Confirm & Join for ${matchedCustomer.name.split(' ')[0]} (₹${plan.amount.toLocaleString('en-IN')})`
-                : `Confirm & Join Plan (₹${plan.amount.toLocaleString('en-IN')})`
-              : `Insufficient Balance (Add ₹${(plan.amount - (currentStats?.walletBalance ?? 0)).toLocaleString('en-IN')})`}
-          </span>
+          <span>{isBalanceEnough ? 'Confirm' : 'Insufficient Balance'}</span>
           <ArrowRight className="w-4 h-4 stroke-[2.5]" />
         </button>
       </div>

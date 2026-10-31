@@ -9,6 +9,8 @@ import {
   Sparkles,
   Check,
   ArrowRight,
+  Upload,
+  Camera,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { triggerConfetti } from '@/lib/confetti';
@@ -30,6 +32,46 @@ const generateCustomerId = () => {
   return `CUST-${Math.floor(100000 + Math.random() * 900000)}`;
 };
 
+// Lightweight Image Compression helper
+function compressImage(file: File, maxWidth = 350, maxHeight = 350, quality = 0.6): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve((e.target?.result as string) || '');
+        }
+      };
+      img.onerror = () => resolve((e.target?.result as string) || '');
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AddCustomerContent({
   onSaveCustomer,
   onCustomerAdded,
@@ -46,6 +88,11 @@ export default function AddCustomerContent({
   const [stateName, setStateName] = useState('Uttar Pradesh');
   const [district, setDistrict] = useState('');
   const [pincode, setPincode] = useState('');
+
+  // Profile Photo State
+  const [photo, setPhoto] = useState<string>('');
+  const [photoFileName, setPhotoFileName] = useState<string>('');
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // Bank State
   const [bankHolderName, setBankHolderName] = useState('');
@@ -74,6 +121,19 @@ export default function AddCustomerContent({
     setCustomerId(generateCustomerId());
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const compressedDataUrl = await compressImage(file, 350, 350, 0.6);
+      setPhoto(compressedDataUrl);
+      setPhotoFileName(file.name);
+    } catch (err) {
+      console.warn('Error compressing photo:', err);
+    }
+  };
+
   const handleStartSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -96,6 +156,7 @@ export default function AddCustomerContent({
       state: stateName,
       district: district.trim() || 'N/A',
       pincode: pincode.trim() || 'N/A',
+      photo: photo || '',
       bankHolderName: bankHolderName.trim() || name.trim(),
       bankName: bankName.trim() || 'State Bank of India',
       accountNumber: accountNumber.trim() || 'N/A',
@@ -242,6 +303,55 @@ export default function AddCustomerContent({
               focusColor="blue"
               inputClassName="font-mono font-bold text-slate-900 bg-white"
             />
+
+            {/* Customer Profile Photo Field (Choice File Button) */}
+            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200">
+              <label className="text-slate-800 font-bold text-xs mb-1.5 flex items-center justify-between">
+                <span>Customer Profile Picture (प्रोफ़ाइल फ़ोटो)</span>
+                {photo && (
+                  <span className="text-emerald-600 text-[10px] font-bold">Photo Attached ✓</span>
+                )}
+              </label>
+
+              <div className="flex items-center gap-3">
+                {photo ? (
+                  <img
+                    src={photo}
+                    alt="Customer Profile"
+                    className="w-12 h-12 rounded-xl object-cover border-2 border-blue-500 shadow-xs"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                )}
+
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    ref={photoInputRef}
+                    accept="image/*"
+                    disabled={isSaving}
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={isSaving}
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Choose Profile Photo (चॉइस फाइल)</span>
+                  </button>
+                  {photoFileName && (
+                    <span className="text-[10px] text-slate-500 block mt-1 truncate">
+                      {photoFileName}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
 
             {/* Address */}
             <FloatingTextarea

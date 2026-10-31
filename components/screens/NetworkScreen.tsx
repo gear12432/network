@@ -489,28 +489,54 @@ export default function NetworkScreen({
   const rank3 = currentTop.find((c) => c.rank === 3)!;
 
   return (
-    <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-2.5">
+    <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-3">
+      {/* 4 Main Feature Navigation Buttons - CLEAN WHITE WITH BLUE ACCENTS */}
+      <div className="grid grid-cols-4 gap-2 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs">
+        {[
+          { id: 'VIP LEVEL', label: 'VIP LEVEL', icon: Crown },
+          { id: 'BUY RULES', label: 'BUY RULES', icon: HelpCircle },
+          { id: 'MY REWARDS', label: 'MY REWARDS', icon: Gift },
+          { id: 'MY PURCHASES', label: 'MY PURCHASES', icon: Coins },
+        ].map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveModalTab(item.id as TabType)}
+              className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-900 transition-all cursor-pointer shadow-2xs group"
+            >
+              <div className="w-8.5 h-8.5 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1 group-hover:bg-blue-600 group-hover:text-white transition-colors border border-blue-100">
+                <IconComponent className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <span className="text-[10px] font-black tracking-tight text-center leading-tight">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Leaderboard Tips Banner */}
-      <div className="text-center pt-1 pb-0.5">
-        <p className="text-[11px] font-bold text-[#805832]">
+      <div className="text-center pt-0.5 pb-0.5">
+        <p className="text-[11px] font-bold text-slate-500">
           Tips: Leaderboard updates every 30 minutes
         </p>
       </div>
 
       {/* =========================================================================
-          4. TIME FILTER PILLS: This Week / Yesterday Earn / Last Week (BORDERLESS)
+          4. TIME FILTER PILLS: This Week / Yesterday Earn / Last Week (WHITE THEME)
           ========================================================================= */}
-      <div className="bg-[#f0dfc8] p-1 rounded-2xl flex items-center justify-between gap-1 shadow-2xs">
+      <div className="bg-white p-1 rounded-2xl flex items-center justify-between gap-1 border border-slate-200 shadow-2xs">
         {(['This Week', 'Yesterday Earn', 'Last Week'] as TimeFilter[]).map((filter) => {
           const isActive = timeFilter === filter;
           return (
             <button
               key={filter}
               onClick={() => setTimeFilter(filter)}
-              className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center ${
+              className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center cursor-pointer ${
                 isActive
-                  ? 'bg-[#D0872E] text-white shadow-sm shadow-[#D0872E]/35 font-black'
-                  : 'text-[#5a3818] hover:bg-white/40'
+                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-black'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               {filter}
