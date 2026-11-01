@@ -350,18 +350,16 @@ export default function NetworkScreen({
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('This Week');
 
-  // Compute Customer Plan Purchases sorted by Highest Purchased Plan Amount
+  // Compute Customer Plan Purchases sorted by Highest Purchased Plan Amount (100% Real Firebase Firestore Data Only - No Demo Data)
   const allCustomerPurchases = React.useMemo(() => {
     const customerMap = new Map<string, CustomerPurchaseEntry>();
 
-    // 1. Process active investments from Firestore / app state
+    // Process real active investments fetched from Firebase Firestore
     if (activeInvestments && activeInvestments.length > 0) {
       activeInvestments.forEach((inv, index) => {
         const custId = inv.customerId || `CUST-${882910 + index}`;
         const custName = inv.customerName || `Customer ${index + 1}`;
-        const custPhoto =
-          inv.customerPhoto ||
-          `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80`;
+        const custPhoto = inv.customerPhoto || '';
 
         if (customerMap.has(custId)) {
           const existing = customerMap.get(custId)!;
@@ -384,88 +382,6 @@ export default function NetworkScreen({
       });
     }
 
-    // 2. High Value Customer Plan Purchases Benchmark Entries
-    const benchmarkList: Omit<CustomerPurchaseEntry, 'rank'>[] = [
-      {
-        id: '6475895',
-        name: 'Rajesh Kumar Verma',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-        purchasedPlanName: 'VIP Diamond Pro',
-        planAmount: 9999,
-        totalEarnings: 20997,
-      },
-      {
-        id: '2447951',
-        name: 'Priya Sharma',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        purchasedPlanName: 'Platinum Wealth Maximizer',
-        planAmount: 4999,
-        totalEarnings: 8248,
-      },
-      {
-        id: 'CUST-882912',
-        name: 'Ananya Roy',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
-        purchasedPlanName: 'Starter Booster Plan',
-        planAmount: 2499,
-        totalEarnings: 3498.6,
-      },
-      {
-        id: '23974873',
-        name: 'Mohammad Tariq',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        purchasedPlanName: 'Gold Elite Accelerator',
-        planAmount: 2499,
-        totalEarnings: 3498,
-      },
-      {
-        id: '3150196',
-        name: 'Amit Patel',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80',
-        purchasedPlanName: 'Silver Network Tier 1',
-        planAmount: 1999,
-        totalEarnings: 2800,
-      },
-      {
-        id: '26172966',
-        name: 'Vikram Singh',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80',
-        purchasedPlanName: 'Silver Network Tier 1',
-        planAmount: 1499,
-        totalEarnings: 2100,
-      },
-      {
-        id: 'CUST-882910',
-        name: 'Customer 1',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-        purchasedPlanName: 'Silver Network Tier 1',
-        planAmount: 999,
-        totalEarnings: 1248.75,
-      },
-      {
-        id: '125044',
-        name: 'Deepak Verma',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80',
-        purchasedPlanName: 'Silver Network Tier 1',
-        planAmount: 999,
-        totalEarnings: 1248,
-      },
-      {
-        id: 'CUST-882911',
-        name: 'Customer 2',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
-        purchasedPlanName: 'Starter Booster Plan',
-        planAmount: 499,
-        totalEarnings: 588.82,
-      },
-    ];
-
-    benchmarkList.forEach((b) => {
-      if (!customerMap.has(b.id)) {
-        customerMap.set(b.id, { ...b, rank: 0 });
-      }
-    });
-
     const list = Array.from(customerMap.values());
 
     // Sort by Highest Purchased Plan Amount descending, then total earnings descending
@@ -477,10 +393,10 @@ export default function NetworkScreen({
     }));
   }, [activeInvestments]);
 
-  // Top 3 Podium
-  const rank1 = allCustomerPurchases.find((c) => c.rank === 1) || allCustomerPurchases[0];
-  const rank2 = allCustomerPurchases.find((c) => c.rank === 2) || allCustomerPurchases[1];
-  const rank3 = allCustomerPurchases.find((c) => c.rank === 3) || allCustomerPurchases[2];
+  // Top 3 Podium Real Entries from Firebase Firestore
+  const rank1 = allCustomerPurchases[0];
+  const rank2 = allCustomerPurchases[1];
+  const rank3 = allCustomerPurchases[2];
 
   // List View Entries (Ranks 4+)
   const tableEntries = allCustomerPurchases.slice(3);
@@ -518,7 +434,7 @@ export default function NetworkScreen({
       {/* Leaderboard Tips Banner */}
       <div className="text-center pt-0.5 pb-0.5">
         <p className="text-[11px] font-bold text-slate-500">
-          Tips: Leaderboard updates every 30 minutes
+          Tips: Leaderboard updates live with real Firebase Firestore investments
         </p>
       </div>
 
@@ -558,29 +474,33 @@ export default function NetworkScreen({
           <div className="flex flex-col items-center">
             {/* Avatar Frame with Silver Ring */}
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-slate-200 to-white shadow-md">
-                <img
-                  src={rank2.avatar}
-                  alt={rank2.id}
-                  className="w-full h-full rounded-full object-cover"
-                />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-slate-200 to-white shadow-md flex items-center justify-center overflow-hidden">
+                {rank2?.avatar ? (
+                  <img
+                    src={rank2.avatar}
+                    alt={rank2.name || rank2.id}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-tr from-slate-500 to-slate-700 text-white font-black text-xs sm:text-sm flex items-center justify-center uppercase">
+                    {rank2 ? (rank2.name || rank2.id).slice(0, 2) : '2'}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Customer ID Badge */}
             <span className="bg-[#465b74] text-white text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded-full shadow-2xs mb-1">
-              {rank2.id}
+              {rank2 ? rank2.id : 'Rank 2'}
             </span>
 
             {/* Silver Marble Pedestal Column */}
-            <div className="w-full bg-gradient-to-b from-[#e3e8ee] via-[#cfd6df] to-[#b7c1cd] rounded-t-xl py-3 px-1 text-center shadow-md">
-              {/* High Plan Purchased Amount */}
+            <div className="w-full bg-gradient-to-b from-[#e3e8ee] via-[#cfd6df] to-[#b7c1cd] rounded-t-xl py-3 px-1 text-center shadow-md min-h-[75px] flex flex-col justify-center">
               <span className="block text-base sm:text-lg font-black text-[#303e51]">
-                ₹{rank2.planAmount.toLocaleString('en-IN')}
+                {rank2 ? `₹${rank2.planAmount.toLocaleString('en-IN')}` : '—'}
               </span>
-              {/* Total Earnings (DELETED "Points:") */}
               <span className="block text-[9px] sm:text-[10px] text-slate-700 font-bold mt-0.5">
-                Total Earnings: ₹{rank2.totalEarnings.toLocaleString('en-IN')}
+                {rank2 ? `Total Earnings: ₹${rank2.totalEarnings.toLocaleString('en-IN')}` : 'No Investment'}
               </span>
             </div>
           </div>
@@ -594,29 +514,33 @@ export default function NetworkScreen({
                 <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-[#ffbe33] fill-[#ffbe33] stroke-[#966308]" />
               </div>
 
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-0.5 bg-gradient-to-tr from-[#ffeaa7] via-[#f7cd6a] to-[#c78b27] shadow-xl">
-                <img
-                  src={rank1.avatar}
-                  alt={rank1.id}
-                  className="w-full h-full rounded-full object-cover"
-                />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-0.5 bg-gradient-to-tr from-[#ffeaa7] via-[#f7cd6a] to-[#c78b27] shadow-xl flex items-center justify-center overflow-hidden">
+                {rank1?.avatar ? (
+                  <img
+                    src={rank1.avatar}
+                    alt={rank1.name || rank1.id}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-800 text-white font-black text-sm sm:text-base flex items-center justify-center uppercase">
+                    {rank1 ? (rank1.name || rank1.id).slice(0, 2) : '1'}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Customer ID Badge */}
             <span className="bg-[#6c481d] text-[#ffebbe] text-[11px] sm:text-xs font-mono font-black px-2.5 py-0.5 rounded-full shadow-2xs mb-1">
-              {rank1.id}
+              {rank1 ? rank1.id : 'Rank 1'}
             </span>
 
             {/* Gold Marble Pedestal Column (Tallest) */}
-            <div className="w-full bg-gradient-to-b from-[#fff3d4] via-[#eed193] to-[#d6ad5e] rounded-t-2xl py-4 sm:py-5 px-1 text-center shadow-lg">
-              {/* High Plan Purchased Amount */}
+            <div className="w-full bg-gradient-to-b from-[#fff3d4] via-[#eed193] to-[#d6ad5e] rounded-t-2xl py-4 sm:py-5 px-1 text-center shadow-lg min-h-[90px] flex flex-col justify-center">
               <span className="block text-lg sm:text-xl font-black text-[#503010]">
-                ₹{rank1.planAmount.toLocaleString('en-IN')}
+                {rank1 ? `₹${rank1.planAmount.toLocaleString('en-IN')}` : '—'}
               </span>
-              {/* Total Earnings (DELETED "Points:") */}
               <span className="block text-[10px] sm:text-[11px] text-[#694218] font-black mt-0.5">
-                Total Earnings: ₹{rank1.totalEarnings.toLocaleString('en-IN')}
+                {rank1 ? `Total Earnings: ₹${rank1.totalEarnings.toLocaleString('en-IN')}` : 'No Investment'}
               </span>
             </div>
           </div>
@@ -625,29 +549,33 @@ export default function NetworkScreen({
           <div className="flex flex-col items-center">
             {/* Avatar Frame with Bronze Ring */}
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#f3cfbc] to-white shadow-md">
-                <img
-                  src={rank3.avatar}
-                  alt={rank3.id}
-                  className="w-full h-full rounded-full object-cover"
-                />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-[#f3cfbc] to-white shadow-md flex items-center justify-center overflow-hidden">
+                {rank3?.avatar ? (
+                  <img
+                    src={rank3.avatar}
+                    alt={rank3.name || rank3.id}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-700 to-stone-800 text-white font-black text-xs sm:text-sm flex items-center justify-center uppercase">
+                    {rank3 ? (rank3.name || rank3.id).slice(0, 2) : '3'}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Customer ID Badge */}
             <span className="bg-[#784b33] text-white text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded-full shadow-2xs mb-1">
-              {rank3.id}
+              {rank3 ? rank3.id : 'Rank 3'}
             </span>
 
             {/* Bronze Marble Pedestal Column */}
-            <div className="w-full bg-gradient-to-b from-[#fae2d5] via-[#e5bc9f] to-[#cf9877] rounded-t-xl py-2.5 px-1 text-center shadow-md">
-              {/* High Plan Purchased Amount */}
+            <div className="w-full bg-gradient-to-b from-[#fae2d5] via-[#e5bc9f] to-[#cf9877] rounded-t-xl py-2.5 px-1 text-center shadow-md min-h-[70px] flex flex-col justify-center">
               <span className="block text-base sm:text-lg font-black text-[#4b2713]">
-                ₹{rank3.planAmount.toLocaleString('en-IN')}
+                {rank3 ? `₹${rank3.planAmount.toLocaleString('en-IN')}` : '—'}
               </span>
-              {/* Total Earnings (DELETED "Points:") */}
               <span className="block text-[9px] sm:text-[10px] text-[#663e27] font-bold mt-0.5">
-                Total Earnings: ₹{rank3.totalEarnings.toLocaleString('en-IN')}
+                {rank3 ? `Total Earnings: ₹${rank3.totalEarnings.toLocaleString('en-IN')}` : 'No Investment'}
               </span>
             </div>
           </div>
@@ -664,7 +592,7 @@ export default function NetworkScreen({
             CUSTOMER PLAN PURCHASE DISTRIBUTION
           </h4>
           <span className="text-[10px] text-slate-500 font-bold">
-            {allCustomerPurchases.length} Customers Active
+            {allCustomerPurchases.length} Real Customers Active in Firebase
           </span>
         </div>
 
@@ -677,49 +605,68 @@ export default function NetworkScreen({
         </div>
 
         {/* Table Rows (borderless) */}
-        {tableEntries.map((item) => (
-          <div
-            key={item.id}
-            className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm shadow-2xs hover:bg-[#fff9ea] transition-colors"
-          >
-            {/* Rank */}
-            <span className="col-span-2 text-center font-black text-slate-800 text-sm sm:text-base">
-              {item.rank}
-            </span>
+        {tableEntries.length > 0 ? (
+          tableEntries.map((item) => (
+            <div
+              key={item.id}
+              className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm shadow-2xs hover:bg-[#fff9ea] transition-colors"
+            >
+              {/* Rank */}
+              <span className="col-span-2 text-center font-black text-slate-800 text-sm sm:text-base">
+                {item.rank}
+              </span>
 
-            {/* Customer Avatar + ID & Name */}
-            <div className="col-span-4 flex items-center gap-2 min-w-0 pr-1">
-              <img
-                src={item.avatar}
-                alt={item.id}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 shadow-2xs"
-              />
-              <div className="min-w-0 leading-tight">
-                <span className="font-mono font-bold text-slate-900 text-[11px] sm:text-xs block truncate">
-                  {item.id}
+              {/* Customer Avatar + ID & Name */}
+              <div className="col-span-4 flex items-center gap-2 min-w-0 pr-1">
+                {item.avatar ? (
+                  <img
+                    src={item.avatar}
+                    alt={item.id}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 shadow-2xs"
+                  />
+                ) : (
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white font-bold text-[10px] sm:text-xs flex items-center justify-center shrink-0 uppercase">
+                    {(item.name || item.id).slice(0, 2)}
+                  </div>
+                )}
+                <div className="min-w-0 leading-tight">
+                  <span className="font-mono font-bold text-slate-900 text-[11px] sm:text-xs block truncate">
+                    {item.id}
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10px] text-slate-500 block truncate">
+                    {item.name}
+                  </span>
+                </div>
+              </div>
+
+              {/* Purchased Plan Name & Amount */}
+              <div className="col-span-3 text-center">
+                <span className="font-mono font-bold text-blue-700 text-xs sm:text-sm block">
+                  ₹{item.planAmount.toLocaleString('en-IN')}
                 </span>
-                <span className="text-[9.5px] sm:text-[10px] text-slate-500 block truncate">
-                  {item.name}
+                <span className="text-[9px] sm:text-[9.5px] text-slate-500 block truncate">
+                  {item.purchasedPlanName}
                 </span>
               </div>
-            </div>
 
-            {/* Purchased Plan Name & Amount */}
-            <div className="col-span-3 text-center">
-              <span className="font-mono font-bold text-blue-700 text-xs sm:text-sm block">
-                ₹{item.planAmount.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[9px] sm:text-[9.5px] text-slate-500 block truncate">
-                {item.purchasedPlanName}
+              {/* Total Earnings */}
+              <span className="col-span-3 text-center font-mono font-black text-[#5a3818] text-xs sm:text-sm">
+                ₹{item.totalEarnings.toLocaleString('en-IN')}
               </span>
             </div>
-
-            {/* Total Earnings */}
-            <span className="col-span-3 text-center font-mono font-black text-[#5a3818] text-xs sm:text-sm">
-              ₹{item.totalEarnings.toLocaleString('en-IN')}
-            </span>
+          ))
+        ) : (
+          <div className="p-6 text-center bg-white rounded-2xl border border-amber-200/80 shadow-2xs space-y-1">
+            <p className="text-xs font-bold text-slate-700">
+              {allCustomerPurchases.length > 0
+                ? 'All active customer plan purchases from Firebase are displayed on the top podium above.'
+                : 'No plan purchases saved in Firebase Firestore yet.'}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              When a plan is confirmed for a customer, their investment data will automatically appear here!
+            </p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* =========================================================================
