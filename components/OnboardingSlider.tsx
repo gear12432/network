@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Bell,
   CheckCircle2,
+  Loader2,
   Sparkles,
 } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
     },
   ];
 
-  // 3-Second Countdown & Progress Logic on Launch
+  // 3-Second Countdown & Progress Loader on Launch
   useEffect(() => {
     let startTime: number | null = null;
     let animationFrameId: number;
@@ -62,10 +63,10 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
         animationFrameId = requestAnimationFrame(updateProgress);
       } else {
         setIsTimerActive(false);
-        // Check if user is already logged in
+        // Check if user is already registered / logged in
         const savedUser = typeof window !== 'undefined' ? localStorage.getItem('network_join_pro_user') : null;
         if (isLoggedIn || savedUser) {
-          // Already logged in user -> Auto open Home Screen after 3 seconds
+          // Registered user -> Auto open Home Screen after 3 seconds
           if (onComplete) onComplete();
         }
       }
@@ -78,18 +79,23 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
     };
   }, [isLoggedIn, onComplete]);
 
-  const handleNext = () => {
+  const handleNextClick = () => {
     setIsTimerActive(false);
+
+    // Check if user is already registered / logged in
+    const savedUser = typeof window !== 'undefined' ? localStorage.getItem('network_join_pro_user') : null;
+    if (isLoggedIn || savedUser) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    // New User logic
     if (currentSlide < slides.length - 1) {
       setCurrentSlide((prev) => prev + 1);
     } else {
+      // Last slide -> Navigate to Sign Up Screen
       if (onComplete) onComplete();
     }
-  };
-
-  const handleSkip = () => {
-    setIsTimerActive(false);
-    if (onComplete) onComplete();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -127,7 +133,7 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Background Decorative Light-Blue Vector Shapes */}
+        {/* Background Decorative Vector Shapes */}
         <div className="absolute top-0 left-0 right-0 h-72 overflow-hidden pointer-events-none z-0">
           <svg className="absolute -top-12 -left-12 w-64 h-64 text-[#A7DFF0]/25" viewBox="0 0 200 200" fill="currentColor">
             <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.6,81.4,29.2,72.9,41.8C64.4,54.4,53,65,39.6,72.8C26.2,80.6,10.8,85.6,-4.8,88.3C-20.4,91,-36.2,91.4,-49.8,85C-63.4,78.6,-74.8,65.4,-82.1,50.3C-89.4,35.2,-92.6,18.2,-91.3,1.8C-90,-14.6,-84.2,-30.4,-74.8,-43.3C-65.4,-56.2,-52.4,-66.2,-38.3,-73.4C-24.2,-80.6,-9,-85,5.1,-87.9C19.2,-90.8,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
@@ -137,21 +143,14 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
           </svg>
         </div>
 
-        {/* Top Header Bar with Tag and Top Right Skip */}
-        <div className="relative z-10 px-5 pt-4 pb-1 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#119DB5]" />
-            <span className="text-xs font-bold tracking-widest uppercase text-[#172B4D]">
+        {/* Top Header Bar (No Skip Button) */}
+        <div className="relative z-10 px-6 pt-5 pb-1 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 bg-[#119DB5]/10 px-3 py-1 rounded-full border border-[#119DB5]/20">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#119DB5] animate-pulse" />
+            <span className="text-xs font-bold tracking-widest uppercase text-[#119DB5]">
               {slides[currentSlide].tag}
             </span>
           </div>
-
-          <button
-            onClick={handleSkip}
-            className="text-xs font-bold text-slate-500 hover:text-[#172B4D] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
-          >
-            Skip
-          </button>
         </div>
 
         {/* Slide Content Area */}
@@ -314,7 +313,7 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
             </motion.div>
           </AnimatePresence>
 
-          {/* Bottom Controls (Pagination Dots + Side by Side Skip & Next Buttons matching screenshot) */}
+          {/* Bottom Controls (Pagination Dots + SINGLE PROMINENT FULL-WIDTH NEXT BUTTON) */}
           <div className="w-full shrink-0 pt-2 flex flex-col items-center gap-3">
             {/* Pagination Dots */}
             <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -333,32 +332,37 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
               ))}
             </div>
 
-            {/* Bottom Action Bar: Skip Button + Blue Next Button matching Screenshot_20261101-001913_bf71f855.jpg */}
-            <div className="w-full flex items-center gap-3">
+            {/* SINGLE BIG FULL-WIDTH NEXT BUTTON WITH 3S PROGRESS LOADER */}
+            <div className="w-full">
               <button
-                onClick={handleSkip}
-                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#F0F4F8] hover:bg-[#e2e8f0] active:scale-[0.98] text-[#172B4D] font-bold text-sm tracking-wide text-center transition-all cursor-pointer border border-slate-200/60 shadow-xs"
+                onClick={handleNextClick}
+                className="w-full py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-base tracking-wide shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer relative overflow-hidden"
               >
-                Skip
-              </button>
-
-              <button
-                onClick={handleNext}
-                className="flex-[2] py-3.5 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-extrabold text-sm tracking-wide shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer relative overflow-hidden"
-              >
-                {/* Subtle top 3s progress indicator bar */}
+                {/* 3-Second Background Progress Bar Fill */}
                 {isTimerActive && (
                   <div
-                    className="absolute top-0 left-0 h-1 bg-white/40 transition-all duration-75 ease-linear pointer-events-none"
+                    className="absolute inset-y-0 left-0 bg-blue-500/50 pointer-events-none transition-all duration-75 ease-linear"
                     style={{ width: `${progress}%` }}
                   />
                 )}
-                <span>{currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}</span>
-                {currentSlide === slides.length - 1 ? (
-                  <ArrowRight className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
+
+                <span className="relative z-10 flex items-center gap-2">
+                  {isTimerActive ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                      <span>Opening Network Join Pro...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{currentSlide === slides.length - 1 ? 'Sign Up' : 'Next'}</span>
+                      {currentSlide === slides.length - 1 ? (
+                        <ArrowRight className="w-5 h-5" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5" />
+                      )}
+                    </>
+                  )}
+                </span>
               </button>
             </div>
           </div>
@@ -367,4 +371,3 @@ export default function OnboardingSlider({ onComplete, isLoggedIn = false }: Onb
     </div>
   );
 }
-

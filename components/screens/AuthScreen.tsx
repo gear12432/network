@@ -32,6 +32,7 @@ import { triggerConfetti } from '@/lib/confetti';
 
 interface AuthScreenProps {
   onLoginSuccess: (user: UserAccountData) => void;
+  initialMode?: 'login' | 'signup';
 }
 
 type AuthMode = 'login' | 'signup';
@@ -208,8 +209,14 @@ function FloatingSelect({
   );
 }
 
-export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
+export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: AuthScreenProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
+
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
 
   // Login form state
   const [loginIdentifier, setLoginIdentifier] = useState('');

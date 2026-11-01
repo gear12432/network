@@ -68,6 +68,7 @@ export default function InvestmentApp() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserAccountData | null>(null);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('signup');
 
   // Main App State
   const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS);
@@ -258,6 +259,10 @@ export default function InvestmentApp() {
   const handleOnboardingComplete = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('has_completed_onboarding', 'true');
+      const savedUser = localStorage.getItem('network_join_pro_user');
+      if (!savedUser && !currentUser) {
+        setAuthInitialMode('signup');
+      }
     }
     setShowOnboarding(false);
   };
@@ -467,7 +472,7 @@ export default function InvestmentApp() {
 
   // 3. If user is NOT logged in, render Auth / Login & Sign Up screen
   if (!currentUser) {
-    return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+    return <AuthScreen onLoginSuccess={handleLoginSuccess} initialMode={authInitialMode} />;
   }
 
   // 4. Render Logged In User Dashboard
