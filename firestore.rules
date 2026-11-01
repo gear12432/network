@@ -46,6 +46,11 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
 
+    match /invest/{investId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
     match /test/{docId} {
       allow read, write: if true;
     }

@@ -713,8 +713,12 @@ export async function saveInvestmentToFirestore(
   }
 
   try {
-    const docRef = doc(db, 'investments', String(cleanData.id));
-    await withTimeout(setDoc(docRef, cleanData), 4000);
+    const docRef1 = doc(db, 'investments', String(cleanData.id));
+    const docRef2 = doc(db, 'invest', String(cleanData.id));
+    await Promise.allSettled([
+      withTimeout(setDoc(docRef1, cleanData), 4000),
+      withTimeout(setDoc(docRef2, cleanData), 4000),
+    ]);
     return { success: true };
   } catch (err: unknown) {
     console.warn('Warning saving investment to Firestore (saved locally):', err);
@@ -726,9 +730,19 @@ export async function saveInvestmentToFirestore(
 export async function getAllInvestmentsFromFirestore(): Promise<any[]> {
   let investmentsFromFirestore: any[] = [];
   try {
-    const ref = collection(db, 'investments');
-    const snap = await withTimeout(getDocs(ref), 3000);
-    snap.forEach((docSnap) => investmentsFromFirestore.push(docSnap.data()));
+    const ref1 = collection(db, 'investments');
+    const snap1 = await withTimeout(getDocs(ref1), 3000);
+    snap1.forEach((docSnap) => investmentsFromFirestore.push(docSnap.data()));
+
+    const ref2 = collection(db, 'invest');
+    const snap2 = await withTimeout(getDocs(ref2), 3000);
+    snap2.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (!investmentsFromFirestore.some((item) => item.id === data.id)) {
+        investmentsFromFirestore.push(data);
+      }
+    });
+
     if (investmentsFromFirestore.length > 0) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('network_join_pro_investments', JSON.stringify(investmentsFromFirestore));
