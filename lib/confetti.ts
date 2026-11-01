@@ -1,7 +1,8 @@
-import confetti from 'canvas-confetti';
-
-export const triggerConfetti = () => {
+export const triggerConfetti = async () => {
+  if (typeof window === 'undefined') return;
   try {
+    const confettiModule = await import('canvas-confetti');
+    const confetti = confettiModule.default;
     confetti({
       particleCount: 80,
       spread: 70,
@@ -12,3 +13,4 @@ export const triggerConfetti = () => {
     console.error('Confetti error:', err);
   }
 };
+
