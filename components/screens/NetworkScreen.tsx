@@ -29,6 +29,7 @@ import {
 import { UserStats, ReferralMember, ActiveInvestment } from '@/types/investment';
 import { triggerConfetti } from '@/lib/confetti';
 import { motion, AnimatePresence } from 'motion/react';
+import { Dashboard3DCard } from '@/components/ui/Dashboard3DIcons';
 
 interface NetworkScreenProps {
   stats: UserStats;
@@ -490,30 +491,32 @@ export default function NetworkScreen({
 
   return (
     <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-3">
-      {/* 4 Main Feature Navigation Buttons - CLEAN WHITE WITH BLUE ACCENTS */}
-      <div className="grid grid-cols-4 gap-2 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs">
-        {[
-          { id: 'VIP LEVEL', label: 'VIP LEVEL', icon: Crown },
-          { id: 'BUY RULES', label: 'BUY RULES', icon: HelpCircle },
-          { id: 'MY REWARDS', label: 'MY REWARDS', icon: Gift },
-          { id: 'MY PURCHASES', label: 'MY PURCHASES', icon: Coins },
-        ].map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveModalTab(item.id as TabType)}
-              className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-900 transition-all cursor-pointer shadow-2xs group"
-            >
-              <div className="w-8.5 h-8.5 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1 group-hover:bg-blue-600 group-hover:text-white transition-colors border border-blue-100">
-                <IconComponent className="w-4 h-4 stroke-[2.5]" />
-              </div>
-              <span className="text-[10px] font-black tracking-tight text-center leading-tight">
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
+      {/* 4 Premium 3D Glossy Dashboard Navigation Icons */}
+      <div className="grid grid-cols-4 gap-2 bg-[#F8FAFC] p-3 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <Dashboard3DCard
+          id="VIP LEVEL"
+          label="VIP LEVEL"
+          iconType="VIP LEVEL"
+          onClick={() => setActiveModalTab('VIP LEVEL')}
+        />
+        <Dashboard3DCard
+          id="BUY RULES"
+          label="BUY RULES"
+          iconType="BUY RULES"
+          onClick={() => setActiveModalTab('BUY RULES')}
+        />
+        <Dashboard3DCard
+          id="MY REWARDS"
+          label="MY REWARDS"
+          iconType="MY REWARDS"
+          onClick={() => setActiveModalTab('MY REWARDS')}
+        />
+        <Dashboard3DCard
+          id="MY PURCHASES"
+          label="MY PURCHASES"
+          iconType="MY PURCHASES"
+          onClick={() => setActiveModalTab('MY PURCHASES')}
+        />
       </div>
 
       {/* Leaderboard Tips Banner */}
