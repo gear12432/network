@@ -23,6 +23,7 @@ import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/i
 import PlanCard from '@/components/PlanCard';
 import FloatingInput from '@/components/ui/FloatingInput';
 import { getCustomSlidersFromFirestore } from '@/lib/firebase';
+import { Joins3DIcon, Earned3DIcon, Payout3DIcon, Active3DIcon } from '@/components/ui/Stat3DIcons';
 
 interface HomeScreenProps {
   stats: UserStats;
@@ -306,9 +307,7 @@ export default function HomeScreen({
             <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">JOINS</span>
-                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-2xs">
-                  <Users className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                <Joins3DIcon />
               </div>
               <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
                 {stats.totalJoins.toLocaleString('en-IN')}
@@ -320,9 +319,7 @@ export default function HomeScreen({
             <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">EARNED</span>
-                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-2xs">
-                  <TrendingUp className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                <Earned3DIcon />
               </div>
               <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
                 ₹{stats.totalEarned.toLocaleString('en-IN')}
@@ -334,9 +331,7 @@ export default function HomeScreen({
             <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">PAYOUT</span>
-                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-2xs">
-                  <DollarSign className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                <Payout3DIcon />
               </div>
               <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
                 ₹{stats.totalPayout.toLocaleString('en-IN')}
@@ -348,9 +343,7 @@ export default function HomeScreen({
             <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">ACTIVE</span>
-                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-2xs">
-                  <Clock className="w-4 h-4 stroke-[2.5]" />
-                </div>
+                <Active3DIcon />
               </div>
               <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
                 {activeInvestments.length} Running
