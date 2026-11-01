@@ -1040,7 +1040,7 @@ export default function NetworkScreen({
                     <div className="space-y-1.5">
                       <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
                         <div>
-                          <span className="font-bold text-slate-800 block">Direct Rebate: Member 2447951</span>
+                          <span className="font-bold text-slate-800 block">Direct Rebate: Level 1 Referral</span>
                           <span className="text-[9.5px] text-slate-500">Today, 14:22 • Level 1 Bonus</span>
                         </div>
                         <span className="font-mono font-black text-emerald-700">+₹1,000</span>
@@ -1054,7 +1054,7 @@ export default function NetworkScreen({
                       </div>
                       <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
                         <div>
-                          <span className="font-bold text-slate-800 block">Tier 2 Rebate: Member 6475895</span>
+                          <span className="font-bold text-slate-800 block">Tier 2 Rebate: Level 2 Referral</span>
                           <span className="text-[9.5px] text-slate-500">2 days ago • Level 2 Bonus</span>
                         </div>
                         <span className="font-mono font-black text-emerald-700">+₹350</span>
@@ -1074,23 +1074,19 @@ export default function NetworkScreen({
                     <div className="p-1">
                       <span className="text-[9px] font-bold text-[#86592a] block">Active Plans</span>
                       <span className="text-base font-black font-mono">
-                        {activeInvestments.length > 0 ? activeInvestments.length : 2}
+                        {activeInvestments.length}
                       </span>
                     </div>
                     <div className="p-1 border-x border-[#dfbe7e]/30">
                       <span className="text-[9px] font-bold text-[#86592a] block">Daily Return</span>
                       <span className="text-base font-black font-mono text-emerald-800">
-                        +₹{activeInvestments.length > 0
-                          ? activeInvestments.reduce((acc, i) => acc + i.dailyReturn, 0).toLocaleString('en-IN')
-                          : '1,250'}/d
+                        +₹{activeInvestments.reduce((acc, i) => acc + i.dailyReturn, 0).toLocaleString('en-IN')}/d
                       </span>
                     </div>
                     <div className="p-1">
                       <span className="text-[9px] font-bold text-[#86592a] block">Total Accrued</span>
                       <span className="text-base font-black font-mono">
-                        ₹{activeInvestments.length > 0
-                          ? activeInvestments.reduce((acc, i) => acc + (i.dailyReturn * i.daysCompleted), 0).toLocaleString('en-IN')
-                          : '6,250'}
+                        ₹{activeInvestments.reduce((acc, i) => acc + (i.dailyReturn * i.daysCompleted), 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
@@ -1146,73 +1142,14 @@ export default function NetworkScreen({
                         </div>
                       ))
                     ) : (
-                      <>
-                        {/* Sample Active Plan 1 */}
-                        <div className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
-                                Banarasi Silk Weaver Fund
-                              </h5>
-                              <span className="text-[10px] text-slate-500 font-medium">
-                                Invested: ₹5,000 • Started 20 Oct 2026
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-mono font-black text-[#966308] text-sm block">
-                                +₹650/day
-                              </span>
-                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                                Running
-                              </span>
-                            </div>
-                          </div>
-                          <div className="space-y-1 pt-1">
-                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
-                              <span>Duration Progress</span>
-                              <span className="font-mono font-bold text-[#55361e]">
-                                Day 5 of 45 Days
-                              </span>
-                            </div>
-                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
-                              <div className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full w-[11%]" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Sample Active Plan 2 */}
-                        <div className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
-                                Kanjivaram Royal Brocade
-                              </h5>
-                              <span className="text-[10px] text-slate-500 font-medium">
-                                Invested: ₹3,000 • Started 18 Oct 2026
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-mono font-black text-[#966308] text-sm block">
-                                +₹600/day
-                              </span>
-                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                                Running
-                              </span>
-                            </div>
-                          </div>
-                          <div className="space-y-1 pt-1">
-                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
-                              <span>Duration Progress</span>
-                              <span className="font-mono font-bold text-[#55361e]">
-                                Day 7 of 30 Days
-                              </span>
-                            </div>
-                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
-                              <div className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full w-[23%]" />
-                            </div>
-                          </div>
-                        </div>
-                      </>
+                      <div className="p-6 text-center bg-white rounded-2xl border border-amber-200/80 shadow-2xs space-y-1">
+                        <p className="text-xs font-bold text-slate-700">
+                          No active subscribed VIP plans found.
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Browse available plans and subscribe to start earning daily returns!
+                        </p>
+                      </div>
                     )}
                   </div>
 

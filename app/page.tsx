@@ -225,29 +225,13 @@ export default function InvestmentApp() {
     let isMounted = true;
     getAllCustomersFromFirestore().then((custs) => {
       if (isMounted && custs && custs.length > 0) {
-        setCustomers((prev) => {
-          const merged = [...custs];
-          prev.forEach((p) => {
-            if (!merged.some((m) => m.id === p.id)) {
-              merged.push(p);
-            }
-          });
-          return merged;
-        });
+        setCustomers(custs);
       }
     });
 
     getAllInvestmentsFromFirestore().then((invs) => {
       if (isMounted && invs && invs.length > 0) {
-        setActiveInvestments((prev) => {
-          const merged = [...invs];
-          prev.forEach((p) => {
-            if (!merged.some((m) => m.id === p.id)) {
-              merged.push(p);
-            }
-          });
-          return merged;
-        });
+        setActiveInvestments(invs);
       }
     });
 

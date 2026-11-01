@@ -84,44 +84,7 @@ export const INITIAL_PLANS: InvestmentPlan[] = [
   },
 ];
 
-export const INITIAL_ACTIVE_INVESTMENTS: ActiveInvestment[] = [
-  {
-    id: 'act-1',
-    planId: 'plan-silver-tier1',
-    planName: 'Silver Network Tier 1',
-    investedAmount: 999,
-    dailyReturn: 41.62,
-    totalReturn: 1248.75,
-    totalDays: 30,
-    daysCompleted: 14,
-    startDate: '2026-10-07',
-    status: 'active',
-  },
-  {
-    id: 'act-2',
-    planId: 'plan-starter-booster',
-    planName: 'Starter Booster Plan',
-    investedAmount: 499,
-    dailyReturn: 39.26,
-    totalReturn: 588.82,
-    totalDays: 15,
-    daysCompleted: 8,
-    startDate: '2026-10-13',
-    status: 'active',
-  },
-  {
-    id: 'act-3',
-    planId: 'plan-gold-accelerator',
-    planName: 'Gold Elite Accelerator',
-    investedAmount: 2499,
-    dailyReturn: 77.75,
-    totalReturn: 3498.60,
-    totalDays: 45,
-    daysCompleted: 3,
-    startDate: '2026-10-18',
-    status: 'active',
-  },
-];
+export const INITIAL_ACTIVE_INVESTMENTS: ActiveInvestment[] = [];
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
@@ -242,57 +205,5 @@ export const FINANCE_SUMMARY_DATA = {
   teamAvatars: ['AI', 'LS', 'DJ', 'RE', 'SA'],
 };
 
-export const INITIAL_CUSTOMERS: Customer[] = [
-  {
-    id: 'CUST-882910',
-    name: 'Rajesh Kumar Verma',
-    mobile: '9876543210',
-    address: 'Flat 402, Shanti Vihar, Civil Lines',
-    state: 'Uttar Pradesh',
-    district: 'Lucknow',
-    pincode: '226001',
-    panNumber: 'ABCDE1234F',
-    aadhaarNumber: '9842-1204-5519',
-    bankHolderName: 'Rajesh Kumar Verma',
-    bankName: 'State Bank of India',
-    accountNumber: '30981240982',
-    ifscCode: 'SBIN0001245',
-    createdDate: '21 Oct 2026',
-    kycStatus: 'verified',
-  },
-  {
-    id: 'CUST-882911',
-    name: 'Priya Sharma',
-    mobile: '9123456789',
-    address: 'B-12, Sector 18, Cyber City',
-    state: 'Haryana',
-    district: 'Gurugram',
-    pincode: '122002',
-    panNumber: 'PRYPS9912K',
-    aadhaarNumber: '7412-9845-6632',
-    bankHolderName: 'Priya Sharma',
-    bankName: 'HDFC Bank',
-    accountNumber: '501004928192',
-    ifscCode: 'HDFC0000128',
-    createdDate: '20 Oct 2026',
-    kycStatus: 'verified',
-  },
-  {
-    id: 'CUST-882912',
-    name: 'Mohammad Tariq',
-    mobile: '8876541290',
-    address: 'Near Jama Masjid, Park Circus',
-    state: 'West Bengal',
-    district: 'Kolkata',
-    pincode: '700017',
-    panNumber: 'TRQPM4410J',
-    aadhaarNumber: '5519-8824-3104',
-    bankHolderName: 'Mohammad Tariq',
-    bankName: 'Punjab National Bank',
-    accountNumber: '08120015000941',
-    ifscCode: 'PUNB0081200',
-    createdDate: '19 Oct 2026',
-    kycStatus: 'verified',
-  },
-];
+export const INITIAL_CUSTOMERS: Customer[] = [];
 
