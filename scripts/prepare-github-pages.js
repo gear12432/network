@@ -9,22 +9,26 @@ function patchHtmlFile(filePath, depth = 0) {
   let content = fs.readFileSync(filePath, 'utf8');
   const prefix = depth > 0 ? '../'.repeat(depth) : './';
 
-  // 1. Normalize relative or absolute _next/ asset references
-  content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `$1="${prefix}_next/`);
-  content = content.replace(/url\(["']?(\.\.\/|\.\/|\/network\/|\/)?_next\//g, `url("${prefix}_next/`);
-  content = content.replace(/(href|src)=["'](\.\.\/|\.\/|\/network\/|\/)?assets\//g, `$1="${prefix}assets/`);
-  content = content.replace(/["'](\.\.\/|\.\/|\/network\/|\/)?_next\//g, `"${prefix}_next/`);
+  // 1. Convert all absolute or subpath _next/ and assets/ references into clean relative links
+  content = content.replace(/(href|src|data-href)=["'](?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/_next\//g, `$1="${prefix}_next/`);
+  content = content.replace(/(href|src|data-href)=["']\/_next\//g, `$1="${prefix}_next/`);
+  content = content.replace(/(href|src|data-href)=["'](?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/assets\//g, `$1="${prefix}assets/`);
+  content = content.replace(/(href|src|data-href)=["']\/assets\//g, `$1="${prefix}assets/`);
+  content = content.replace(/url\(["']?(?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/_next\//g, `url("${prefix}_next/`);
+  content = content.replace(/url\(["']?\/_next\//g, `url("${prefix}_next/`);
 
   // 2. Inject helper script into <head> for GitHub Pages subpath and admin route resilience
   if (!content.includes('window.__IS_ADMIN_ROUTE__')) {
     const adminScript = `<script>
       (function() {
-        var p = window.location.pathname.toLowerCase();
-        var h = window.location.hash.toLowerCase();
-        var s = window.location.search.toLowerCase();
-        if (p.includes('admin') || h.includes('admin') || s.includes('admin')) {
-          window.__IS_ADMIN_ROUTE__ = true;
-        }
+        try {
+          var p = (window.location.pathname || '').toLowerCase();
+          var h = (window.location.hash || '').toLowerCase();
+          var s = (window.location.search || '').toLowerCase();
+          if (p.includes('admin') || h.includes('admin') || s.includes('admin')) {
+            window.__IS_ADMIN_ROUTE__ = true;
+          }
+        } catch(e) {}
       })();
     </script>`;
     content = content.replace('<head>', `<head>${adminScript}`);
