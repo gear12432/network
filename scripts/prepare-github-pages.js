@@ -57,7 +57,27 @@ if (fs.existsSync(outDir)) {
   // 1. Process all HTML files recursively in out/
   processDirectory(outDir, 0);
 
-  // 2. (Skipped: Never patch .js files directly to keep Webpack runtime intact)
+  // 2. Patch .js files in out/_next/ so Webpack publicPath uses relative path ./_next/ on GitHub Pages subpaths
+  function patchJsFiles(dir) {
+    if (!fs.existsSync(dir)) return;
+    const items = fs.readdirSync(dir, { withFileTypes: true });
+    for (const item of items) {
+      const fullPath = path.join(dir, item.name);
+      if (item.isDirectory()) {
+        patchJsFiles(fullPath);
+      } else if (item.name.endsWith('.js')) {
+        let jsContent = fs.readFileSync(fullPath, 'utf8');
+        if (jsContent.includes('"/_next/"') || jsContent.includes("'/_next/'")) {
+          jsContent = jsContent.replace(/"\/_next\/"/g, '"./_next/"').replace(/'\/_next\/'/g, "'./_next/'");
+          fs.writeFileSync(fullPath, jsContent, 'utf8');
+          console.log(`[GitHub Pages Fix] Patched Webpack publicPath in JS: ${item.name}`);
+        }
+      }
+    }
+  }
+
+  const outNextChunks = path.join(outDir, '_next');
+  patchJsFiles(outNextChunks);
 
   // 3. Ensure 404.html is a copy of index.html so GitHub Pages SPA fallback works
   const indexOut = path.join(outDir, 'index.html');

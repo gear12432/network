@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build && node scripts/prepare-github-pages.js",
-    "build:export": "next build && node scripts/prepare-github-pages.js",
+    "build": "cross-env NODE_ENV=production next build && node scripts/prepare-github-pages.js",
+    "build:export": "cross-env NODE_ENV=production next build && node scripts/prepare-github-pages.js",
     "predeploy": "npm run build:export",
     "deploy": "gh-pages -d out -t true",
     "start": "next start -p 3000",
