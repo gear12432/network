@@ -262,9 +262,10 @@ export default function HomeScreen({
 
               <button
                 onClick={onClaimDailyRoi}
-                className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                style={{ backgroundColor: '#FF8904' }}
+                className="hover:brightness-110 active:scale-95 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer"
               >
-                <Sparkles className="w-3 h-3 text-blue-200" />
+                <Sparkles className="w-3 h-3 text-white" />
                 <span>Claim</span>
               </button>
             </div>
@@ -395,7 +396,8 @@ export default function HomeScreen({
                   onOpenPurchaseHistory();
                 }
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-[11px] sm:text-xs shadow-xs transition-all cursor-pointer shrink-0"
+              style={{ backgroundColor: '#C27AFF' }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:brightness-110 active:scale-95 text-white font-extrabold text-[11px] sm:text-xs shadow-xs transition-all cursor-pointer shrink-0"
               title="Plan History"
             >
               <ShoppingBag className="w-3.5 h-3.5 text-white stroke-[2.5]" />
@@ -433,7 +435,7 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Scrollable category pills - VIBRANT BLUE ACTIVE PILL */}
+        {/* Scrollable category pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat;
@@ -441,9 +443,10 @@ export default function HomeScreen({
               <button
                 key={cat}
                 onClick={() => onSelectCategory(cat)}
+                style={isSelected ? { backgroundColor: '#1A7595', borderColor: '#1A7595' } : {}}
                 className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all shadow-2xs cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-600 text-white border border-blue-600 shadow-xs'
+                    ? 'text-white border shadow-xs'
                     : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
                 }`}
               >

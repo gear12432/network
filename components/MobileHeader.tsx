@@ -62,23 +62,25 @@ export default function MobileHeader({
       <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Wallet pill */}
         <div className="flex items-center bg-blue-50/80 border border-blue-200 rounded-full px-2.5 py-1 text-slate-800 shadow-2xs">
-          <Wallet className="w-4.5 h-4.5 text-blue-600 mr-1.5 shrink-0 stroke-[2.2]" />
+          <Wallet className="w-4.5 h-4.5 text-[#020618] mr-1.5 shrink-0 stroke-[2.2]" />
           <span className="text-xs sm:text-sm font-black text-slate-900 mr-1.5 font-mono">
             ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
           </span>
           <button
             onClick={onOpenDeposit}
-            className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-xs active:scale-90 shrink-0 cursor-pointer"
+            style={{ backgroundColor: '#008000' }}
+            className="w-5 h-5 rounded-full text-white flex items-center justify-center hover:brightness-110 transition-all shadow-xs active:scale-90 shrink-0 cursor-pointer"
             title="Add Money"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
           </button>
         </div>
 
-        {/* + Customer button in VIBRANT BLUE */}
+        {/* + Customer button */}
         <button
           onClick={onOpenAddCustomer}
-          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white border border-blue-500/60 text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
+          style={{ backgroundColor: '#9810FA' }}
+          className="flex items-center gap-1 hover:brightness-110 active:scale-95 text-white border border-[#9810FA] text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
           title="Add New Customer"
         >
           <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
