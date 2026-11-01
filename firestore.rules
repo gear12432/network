@@ -31,6 +31,21 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
 
+    match /customers/{customerId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /customer/{customerId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
+    match /investments/{investmentId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+
     match /test/{docId} {
       allow read, write: if true;
     }

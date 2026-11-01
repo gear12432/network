@@ -43,7 +43,7 @@ import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, getCustomPlansFromFirestore, getAllCustomersFromFirestore } from '@/lib/firebase';
+import { UserAccountData, testConnection, getCustomPlansFromFirestore, getAllCustomersFromFirestore, getAllInvestmentsFromFirestore, saveInvestmentToFirestore, saveCustomerToFirestore } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 
 function subscribeWindowResize(callback: () => void) {
@@ -220,7 +220,7 @@ export default function InvestmentApp() {
     };
   }, []);
 
-  // Fetch Saved Customers from Firestore on Mount
+  // Fetch Saved Customers & Investments from Firestore on Mount
   useEffect(() => {
     let isMounted = true;
     getAllCustomersFromFirestore().then((custs) => {
@@ -236,6 +236,21 @@ export default function InvestmentApp() {
         });
       }
     });
+
+    getAllInvestmentsFromFirestore().then((invs) => {
+      if (isMounted && invs && invs.length > 0) {
+        setActiveInvestments((prev) => {
+          const merged = [...invs];
+          prev.forEach((p) => {
+            if (!merged.some((m) => m.id === p.id)) {
+              merged.push(p);
+            }
+          });
+          return merged;
+        });
+      }
+    });
+
     return () => {
       isMounted = false;
     };
@@ -338,6 +353,7 @@ export default function InvestmentApp() {
       customerPhoto: linkedCustomer?.photo,
     };
     setActiveInvestments((prev) => [newInvestment, ...prev]);
+    saveInvestmentToFirestore(newInvestment);
 
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
@@ -447,6 +463,7 @@ export default function InvestmentApp() {
 
   const handleSaveCustomer = (newCustomer: Customer) => {
     setCustomers((prev) => [newCustomer, ...prev]);
+    saveCustomerToFirestore(newCustomer);
     showToast(`Customer ${newCustomer.name} (${newCustomer.id}) registered successfully!`);
   };
 
@@ -504,6 +521,7 @@ export default function InvestmentApp() {
             stats={userStats}
             referrals={referrals}
             activeInvestments={activeInvestments}
+            customers={customers}
             onOpenPlans={() => setActiveTab('home')}
             onOpenDeposit={() => setActiveModal('deposit')}
           />

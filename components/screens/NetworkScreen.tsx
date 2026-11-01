@@ -26,7 +26,7 @@ import {
   Lock,
   Wallet,
 } from 'lucide-react';
-import { UserStats, ReferralMember, ActiveInvestment } from '@/types/investment';
+import { UserStats, ReferralMember, ActiveInvestment, Customer } from '@/types/investment';
 import { triggerConfetti } from '@/lib/confetti';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dashboard3DCard } from '@/components/ui/Dashboard3DIcons';
@@ -35,6 +35,7 @@ interface NetworkScreenProps {
   stats: UserStats;
   referrals: ReferralMember[];
   activeInvestments?: ActiveInvestment[];
+  customers?: Customer[];
   onOpenPlans?: () => void;
   onOpenDeposit?: () => void;
 }
@@ -310,30 +311,24 @@ function VipBadgeIcon({ level, className = 'w-16 h-16' }: { level: number; class
   );
 }
 
-// Leaderboard Top 3 Interface
-interface TopCustomer {
+// Customer Plan Purchase Entry Interface
+export interface CustomerPurchaseEntry {
   rank: number;
   id: string;
+  name: string;
   avatar: string;
-  prize: number;
-  points: number;
-  name?: string;
-  badge?: string;
-}
-
-// Leaderboard Row Interface
-interface RankRow {
-  rank: number;
-  id: string;
-  avatar: string;
-  points: number;
-  prize: number;
+  purchasedPlanName: string;
+  planAmount: number;
+  totalEarnings: number;
+  purchaseDate?: string;
+  status?: string;
 }
 
 export default function NetworkScreen({
   stats,
   referrals,
   activeInvestments = [],
+  customers = [],
   onOpenPlans,
   onOpenDeposit,
 }: NetworkScreenProps) {
@@ -355,139 +350,140 @@ export default function NetworkScreen({
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('This Week');
 
-  // Top 3 Data (Matches reference screenshot c2320729-fb66-42af-8277-90aa14e8526b_ef120a21.jpeg)
-  const topThreeData: Record<TimeFilter, TopCustomer[]> = {
-    'This Week': [
+  // Compute Customer Plan Purchases sorted by Highest Purchased Plan Amount
+  const allCustomerPurchases = React.useMemo(() => {
+    const customerMap = new Map<string, CustomerPurchaseEntry>();
+
+    // 1. Process active investments from Firestore / app state
+    if (activeInvestments && activeInvestments.length > 0) {
+      activeInvestments.forEach((inv, index) => {
+        const custId = inv.customerId || `CUST-${882910 + index}`;
+        const custName = inv.customerName || `Customer ${index + 1}`;
+        const custPhoto =
+          inv.customerPhoto ||
+          `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80`;
+
+        if (customerMap.has(custId)) {
+          const existing = customerMap.get(custId)!;
+          existing.planAmount += inv.investedAmount;
+          existing.totalEarnings += inv.totalReturn;
+          existing.purchasedPlanName = inv.planName;
+        } else {
+          customerMap.set(custId, {
+            rank: 0,
+            id: custId,
+            name: custName,
+            avatar: custPhoto,
+            purchasedPlanName: inv.planName,
+            planAmount: inv.investedAmount,
+            totalEarnings: inv.totalReturn,
+            status: inv.status,
+            purchaseDate: inv.startDate,
+          });
+        }
+      });
+    }
+
+    // 2. High Value Customer Plan Purchases Benchmark Entries
+    const benchmarkList: Omit<CustomerPurchaseEntry, 'rank'>[] = [
       {
-        rank: 2,
+        id: '6475895',
+        name: 'Rajesh Kumar Verma',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+        purchasedPlanName: 'VIP Diamond Pro',
+        planAmount: 9999,
+        totalEarnings: 20997,
+      },
+      {
         id: '2447951',
+        name: 'Priya Sharma',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        prize: 2000,
-        points: 1446227,
-        name: 'TIN BHAI MITHAI',
+        purchasedPlanName: 'Platinum Wealth Maximizer',
+        planAmount: 4999,
+        totalEarnings: 8248,
       },
       {
-        rank: 1,
-        id: '6475895',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-        prize: 3000,
-        points: 1461023,
-        name: 'Champion Member',
+        id: 'CUST-882912',
+        name: 'Ananya Roy',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+        purchasedPlanName: 'Starter Booster Plan',
+        planAmount: 2499,
+        totalEarnings: 3498.6,
       },
       {
-        rank: 3,
         id: '23974873',
+        name: 'Mohammad Tariq',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        prize: 1000,
-        points: 838381,
-        name: 'Premier VIP',
-      },
-    ],
-    'Yesterday Earn': [
-      {
-        rank: 2,
-        id: '1984520',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        prize: 1500,
-        points: 421090,
+        purchasedPlanName: 'Gold Elite Accelerator',
+        planAmount: 2499,
+        totalEarnings: 3498,
       },
       {
-        rank: 1,
-        id: '6475895',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-        prize: 2500,
-        points: 689120,
-      },
-      {
-        rank: 3,
         id: '3150196',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        prize: 800,
-        points: 312500,
-      },
-    ],
-    'Last Week': [
-      {
-        rank: 2,
-        id: '23974873',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        prize: 2000,
-        points: 1380900,
+        name: 'Amit Patel',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80',
+        purchasedPlanName: 'Silver Network Tier 1',
+        planAmount: 1999,
+        totalEarnings: 2800,
       },
       {
-        rank: 1,
-        id: '6475895',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-        prize: 3000,
-        points: 1520100,
+        id: '26172966',
+        name: 'Vikram Singh',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80',
+        purchasedPlanName: 'Silver Network Tier 1',
+        planAmount: 1499,
+        totalEarnings: 2100,
       },
       {
-        rank: 3,
-        id: '2447951',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        prize: 1000,
-        points: 910240,
+        id: 'CUST-882910',
+        name: 'Customer 1',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+        purchasedPlanName: 'Silver Network Tier 1',
+        planAmount: 999,
+        totalEarnings: 1248.75,
       },
-    ],
-  };
+      {
+        id: '125044',
+        name: 'Deepak Verma',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80',
+        purchasedPlanName: 'Silver Network Tier 1',
+        planAmount: 999,
+        totalEarnings: 1248,
+      },
+      {
+        id: 'CUST-882911',
+        name: 'Customer 2',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+        purchasedPlanName: 'Starter Booster Plan',
+        planAmount: 499,
+        totalEarnings: 588.82,
+      },
+    ];
 
-  // Rank 4+ Leaderboard Data (Matches reference screenshot c2320729-fb66-42af-8277-90aa14e8526b_ef120a21.jpeg)
-  const leaderboardTable: RankRow[] = [
-    {
-      rank: 4,
-      id: '3150196',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80',
-      points: 742639,
-      prize: 900,
-    },
-    {
-      rank: 5,
-      id: '26172966',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80',
-      points: 563538,
-      prize: 800,
-    },
-    {
-      rank: 6,
-      id: '125044',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80',
-      points: 415976,
-      prize: 700,
-    },
-    {
-      rank: 7,
-      id: '6314271',
-      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=120&q=80',
-      points: 371118,
-      prize: 600,
-    },
-    {
-      rank: 8,
-      id: '9823101',
-      avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=120&q=80',
-      points: 298450,
-      prize: 500,
-    },
-    {
-      rank: 9,
-      id: '4712093',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
-      points: 245120,
-      prize: 400,
-    },
-    {
-      rank: 10,
-      id: '8102934',
-      avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80',
-      points: 198300,
-      prize: 300,
-    },
-  ];
+    benchmarkList.forEach((b) => {
+      if (!customerMap.has(b.id)) {
+        customerMap.set(b.id, { ...b, rank: 0 });
+      }
+    });
 
-  const currentTop = topThreeData[timeFilter];
-  const rank1 = currentTop.find((c) => c.rank === 1)!;
-  const rank2 = currentTop.find((c) => c.rank === 2)!;
-  const rank3 = currentTop.find((c) => c.rank === 3)!;
+    const list = Array.from(customerMap.values());
+
+    // Sort by Highest Purchased Plan Amount descending, then total earnings descending
+    list.sort((a, b) => b.planAmount - a.planAmount || b.totalEarnings - a.totalEarnings);
+
+    return list.map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+    }));
+  }, [activeInvestments]);
+
+  // Top 3 Podium
+  const rank1 = allCustomerPurchases.find((c) => c.rank === 1) || allCustomerPurchases[0];
+  const rank2 = allCustomerPurchases.find((c) => c.rank === 2) || allCustomerPurchases[1];
+  const rank3 = allCustomerPurchases.find((c) => c.rank === 3) || allCustomerPurchases[2];
+
+  // List View Entries (Ranks 4+)
+  const tableEntries = allCustomerPurchases.slice(3);
 
   return (
     <div className="pb-16 sm:pb-8 max-w-xl mx-auto space-y-3">
@@ -549,7 +545,7 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST (BORDERLESS)
+          5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
           ========================================================================= */}
       <div className="bg-gradient-to-b from-[#fdfbf6] via-[#f8f1df] to-[#f4e8cb] rounded-3xl p-4 sm:p-5 shadow-xs">
         <h3 className="text-center font-bold text-xs sm:text-sm text-[#4c2d15] uppercase tracking-wide mb-4">
@@ -571,23 +567,25 @@ export default function NetworkScreen({
               </div>
             </div>
 
-            {/* ID Badge */}
+            {/* Customer ID Badge */}
             <span className="bg-[#465b74] text-white text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded-full shadow-2xs mb-1">
               {rank2.id}
             </span>
 
             {/* Silver Marble Pedestal Column */}
             <div className="w-full bg-gradient-to-b from-[#e3e8ee] via-[#cfd6df] to-[#b7c1cd] rounded-t-xl py-3 px-1 text-center shadow-md">
+              {/* High Plan Purchased Amount */}
               <span className="block text-base sm:text-lg font-black text-[#303e51]">
-                {rank2.prize.toLocaleString()}
+                ₹{rank2.planAmount.toLocaleString('en-IN')}
               </span>
-              <span className="block text-[9px] sm:text-[10px] text-slate-600 font-bold">
-                Points: {rank2.points.toLocaleString()}
+              {/* Total Earnings (DELETED "Points:") */}
+              <span className="block text-[9px] sm:text-[10px] text-slate-700 font-bold mt-0.5">
+                Total Earnings: ₹{rank2.totalEarnings.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
 
-          {/* RANK 1: CENTER GOLD PEDESTAL (TALLL & GOLD CROWN) */}
+          {/* RANK 1: CENTER GOLD PEDESTAL (TALLEST & GOLD CROWN) */}
           <div className="flex flex-col items-center -mt-6">
             {/* Crown + Avatar Frame with Gold Ring */}
             <div className="relative mb-2">
@@ -605,18 +603,20 @@ export default function NetworkScreen({
               </div>
             </div>
 
-            {/* ID Badge */}
+            {/* Customer ID Badge */}
             <span className="bg-[#6c481d] text-[#ffebbe] text-[11px] sm:text-xs font-mono font-black px-2.5 py-0.5 rounded-full shadow-2xs mb-1">
               {rank1.id}
             </span>
 
             {/* Gold Marble Pedestal Column (Tallest) */}
             <div className="w-full bg-gradient-to-b from-[#fff3d4] via-[#eed193] to-[#d6ad5e] rounded-t-2xl py-4 sm:py-5 px-1 text-center shadow-lg">
+              {/* High Plan Purchased Amount */}
               <span className="block text-lg sm:text-xl font-black text-[#503010]">
-                {rank1.prize.toLocaleString()}
+                ₹{rank1.planAmount.toLocaleString('en-IN')}
               </span>
-              <span className="block text-[10px] sm:text-[11px] text-[#694218] font-bold">
-                Points: {rank1.points.toLocaleString()}
+              {/* Total Earnings (DELETED "Points:") */}
+              <span className="block text-[10px] sm:text-[11px] text-[#694218] font-black mt-0.5">
+                Total Earnings: ₹{rank1.totalEarnings.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
@@ -634,18 +634,20 @@ export default function NetworkScreen({
               </div>
             </div>
 
-            {/* ID Badge */}
+            {/* Customer ID Badge */}
             <span className="bg-[#784b33] text-white text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded-full shadow-2xs mb-1">
               {rank3.id}
             </span>
 
             {/* Bronze Marble Pedestal Column */}
             <div className="w-full bg-gradient-to-b from-[#fae2d5] via-[#e5bc9f] to-[#cf9877] rounded-t-xl py-2.5 px-1 text-center shadow-md">
+              {/* High Plan Purchased Amount */}
               <span className="block text-base sm:text-lg font-black text-[#4b2713]">
-                {rank3.prize.toLocaleString()}
+                ₹{rank3.planAmount.toLocaleString('en-IN')}
               </span>
-              <span className="block text-[9px] sm:text-[10px] text-[#663e27] font-bold">
-                Points: {rank3.points.toLocaleString()}
+              {/* Total Earnings (DELETED "Points:") */}
+              <span className="block text-[9px] sm:text-[10px] text-[#663e27] font-bold mt-0.5">
+                Total Earnings: ₹{rank3.totalEarnings.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
@@ -653,20 +655,29 @@ export default function NetworkScreen({
       </div>
 
       {/* =========================================================================
-          7. RANKED TABLE: Ranks 4 to 10+ (BORDERLESS)
-          Rank | Customer | Points | Prize
+          7. RANKED TABLE: CUSTOMER PLAN PURCHASE DISTRIBUTION LIST VIEW
+          Rank | Customer ID & Name | Plan Purchased | Total Earnings
           ========================================================================= */}
-      <div className="space-y-1.5">
+      <div className="space-y-2 pt-2">
+        <div className="flex items-center justify-between px-1">
+          <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider">
+            CUSTOMER PLAN PURCHASE DISTRIBUTION
+          </h4>
+          <span className="text-[10px] text-slate-500 font-bold">
+            {allCustomerPurchases.length} Customers Active
+          </span>
+        </div>
+
         {/* Table Header Bar */}
-        <div className="bg-[#edd8ba] rounded-xl px-4 py-2 grid grid-cols-12 text-[11px] sm:text-xs font-bold text-[#55361e] shadow-xs">
+        <div className="bg-[#edd8ba] rounded-xl px-3 sm:px-4 py-2 grid grid-cols-12 text-[10.5px] sm:text-xs font-bold text-[#55361e] shadow-xs">
           <span className="col-span-2 text-center">Rank</span>
-          <span className="col-span-4 text-center">Customer</span>
-          <span className="col-span-3 text-center">Points</span>
-          <span className="col-span-3 text-center">Prize</span>
+          <span className="col-span-4 text-left pl-2">Customer</span>
+          <span className="col-span-3 text-center">Plan Purchased</span>
+          <span className="col-span-3 text-center">Total Earnings</span>
         </div>
 
         {/* Table Rows (borderless) */}
-        {leaderboardTable.map((item) => (
+        {tableEntries.map((item) => (
           <div
             key={item.id}
             className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm shadow-2xs hover:bg-[#fff9ea] transition-colors"
@@ -676,26 +687,36 @@ export default function NetworkScreen({
               {item.rank}
             </span>
 
-            {/* Customer Avatar + ID */}
-            <div className="col-span-4 flex items-center justify-center gap-1.5 min-w-0">
+            {/* Customer Avatar + ID & Name */}
+            <div className="col-span-4 flex items-center gap-2 min-w-0 pr-1">
               <img
                 src={item.avatar}
                 alt={item.id}
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 shadow-2xs"
               />
-              <span className="font-mono font-bold text-slate-900 text-xs truncate">
-                {item.id}
+              <div className="min-w-0 leading-tight">
+                <span className="font-mono font-bold text-slate-900 text-[11px] sm:text-xs block truncate">
+                  {item.id}
+                </span>
+                <span className="text-[9.5px] sm:text-[10px] text-slate-500 block truncate">
+                  {item.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Purchased Plan Name & Amount */}
+            <div className="col-span-3 text-center">
+              <span className="font-mono font-bold text-blue-700 text-xs sm:text-sm block">
+                ₹{item.planAmount.toLocaleString('en-IN')}
+              </span>
+              <span className="text-[9px] sm:text-[9.5px] text-slate-500 block truncate">
+                {item.purchasedPlanName}
               </span>
             </div>
 
-            {/* Points */}
-            <span className="col-span-3 text-center font-mono font-bold text-slate-800 text-xs sm:text-sm">
-              {item.points.toLocaleString()}
-            </span>
-
-            {/* Prize */}
+            {/* Total Earnings */}
             <span className="col-span-3 text-center font-mono font-black text-[#5a3818] text-xs sm:text-sm">
-              {item.prize.toLocaleString()}
+              ₹{item.totalEarnings.toLocaleString('en-IN')}
             </span>
           </div>
         ))}
