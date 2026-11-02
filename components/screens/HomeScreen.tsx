@@ -2,12 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Search,
   ShieldCheck,
   ArrowRight,
-  Users,
   TrendingUp,
-  DollarSign,
   Sparkles,
   Gift,
   Clock,
@@ -18,12 +15,14 @@ import {
   ChevronDown,
   ChevronUp,
   ShoppingBag,
+  CheckCircle2,
+  UserCheck,
 } from 'lucide-react';
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
 import PlanCard from '@/components/PlanCard';
-import FloatingInput from '@/components/ui/FloatingInput';
-import { getCustomSlidersFromFirestore } from '@/lib/firebase';
+import { getCustomSlidersFromFirestore, saveWithdrawalToFirestore } from '@/lib/firebase';
 import { Joins3DIcon, Earned3DIcon, Payout3DIcon, Active3DIcon } from '@/components/ui/Stat3DIcons';
+import { triggerConfetti } from '@/lib/confetti';
 
 interface HomeScreenProps {
   stats: UserStats;
@@ -79,6 +78,10 @@ export default function HomeScreen({
 
   // Mobile Stats Dropdown Accordion Toggle
   const [isStatsOpenMobile, setIsStatsOpenMobile] = useState(false);
+
+  // Claim to Firebase Status
+  const [claimedPlanIds, setClaimedPlanIds] = useState<string[]>([]);
+  const [claimToast, setClaimToast] = useState<string | null>(null);
 
   // Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -158,8 +161,61 @@ export default function HomeScreen({
 
   const slide = slides[currentSlide % slides.length] || slides[0];
 
+  // Helper to calculate Maturity Date string
+  const getMaturityDateStr = (startDateStr?: string, durationDays: number = 30) => {
+    try {
+      const baseDate = startDateStr ? new Date(startDateStr) : new Date();
+      if (isNaN(baseDate.getTime())) {
+        const fallback = new Date();
+        fallback.setDate(fallback.getDate() + durationDays);
+        return fallback.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+      baseDate.setDate(baseDate.getDate() + durationDays);
+      return baseDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return '30 Days Matured';
+    }
+  };
+
+  // Claim Active Matured Plan -> Save Withdrawal Request to Firebase (`withdrawals` collection)
+  const handleClaimActivePlanToFirebase = async (inv: ActiveInvestment) => {
+    if (claimedPlanIds.includes(inv.id)) return;
+
+    const withdrawRecord = {
+      id: `wth-${Date.now()}`,
+      loginUid: stats.loginUid || 'GK35648',
+      userName: stats.userName || 'User',
+      mobile: stats.mobile || '9876543210',
+      amount: inv.totalReturn || inv.investedAmount * 1.5,
+      bankDetails: 'skjiyaul@okhdfcbank linked',
+      dateTime: new Date().toLocaleString('en-IN'),
+      status: 'Pending' as const,
+      createdAt: new Date().toISOString(),
+      customerId: inv.customerId,
+      customerName: inv.customerName,
+      customerMobile: inv.customerMobile,
+      planName: inv.planName,
+    };
+
+    const res = await saveWithdrawalToFirestore(withdrawRecord);
+    if (res.success) {
+      setClaimedPlanIds((prev) => [...prev, inv.id]);
+      triggerConfetti();
+      setClaimToast(`Withdrawal request for ${inv.planName} saved to Firebase (Status: Pending)!`);
+      setTimeout(() => setClaimToast(null), 4000);
+    }
+  };
+
   return (
     <div className="space-y-3.5 pb-20 sm:pb-8">
+      {/* Toast Notification Banner for Firebase Withdrawal Claim */}
+      {claimToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1e2330] text-emerald-400 text-xs sm:text-sm font-bold py-2.5 px-5 rounded-full border border-emerald-500/40 shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <span>✅</span>
+          <span>{claimToast}</span>
+        </div>
+      )}
+
       {/* 1. Executive Bento Grid (Carousel + Stats) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         {/* Left Column: Compact Slider + Daily Return */}
@@ -261,7 +317,24 @@ export default function HomeScreen({
               </div>
 
               <button
-                onClick={onClaimDailyRoi}
+                onClick={async () => {
+                  onClaimDailyRoi();
+                  const withdrawRecord = {
+                    id: `wth-daily-${Date.now()}`,
+                    loginUid: stats.loginUid || 'GK35648',
+                    userName: stats.userName || 'User',
+                    mobile: stats.mobile || '9876543210',
+                    amount: stats.unclaimedRoi || 248.5,
+                    bankDetails: 'skjiyaul@okhdfcbank linked',
+                    dateTime: new Date().toLocaleString('en-IN'),
+                    status: 'Pending' as const,
+                    createdAt: new Date().toISOString(),
+                    planName: 'Daily ROI Return Claim',
+                  };
+                  await saveWithdrawalToFirestore(withdrawRecord);
+                  setClaimToast(`Daily Return claim saved to Firebase (Status: Pending)!`);
+                  setTimeout(() => setClaimToast(null), 4000);
+                }}
                 style={{ backgroundColor: '#FF8904' }}
                 className="hover:brightness-110 active:scale-95 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer"
               >
@@ -376,7 +449,103 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* 2. CATEGORIES Section Header & COMPACT SMALL-SIZE BUTTONS */}
+      {/* 2. ACTIVE PLANS & MATURITY DATES SECTION (Claim saves to Firebase withdrawals) */}
+      {activeInvestments.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-4 border border-amber-200 dark:border-slate-800 shadow-2xs space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                  Active Running Plans & Maturity Status
+                </h4>
+                <p className="text-[10px] text-slate-500">
+                  Claiming submits customer bank details to Firebase (Status: Pending)
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+              {activeInvestments.length} Active
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            {activeInvestments.map((inv) => {
+              const maturityStr = getMaturityDateStr(inv.startDate, inv.totalDays || 30);
+              const isClaimed = claimedPlanIds.includes(inv.id);
+
+              return (
+                <div
+                  key={inv.id}
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col justify-between gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {inv.customerPhoto ? (
+                        <img
+                          src={inv.customerPhoto}
+                          alt={inv.customerName || 'Customer'}
+                          className="w-8 h-8 rounded-full object-cover border border-amber-500 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0">
+                          {inv.customerName?.[0] || 'C'}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white truncate block">
+                          {inv.planName}
+                        </span>
+                        {inv.customerName && (
+                          <span className="text-[10.5px] text-slate-500 block truncate">
+                            Customer: {inv.customerName} ({inv.customerMobile || 'Linked'})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 shrink-0">
+                      ₹{inv.investedAmount}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/80 dark:border-slate-700 text-[11px]">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Maturity Date:</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                        {maturityStr}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleClaimActivePlanToFirebase(inv)}
+                      disabled={isClaimed}
+                      style={{ backgroundColor: isClaimed ? '#10B981' : '#008000' }}
+                      className="px-3 py-1 rounded-lg text-white font-bold text-xs shadow-2xs hover:brightness-110 active:scale-95 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-90"
+                    >
+                      {isClaimed ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          <span>Pending in Firebase</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="w-3.5 h-3.5 text-white" />
+                          <span>Claim & Withdraw</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 3. CATEGORIES Section Header & COMPACT SMALL-SIZE BUTTONS */}
       <div className="pt-1">
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-2">
@@ -457,7 +626,7 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* 3. Available Plans */}
+      {/* 4. Available Plans */}
       <div className="space-y-2.5 pt-0.5">
         {filteredPlans.length === 0 ? (
           <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-6 text-center border border-[#dfbe7e]">
@@ -469,7 +638,7 @@ export default function HomeScreen({
             {(searchQuery || selectedCategory !== 'All Plans') && (
               <button
                 onClick={() => {
-                  onSearchChange('');
+                  onSearchChange?.('');
                   onSelectCategory('All Plans');
                 }}
                 className="mt-2 text-xs text-[#8a5416] hover:text-[#46280b] font-bold underline cursor-pointer"

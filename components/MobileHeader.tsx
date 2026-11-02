@@ -29,6 +29,15 @@ export default function MobileHeader({
   onOpenProfile,
   onOpenNotifications,
 }: MobileHeaderProps) {
+  const [profilePhoto, setProfilePhoto] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('user_profile_photo');
+      if (saved) setProfilePhoto(saved);
+    }
+  }, []);
+
   // REQUIREMENT: Header will ONLY show on Home Screen! On other screens, return null.
   if (activeTab !== 'home') {
     return null;
@@ -46,9 +55,17 @@ export default function MobileHeader({
           title="View Profile & Full KYC"
         >
           <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 via-blue-50 to-indigo-100 border-2 border-blue-600 flex items-center justify-center font-serif font-black text-blue-900 text-xs shadow-xs">
-              {currentStats?.userInitials || 'GK'}
-            </div>
+            {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Profile"
+                className="w-9 h-9 rounded-full object-cover border-2 border-blue-600 shadow-xs"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 via-blue-50 to-indigo-100 border-2 border-blue-600 flex items-center justify-center font-serif font-black text-blue-900 text-xs shadow-xs">
+                {currentStats?.userInitials || 'GK'}
+              </div>
+            )}
             {currentStats?.isVip && (
               <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-600 text-amber-950 p-0.5 rounded-full shadow-xs border border-white">
                 <Crown className="w-2.5 h-2.5 fill-amber-950" />

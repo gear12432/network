@@ -9,14 +9,13 @@ import {
   Headphones,
   ChevronRight,
   LogOut,
-  Sun,
-  Moon,
   Camera,
   X,
   CheckCircle2,
   KeyRound,
 } from 'lucide-react';
 import { UserStats } from '@/types/investment';
+import HelpdeskChatModal from '@/components/modals/HelpdeskChatModal';
 
 interface ProfileScreenProps {
   stats: UserStats;
@@ -47,6 +46,9 @@ export default function ProfileScreen({
   const [pinSavedSuccess, setPinSavedSuccess] = useState<boolean>(false);
   const [hasSavedPin, setHasSavedPin] = useState<boolean>(true);
 
+  // 24/7 VIP Helpdesk Chat Modal State
+  const [showHelpdeskChat, setShowHelpdeskChat] = useState<boolean>(false);
+
   const pinRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -67,10 +69,8 @@ export default function ProfileScreen({
       const savedTheme = localStorage.getItem('app_theme');
       if (savedTheme === 'dark' || document.documentElement.classList.contains('dark')) {
         setIsDark(true);
-        document.documentElement.classList.add('dark');
       } else {
         setIsDark(false);
-        document.documentElement.classList.remove('dark');
       }
 
       // 2. Load Saved Profile Photo
@@ -86,20 +86,6 @@ export default function ProfileScreen({
       }
     }
   }, []);
-
-  const toggleTheme = () => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    if (typeof window !== 'undefined') {
-      if (nextDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('app_theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('app_theme', 'light');
-      }
-    }
-  };
 
   // Profile Image Upload Handler
   const handleAvatarClick = () => {
@@ -272,23 +258,6 @@ export default function ProfileScreen({
               </div>
             </div>
           </div>
-
-          {/* Light / Dark Mode Switch Icon Button (Enlarged Black Icon, Clean Layout) */}
-          <button
-            onClick={toggleTheme}
-            className={`p-2.5 rounded-2xl flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-              isDark
-                ? 'text-white hover:bg-slate-800'
-                : 'text-black hover:bg-slate-100'
-            }`}
-            title="Toggle Light / Dark Theme Across All Screens"
-          >
-            {isDark ? (
-              <Moon className="w-6.5 h-6.5 text-white stroke-[2.2]" />
-            ) : (
-              <Sun className="w-6.5 h-6.5 text-black stroke-[2.2]" />
-            )}
-          </button>
         </div>
 
         {/* Balance Metric Grid */}
@@ -409,8 +378,10 @@ export default function ProfileScreen({
           </span>
         </button>
 
-        {/* 24/7 VIP Helpdesk Button */}
-        <div
+        {/* 24/7 VIP Helpdesk Button (Opens Real-Time Chat Modal) */}
+        <button
+          type="button"
+          onClick={() => setShowHelpdeskChat(true)}
           className={`w-full flex items-center justify-between p-3.5 transition-colors text-left cursor-pointer rounded-2xl ${
             isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'
           }`}
@@ -431,7 +402,7 @@ export default function ProfileScreen({
             </div>
           </div>
           <ChevronRight className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-        </div>
+        </button>
 
         {/* Log Out Button */}
         {onLogout && (
@@ -465,6 +436,13 @@ export default function ProfileScreen({
           Encrypted with 256-bit SSL Certificate
         </p>
       </div>
+
+      {/* 24/7 VIP Helpdesk Realtime Chat Modal */}
+      <HelpdeskChatModal
+        isOpen={showHelpdeskChat}
+        onClose={() => setShowHelpdeskChat(false)}
+        userStats={stats}
+      />
 
       {/* Security & Withdrawal PIN Dialog Modal */}
       {showPinModal && (

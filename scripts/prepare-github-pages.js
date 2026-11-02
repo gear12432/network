@@ -4,6 +4,26 @@ const path = require('path');
 const projectRoot = path.join(__dirname, '..');
 const outDir = path.join(projectRoot, 'out');
 
+function cleanRootArtifacts() {
+  const rootAdmin = path.join(projectRoot, 'admin');
+  const rootNext = path.join(projectRoot, '_next');
+  const rootIndex = path.join(projectRoot, 'index.html');
+  const root404 = path.join(projectRoot, '404.html');
+  const rootAdminHtml = path.join(projectRoot, 'admin.html');
+
+  if (fs.existsSync(rootAdmin)) fs.rmSync(rootAdmin, { recursive: true, force: true });
+  if (fs.existsSync(rootNext)) fs.rmSync(rootNext, { recursive: true, force: true });
+  if (fs.existsSync(rootIndex)) fs.rmSync(rootIndex, { force: true });
+  if (fs.existsSync(root404)) fs.rmSync(root404, { force: true });
+  if (fs.existsSync(rootAdminHtml)) fs.rmSync(rootAdminHtml, { force: true });
+  console.log('[GitHub Pages Fix] Cleaned previous root build artifacts.');
+}
+
+if (process.argv.includes('--clean')) {
+  cleanRootArtifacts();
+  process.exit(0);
+}
+
 function patchHtmlFile(filePath, depth = 0) {
   if (!fs.existsSync(filePath)) return;
   let content = fs.readFileSync(filePath, 'utf8');

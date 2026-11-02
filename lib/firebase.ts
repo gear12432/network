@@ -351,6 +351,10 @@ export interface WithdrawalRecord {
   dateTime: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   createdAt: string;
+  customerId?: string;
+  customerName?: string;
+  customerMobile?: string;
+  planName?: string;
 }
 
 export async function saveWithdrawalToFirestore(
@@ -766,6 +770,58 @@ export async function getAllInvestmentsFromFirestore(): Promise<any[]> {
 
   return [];
 }
+
+// 13. Support Chat Messages Firestore Management
+export interface SupportChatMessage {
+  id: string;
+  sender: 'user' | 'admin';
+  senderName: string;
+  senderUid?: string;
+  text?: string;
+  imageUrl?: string;
+  timestamp: string;
+  createdAt: number;
+}
+
+export async function saveChatMessageToFirestore(
+  msg: SupportChatMessage
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const docRef = doc(db, 'support_chats', msg.id);
+    await withTimeout(setDoc(docRef, msg), 4000);
+    return { success: true };
+  } catch (err: unknown) {
+    console.warn('Warning saving chat message to Firestore:', err);
+    return { success: false, error: 'Failed to save chat message' };
+  }
+}
+
+export async function deleteChatMessageFromFirestore(msgId: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'support_chats', msgId);
+    await withTimeout(deleteDoc(docRef), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error deleting chat message from Firestore:', err);
+    return false;
+  }
+}
+
+export async function getAllChatMessagesFromFirestore(): Promise<SupportChatMessage[]> {
+  try {
+    const ref = collection(db, 'support_chats');
+    const snap = await withTimeout(getDocs(ref), 3000);
+    const messages: SupportChatMessage[] = [];
+    snap.forEach((docSnap) => {
+      messages.push(docSnap.data() as SupportChatMessage);
+    });
+    return messages.sort((a, b) => a.createdAt - b.createdAt);
+  } catch (err) {
+    console.warn('Error fetching chat messages from Firestore:', err);
+    return [];
+  }
+}
+
 
 
 
