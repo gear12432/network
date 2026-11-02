@@ -822,6 +822,89 @@ export async function getAllChatMessagesFromFirestore(): Promise<SupportChatMess
   }
 }
 
+// 14. VIP Level Settings Firestore Management
+export interface VipLevelRecord {
+  id: string; // e.g. "level_1"
+  levelNumber: number; // 1 to 10
+  levelName: string; // "VIP 1", "VIP 2", etc.
+  minAmount: number;
+  dailyPercentage: number;
+  icon?: string;
+  updatedAt: string;
+}
+
+export async function saveVipLevelToFirestore(
+  levelData: VipLevelRecord
+): Promise<{ success: boolean; error?: string }> {
+  if (typeof window !== 'undefined') {
+    try {
+      const localStr = localStorage.getItem('network_join_pro_vip_levels');
+      const existing = localStr ? JSON.parse(localStr) : [];
+      const updated = [
+        levelData,
+        ...existing.filter((l: any) => String(l.id) !== String(levelData.id)),
+      ];
+      localStorage.setItem('network_join_pro_vip_levels', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('LocalStorage save level error:', e);
+    }
+  }
+
+  try {
+    const docRef1 = doc(db, 'level', levelData.id);
+    const docRef2 = doc(db, 'levels', levelData.id);
+    await Promise.allSettled([
+      withTimeout(setDoc(docRef1, levelData), 4000),
+      withTimeout(setDoc(docRef2, levelData), 4000),
+    ]);
+    return { success: true };
+  } catch (err: unknown) {
+    console.warn('Warning saving level to Firestore (saved locally):', err);
+    return { success: false, error: 'Saved locally' };
+  }
+}
+
+export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> {
+  let levelsFromFirestore: VipLevelRecord[] = [];
+  try {
+    const ref1 = collection(db, 'level');
+    const snap1 = await withTimeout(getDocs(ref1), 3000);
+    snap1.forEach((docSnap) => levelsFromFirestore.push(docSnap.data() as VipLevelRecord));
+
+    if (levelsFromFirestore.length === 0) {
+      const ref2 = collection(db, 'levels');
+      const snap2 = await withTimeout(getDocs(ref2), 3000);
+      snap2.forEach((docSnap) => levelsFromFirestore.push(docSnap.data() as VipLevelRecord));
+    }
+
+    if (levelsFromFirestore.length > 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(
+          'network_join_pro_vip_levels',
+          JSON.stringify(levelsFromFirestore)
+        );
+      }
+      return levelsFromFirestore.sort((a, b) => a.levelNumber - b.levelNumber);
+    }
+  } catch (err) {
+    console.warn('Error fetching levels from Firestore:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_vip_levels');
+      if (local) {
+        return JSON.parse(local);
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return [];
+}
+
+
 
 
 

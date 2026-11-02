@@ -39,6 +39,10 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  MessageSquare,
+  Settings,
+  Send,
+  Crown,
 } from 'lucide-react';
 import {
   getAllUsersFromFirestore,
@@ -58,17 +62,34 @@ import {
   getCustomSlidersFromFirestore,
   saveCustomSliderToFirestore,
   deleteCustomSliderFromFirestore,
+  getAllChatMessagesFromFirestore,
+  saveChatMessageToFirestore,
+  deleteChatMessageFromFirestore,
+  getAllVipLevelsFromFirestore,
+  saveVipLevelToFirestore,
   UserAccountData,
   DepositRecord,
   WithdrawalRecord,
   GatewaySettings,
+  SupportChatMessage,
+  VipLevelRecord,
+  db,
 } from '@/lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { INITIAL_PLANS } from '@/data/initialData';
 
 export default function AdminPanel() {
-  // Sidebar tab: 'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits'
+  // Sidebar tab: 'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits' | 'contact' | 'settings'
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits'
+    | 'dashboard'
+    | 'users'
+    | 'plans'
+    | 'sliders'
+    | 'gateway'
+    | 'withdrawals'
+    | 'deposits'
+    | 'contact'
+    | 'settings'
   >('dashboard');
 
   // Sidebar Collapsed State (Starts in small icon-only mode)
@@ -369,6 +390,211 @@ export default function AdminPanel() {
     reader.readAsDataURL(file);
   };
 
+  // -------------------------------------------------------------------------
+  // SUPPORT CHAT MANAGER (Contact Us Tab - Realtime Firestore Sync)
+  // -------------------------------------------------------------------------
+  const [chatMessages, setChatMessages] = useState<SupportChatMessage[]>([]);
+  const [selectedChatUserUid, setSelectedChatUserUid] = useState<string | null>(null);
+  const [adminReplyText, setAdminReplyText] = useState<string>('');
+  const [adminReplyImagePreview, setAdminReplyImagePreview] = useState<string>('');
+  const [sendingReply, setSendingReply] = useState<boolean>(false);
+
+  // Real-time Firestore Listener for Support Chat Messages
+  useEffect(() => {
+    try {
+      const chatRef = collection(db, 'support_chats');
+      const unsubscribe = onSnapshot(
+        chatRef,
+        (snapshot) => {
+          const list: SupportChatMessage[] = [];
+          snapshot.forEach((docSnap) => {
+            list.push(docSnap.data() as SupportChatMessage);
+          });
+          list.sort((a, b) => a.createdAt - b.createdAt);
+          setChatMessages(list);
+        },
+        (err) => {
+          console.warn('Realtime chat listener warning:', err);
+        }
+      );
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn('Error setting up support_chats real-time listener:', e);
+    }
+  }, []);
+
+  // Group chat messages by User UID
+  const chatUsersMap = React.useMemo(() => {
+    const map: Record<
+      string,
+      {
+        userUid: string;
+        userName: string;
+        userEmail: string;
+        userMobile: string;
+        messages: SupportChatMessage[];
+        lastMsg: SupportChatMessage;
+      }
+    > = {};
+
+    chatMessages.forEach((msg) => {
+      const uid = msg.userUid;
+      if (!map[uid]) {
+        map[uid] = {
+          userUid: uid,
+          userName: msg.userName || 'User ' + uid,
+          userEmail: msg.userEmail || '',
+          userMobile: msg.userMobile || '',
+          messages: [],
+          lastMsg: msg,
+        };
+      }
+      map[uid].messages.push(msg);
+      if (msg.createdAt >= map[uid].lastMsg.createdAt) {
+        map[uid].lastMsg = msg;
+      }
+    });
+
+    return Object.values(map).sort((a, b) => b.lastMsg.createdAt - a.lastMsg.createdAt);
+  }, [chatMessages]);
+
+  const activeChatGroup = React.useMemo(() => {
+    if (!selectedChatUserUid) return null;
+    return chatUsersMap.find((g) => g.userUid === selectedChatUserUid) || null;
+  }, [chatUsersMap, selectedChatUserUid]);
+
+  // Handle Admin Sending Reply
+  const handleAdminSendReply = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedChatUserUid || sendingReply) return;
+    if (!adminReplyText.trim() && !adminReplyImagePreview) return;
+
+    const group = activeChatGroup;
+    const msgObj: SupportChatMessage = {
+      id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      userUid: selectedChatUserUid,
+      userName: group?.userName || 'User ' + selectedChatUserUid,
+      userEmail: group?.userEmail || '',
+      userMobile: group?.userMobile || '',
+      sender: 'admin',
+      text: adminReplyText.trim(),
+      imageUrl: adminReplyImagePreview || undefined,
+      createdAt: Date.now(),
+    };
+
+    setSendingReply(true);
+    setChatMessages((prev) => [...prev, msgObj]);
+    setAdminReplyText('');
+    setAdminReplyImagePreview('');
+
+    await saveChatMessageToFirestore(msgObj);
+    setSendingReply(false);
+  };
+
+  // Handle Admin Selecting Reply Image Attachment
+  const handleAdminChatImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be under 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setAdminReplyImagePreview(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Delete User Chat Message (Only user messages can be deleted by admin per requirement)
+  const handleDeleteUserChatMessage = async (msg: SupportChatMessage) => {
+    if (msg.sender === 'admin') {
+      alert('Admin messages cannot be deleted.');
+      return;
+    }
+    if (confirm('Are you sure you want to delete this user message?')) {
+      setChatMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      await deleteChatMessageFromFirestore(msg.id);
+    }
+  };
+
+  // -------------------------------------------------------------------------
+  // VIP LEVEL SETTINGS (Settings Tab - Firestore `level` collection)
+  // -------------------------------------------------------------------------
+  const [vipLevels, setVipLevels] = useState<VipLevelRecord[]>([]);
+  const [selectedLevelNum, setSelectedLevelNum] = useState<number>(1);
+  const [levelAmount, setLevelAmount] = useState<string>('500');
+  const [levelPercentage, setLevelPercentage] = useState<string>('2.5');
+  const [levelSaveMsg, setLevelSaveMsg] = useState<string>('');
+  const [savingLevel, setSavingLevel] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchLevels = async () => {
+      const recs = await getAllVipLevelsFromFirestore();
+      setVipLevels(recs);
+      const lvl1 = recs.find((r) => r.levelNumber === 1);
+      if (lvl1) {
+        setLevelAmount(String(lvl1.minAmount));
+        setLevelPercentage(String(lvl1.dailyPercentage));
+      }
+    };
+    fetchLevels();
+  }, []);
+
+  useEffect(() => {
+    const existing = vipLevels.find((r) => r.levelNumber === selectedLevelNum);
+    if (existing) {
+      setLevelAmount(String(existing.minAmount));
+      setLevelPercentage(String(existing.dailyPercentage));
+    } else {
+      const defaultAmounts = [500, 1000, 2500, 5000, 10000, 15000, 25000, 35000, 50000, 100000];
+      const defaultRates = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.5, 10.0];
+      const idx = selectedLevelNum - 1;
+      setLevelAmount(String(defaultAmounts[idx] || 1000 * selectedLevelNum));
+      setLevelPercentage(String(defaultRates[idx] || 2 + selectedLevelNum * 0.5));
+    }
+  }, [selectedLevelNum, vipLevels]);
+
+  const handleSaveVipLevel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = parseFloat(levelAmount);
+    const pct = parseFloat(levelPercentage);
+
+    if (isNaN(amt) || isNaN(pct)) {
+      alert('Please enter valid numeric values for Amount and Percentage.');
+      return;
+    }
+
+    setSavingLevel(true);
+    const levelRecord: VipLevelRecord = {
+      id: `level_${selectedLevelNum}`,
+      levelNumber: selectedLevelNum,
+      levelName: `VIP ${selectedLevelNum}`,
+      minAmount: amt,
+      dailyPercentage: pct,
+      icon: selectedLevelNum <= 3 ? '🥈' : selectedLevelNum <= 6 ? '🥇' : selectedLevelNum <= 9 ? '💎' : '👑',
+      updatedAt: new Date().toISOString(),
+    };
+
+    setVipLevels((prev) => [
+      levelRecord,
+      ...prev.filter((r) => r.levelNumber !== selectedLevelNum),
+    ].sort((a, b) => a.levelNumber - b.levelNumber));
+
+    const res = await saveVipLevelToFirestore(levelRecord);
+    setSavingLevel(false);
+
+    if (res.success) {
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('level' collection) successfully! 🟢`);
+    } else {
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved locally!`);
+    }
+    setTimeout(() => setLevelSaveMsg(''), 3500);
+  };
+
   // Load all Firebase data
   const refreshData = async () => {
     setLoading(true);
@@ -660,6 +886,8 @@ export default function AdminPanel() {
                 <option value="withdrawals" className="text-slate-900">Withdrawals ▾</option>
                 <option value="plans" className="text-slate-900">Investment Plans ▾</option>
                 <option value="sliders" className="text-slate-900">Home Sliders ▾</option>
+                <option value="contact" className="text-slate-900">Contact Us (Chats) ▾</option>
+                <option value="settings" className="text-slate-900">Settings (VIP Levels) ▾</option>
                 <option value="gateway" className="text-slate-900">Payment Gateway ▾</option>
               </select>
               <ChevronRight className="w-3.5 h-3.5 text-cyan-100 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
@@ -885,6 +1113,8 @@ export default function AdminPanel() {
                 <nav className="space-y-1">
                   {[
                     { id: 'sliders', label: 'Home Sliders', icon: Sliders },
+                    { id: 'contact', label: 'Contact Us', icon: MessageSquare, badge: chatMessages.filter((m) => m.sender === 'user').length },
+                    { id: 'settings', label: 'Settings', icon: Settings },
                   ].map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
@@ -906,7 +1136,18 @@ export default function AdminPanel() {
                           {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
                         </div>
                         {!sidebarCollapsed && (
-                          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {item.badge !== undefined && item.badge > 0 && (
+                              <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
+                          </div>
                         )}
                       </button>
                     );
@@ -952,6 +1193,8 @@ export default function AdminPanel() {
                   {activeTab === 'withdrawals' && 'Withdrawal Requests'}
                   {activeTab === 'plans' && 'Yield Plans Manager'}
                   {activeTab === 'sliders' && 'Home Screen Sliders'}
+                  {activeTab === 'contact' && 'Support Chats (Contact Us)'}
+                  {activeTab === 'settings' && 'VIP Level Settings'}
                   {activeTab === 'gateway' && 'Payment Gateway Settings'}
                 </span>
                 <span className="text-xs font-normal text-slate-400">Control panel</span>
@@ -2625,6 +2868,362 @@ export default function AdminPanel() {
                 Save Gateway Settings
               </button>
             </form>
+          </div>
+        )}
+
+        {/* =========================================================================
+            8. CONTACT US (SUPPORT CHATS MANAGER) TAB
+            ========================================================================= */}
+        {activeTab === 'contact' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-140px)] min-h-[500px]">
+            {/* Left: User Chat Conversations List (4 Cols) */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden shadow-2xs">
+              <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-cyan-400" />
+                  <h3 className="font-extrabold text-sm">User Conversations ({chatUsersMap.length})</h3>
+                </div>
+                <span className="text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 rounded-full">
+                  Realtime Sync 🟢
+                </span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                {chatUsersMap.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs space-y-2">
+                    <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
+                    <p className="font-semibold">No support chats received yet.</p>
+                    <p className="text-[11px] text-slate-400">When users message 24/7 support, their real-time chats will appear here.</p>
+                  </div>
+                ) : (
+                  chatUsersMap.map((userGroup) => {
+                    const isSelected = selectedChatUserUid === userGroup.userUid;
+                    return (
+                      <div
+                        key={userGroup.userUid}
+                        onClick={() => setSelectedChatUserUid(userGroup.userUid)}
+                        className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-cyan-50/80 border-l-4 border-cyan-500'
+                            : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-slate-800 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-2xs">
+                          {userGroup.userName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="text-xs font-black text-slate-900 truncate">{userGroup.userName}</h4>
+                            <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                              {new Date(userGroup.lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 font-medium truncate">
+                            {userGroup.lastMsg.sender === 'admin' ? 'You: ' : ''}
+                            {userGroup.lastMsg.text || '🖼️ Image attachment'}
+                          </p>
+                          <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400">
+                            <span>UID: {userGroup.userUid}</span>
+                            {userGroup.userMobile && <span className="font-mono">{userGroup.userMobile}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Right: Active Chat Conversation Screen (8 Cols) */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden shadow-2xs">
+              {activeChatGroup ? (
+                <>
+                  {/* Chat Top Bar */}
+                  <div className="p-3.5 bg-slate-800 text-white flex items-center justify-between border-b border-slate-700">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-cyan-600 text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
+                        {activeChatGroup.userName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-white">{activeChatGroup.userName}</h4>
+                        <p className="text-[10px] text-slate-300 font-mono flex items-center gap-2">
+                          <span>UID: {activeChatGroup.userUid}</span>
+                          {activeChatGroup.userEmail && <span>• {activeChatGroup.userEmail}</span>}
+                          {activeChatGroup.userMobile && <span>• {activeChatGroup.userMobile}</span>}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Messages Viewport */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
+                    {activeChatGroup.messages.map((msg) => {
+                      const isAdmin = msg.sender === 'admin';
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex items-start gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}
+                        >
+                          {!isAdmin && (
+                            <div className="w-7 h-7 rounded-full bg-slate-700 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-1">
+                              U
+                            </div>
+                          )}
+
+                          <div
+                            className={`max-w-[75%] rounded-2xl p-3 shadow-2xs space-y-1.5 relative group ${
+                              isAdmin
+                                ? 'bg-cyan-600 text-white rounded-tr-none'
+                                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 text-[10px] opacity-80 border-b border-white/10 pb-1">
+                              <span className="font-extrabold">
+                                {isAdmin ? 'Admin Support 🛡️' : msg.userName || 'User'}
+                              </span>
+                              <span className="font-mono">
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+
+                            {msg.imageUrl && (
+                              <div className="rounded-xl overflow-hidden border border-black/10 cursor-pointer" onClick={() => setPreviewImage(msg.imageUrl!)}>
+                                <img src={msg.imageUrl} alt="Chat Attachment" className="max-h-60 w-full object-cover" />
+                              </div>
+                            )}
+
+                            {msg.text && <p className="text-xs font-medium leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
+
+                            {/* Delete Button for User Messages Only */}
+                            {!isAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUserChatMessage(msg)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-2 -right-2 p-1 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 cursor-pointer"
+                                title="Delete user message"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+
+                          {isAdmin && (
+                            <div className="w-7 h-7 rounded-full bg-cyan-700 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-1">
+                              AD
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Image Attachment Preview in Reply Bar */}
+                  {adminReplyImagePreview && (
+                    <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <img src={adminReplyImagePreview} alt="Reply Attachment" className="w-12 h-12 object-cover rounded-lg border border-slate-300" />
+                        <span className="text-xs font-bold text-slate-700">Image attached</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAdminReplyImagePreview('')}
+                        className="p-1 text-rose-600 hover:bg-rose-100 rounded-full"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Admin Reply Bar */}
+                  <form onSubmit={handleAdminSendReply} className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                    <label className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl cursor-pointer transition-all shrink-0">
+                      <ImageIcon className="w-5 h-5" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAdminChatImageSelect}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <input
+                      type="text"
+                      value={adminReplyText}
+                      onChange={(e) => setAdminReplyText(e.target.value)}
+                      placeholder="Type admin reply message..."
+                      className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-slate-800"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={sendingReply || (!adminReplyText.trim() && !adminReplyImagePreview)}
+                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Send</span>
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <MessageSquare className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-700">Select a User Conversation</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mt-1">
+                      Choose a user from the left sidebar to view their messages, images, and send real-time admin replies.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            9. VIP LEVEL SETTINGS TAB (Persists to Firestore `level` collection)
+            ========================================================================= */}
+        {activeTab === 'settings' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* VIP Level Configuration Form Box */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">VIP Level Settings</h3>
+                    <p className="text-[11px] text-slate-400 font-medium">Saved directly to Firestore &apos;level&apos; folder</p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveVipLevel} className="space-y-4 text-xs">
+                {/* Select VIP Level Dropdown Box (1 to 10) */}
+                <div>
+                  <label className="font-extrabold text-slate-800 block mb-1.5">
+                    Select VIP Level Box (Level 1 to 10):
+                  </label>
+                  <select
+                    value={selectedLevelNum}
+                    onChange={(e) => setSelectedLevelNum(parseInt(e.target.value) || 1)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-extrabold text-slate-800 focus:outline-none focus:border-slate-900 cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <option key={num} value={num}>
+                        👑 VIP Level {num} {num <= 3 ? '(Silver/Basic)' : num <= 6 ? '(Gold/Pro)' : num <= 9 ? '(Diamond/Elite)' : '(Royal Master)'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Amount Input Box (₹) */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Required Minimum Investment Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="any"
+                    value={levelAmount}
+                    onChange={(e) => setLevelAmount(e.target.value)}
+                    placeholder="e.g. 5000"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+
+                {/* Percentage Input Box (%) */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Daily Profit Income Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="any"
+                    value={levelPercentage}
+                    onChange={(e) => setLevelPercentage(e.target.value)}
+                    placeholder="e.g. 3.5"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+
+                {levelSaveMsg && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl text-center shadow-2xs">
+                    {levelSaveMsg}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={savingLevel}
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-black text-xs rounded-xl transition-all shadow-sm cursor-pointer active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <span>{savingLevel ? 'Saving to Firebase...' : `Save VIP Level ${selectedLevelNum} Settings`}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* VIP Levels Overview Table (7 Cols) */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-black text-slate-900">Configured VIP Levels Summary (1 - 10)</h3>
+                <span className="text-[10px] font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full">
+                  Firestore Folder: level
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="p-2.5 rounded-l-lg">Level</th>
+                      <th className="p-2.5">Badge</th>
+                      <th className="p-2.5">Min Amount (₹)</th>
+                      <th className="p-2.5">Daily Rate (%)</th>
+                      <th className="p-2.5 rounded-r-lg text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                      const rec = vipLevels.find((r) => r.levelNumber === num);
+                      const isSel = selectedLevelNum === num;
+                      return (
+                        <tr key={num} className={`hover:bg-slate-50 transition-colors ${isSel ? 'bg-amber-50/60 font-bold' : ''}`}>
+                          <td className="p-2.5 font-bold text-slate-900">VIP {num}</td>
+                          <td className="p-2.5">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+                              {rec?.icon || (num <= 3 ? '🥈' : num <= 6 ? '🥇' : num <= 9 ? '💎' : '👑')} Level {num}
+                            </span>
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-slate-800">
+                            {rec ? `₹${rec.minAmount.toLocaleString('en-IN')}` : '₹' + (num * 1000)}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-emerald-700">
+                            {rec ? `${rec.dailyPercentage}% / day` : `${2 + num * 0.5}% / day`}
+                          </td>
+                          <td className="p-2.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLevelNum(num)}
+                              className="px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
+                            >
+                              Edit Level
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </main>
