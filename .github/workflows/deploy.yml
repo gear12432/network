@@ -30,7 +30,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci || npm install --legacy-peer-deps
 
       - name: Build static site
         run: npm run build:export
@@ -40,13 +40,23 @@ jobs:
 
       - name: Ensure .nojekyll exists
         run: |
+          mkdir -p ./out
           touch ./out/.nojekyll
           touch ./.nojekyll
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+      - name: Deploy to GitHub Pages Action
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
 
       - name: Deploy to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: out
           branch: gh-pages
-
-
+        continue-on-error: true
