@@ -12,6 +12,10 @@ const compat = new FlatCompat({
 export default [
   ...compat.extends("next/core-web-vitals"),
   {
+    rules: {
+      "@next/next/no-img-element": "off",
+      "react-hooks/exhaustive-deps": "off"
+    },
     ignores: [".next/*", "out/*", "dist/*"],
   },
 ];

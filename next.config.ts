@@ -20,7 +20,6 @@ const nextConfig: NextConfig = {
     ],
   },
   trailingSlash: true,
-  output: 'export',
   transpilePackages: ['motion'],
   webpack: (config, {dev}) => {
     if (dev && process.env.DISABLE_HMR === 'true') {

@@ -851,11 +851,17 @@ export async function saveVipLevelToFirestore(
   }
 
   try {
-    const docRef1 = doc(db, 'level', levelData.id);
-    const docRef2 = doc(db, 'levels', levelData.id);
+    const docRef1 = doc(db, 'vip level', levelData.id);
+    const docRef2 = doc(db, 'level', levelData.id);
+    const docRef3 = doc(db, 'levels', levelData.id);
+    const docRef4 = doc(db, 'vip_level', levelData.id);
+    const docRef5 = doc(db, 'viplevel', levelData.id);
     await Promise.allSettled([
       withTimeout(setDoc(docRef1, levelData), 4000),
       withTimeout(setDoc(docRef2, levelData), 4000),
+      withTimeout(setDoc(docRef3, levelData), 4000),
+      withTimeout(setDoc(docRef4, levelData), 4000),
+      withTimeout(setDoc(docRef5, levelData), 4000),
     ]);
     return { success: true };
   } catch (err: unknown) {
@@ -866,28 +872,34 @@ export async function saveVipLevelToFirestore(
 
 export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> {
   let levelsFromFirestore: VipLevelRecord[] = [];
-  try {
-    const ref1 = collection(db, 'level');
-    const snap1 = await withTimeout(getDocs(ref1), 3000);
-    snap1.forEach((docSnap) => levelsFromFirestore.push(docSnap.data() as VipLevelRecord));
+  const collectionsToTry = ['vip level', 'level', 'levels', 'vip_level', 'viplevel'];
 
-    if (levelsFromFirestore.length === 0) {
-      const ref2 = collection(db, 'levels');
-      const snap2 = await withTimeout(getDocs(ref2), 3000);
-      snap2.forEach((docSnap) => levelsFromFirestore.push(docSnap.data() as VipLevelRecord));
-    }
-
-    if (levelsFromFirestore.length > 0) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(
-          'network_join_pro_vip_levels',
-          JSON.stringify(levelsFromFirestore)
-        );
+  for (const colName of collectionsToTry) {
+    try {
+      const ref = collection(db, colName);
+      const snap = await withTimeout(getDocs(ref), 3000);
+      if (!snap.empty) {
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() as VipLevelRecord;
+          if (!levelsFromFirestore.some((l) => l.levelNumber === data.levelNumber)) {
+            levelsFromFirestore.push(data);
+          }
+        });
+        if (levelsFromFirestore.length > 0) break;
       }
-      return levelsFromFirestore.sort((a, b) => a.levelNumber - b.levelNumber);
+    } catch (err) {
+      console.warn(`Error fetching levels from Firestore collection '${colName}':`, err);
     }
-  } catch (err) {
-    console.warn('Error fetching levels from Firestore:', err);
+  }
+
+  if (levelsFromFirestore.length > 0) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        'network_join_pro_vip_levels',
+        JSON.stringify(levelsFromFirestore)
+      );
+    }
+    return levelsFromFirestore.sort((a, b) => a.levelNumber - b.levelNumber);
   }
 
   if (typeof window !== 'undefined') {

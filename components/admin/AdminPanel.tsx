@@ -639,7 +639,7 @@ export default function AdminPanel() {
     setSavingLevel(false);
 
     if (res.success) {
-      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('level' collection) successfully with ${pct}% Daily Rate! 🟢`);
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('vip level' folder) successfully with ${pct}% Daily Rate! 🟢`);
     } else {
       setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved locally!`);
     }
@@ -3146,7 +3146,7 @@ export default function AdminPanel() {
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-slate-900">VIP Level Settings</h3>
-                    <p className="text-[11px] text-slate-400 font-medium">Saved directly to Firestore &apos;level&apos; folder</p>
+                    <p className="text-[11px] text-slate-400 font-medium">Saved directly to Firestore &apos;vip level&apos; folder</p>
                   </div>
                 </div>
               </div>
@@ -3253,7 +3253,7 @@ export default function AdminPanel() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="text-sm font-black text-slate-900">Configured VIP Levels Summary (1 - 10)</h3>
                 <span className="text-[10px] font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full">
-                  Firestore Folder: level
+                  Firestore Folder: vip level / level
                 </span>
               </div>
 
