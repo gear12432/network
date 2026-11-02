@@ -29,13 +29,12 @@ function patchHtmlFile(filePath, depth = 0) {
   let content = fs.readFileSync(filePath, 'utf8');
   const prefix = depth > 0 ? '../'.repeat(depth) : './';
 
-  // 1. Convert all absolute or subpath _next/ and assets/ references into clean relative links
+  // 1. Convert all _next/ and assets/ references (whether absolute, relative, or ../) into clean relative links
+  content = content.replace(/(href|src|data-href)=["'](?:\.\.\/|\/)*_next\//g, `$1="${prefix}_next/`);
   content = content.replace(/(href|src|data-href)=["'](?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/_next\//g, `$1="${prefix}_next/`);
-  content = content.replace(/(href|src|data-href)=["']\/_next\//g, `$1="${prefix}_next/`);
+  content = content.replace(/(href|src|data-href)=["'](?:\.\.\/|\/)*assets\//g, `$1="${prefix}assets/`);
   content = content.replace(/(href|src|data-href)=["'](?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/assets\//g, `$1="${prefix}assets/`);
-  content = content.replace(/(href|src|data-href)=["']\/assets\//g, `$1="${prefix}assets/`);
-  content = content.replace(/url\(["']?(?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/_next\//g, `url("${prefix}_next/`);
-  content = content.replace(/url\(["']?\/_next\//g, `url("${prefix}_next/`);
+  content = content.replace(/url\(["']?(?:\.\.\/|\/)*_next\//g, `url("${prefix}_next/`);
 
   // 2. Inject helper script into <head> for GitHub Pages subpath and admin route resilience
   if (!content.includes('window.__IS_ADMIN_ROUTE__')) {
@@ -117,16 +116,14 @@ if (fs.existsSync(outDir)) {
   const outAdminIndex = path.join(outAdminDir, 'index.html');
   const outAdminHtml = path.join(outDir, 'admin.html');
 
-  // If next build produced out/admin/index.html, patch it; if not, use index.html copy
-  if (!fs.existsSync(outAdminIndex) && fs.existsSync(indexOut)) {
+  // Use indexOut copy for admin routes so Tailwind CSS and Next bundles load reliably
+  if (fs.existsSync(indexOut)) {
     fs.copyFileSync(indexOut, outAdminIndex);
-  }
-  if (!fs.existsSync(outAdminHtml) && fs.existsSync(indexOut)) {
     fs.copyFileSync(indexOut, outAdminHtml);
   }
 
-  patchHtmlFile(outAdminIndex, 1);
   patchHtmlFile(outAdminHtml, 0);
+  patchHtmlFile(outAdminIndex, 1);
 
   // 5. Copy build artifacts directly to project root for branch publishing
   const rootIndex = path.join(projectRoot, 'index.html');
@@ -157,9 +154,9 @@ if (fs.existsSync(outDir)) {
   const rootAdminIndexFile = path.join(rootAdminDir, 'index.html');
   const rootAdminHtmlFile = path.join(projectRoot, 'admin.html');
 
-  if (fs.existsSync(outAdminIndex)) {
-    fs.copyFileSync(outAdminIndex, rootAdminIndexFile);
-    fs.copyFileSync(outAdminIndex, rootAdminHtmlFile);
+  if (fs.existsSync(indexOut)) {
+    fs.copyFileSync(indexOut, rootAdminIndexFile);
+    fs.copyFileSync(indexOut, rootAdminHtmlFile);
   }
 
   patchHtmlFile(rootAdminHtmlFile, 0);
@@ -170,5 +167,3 @@ if (fs.existsSync(outDir)) {
   fs.writeFileSync(path.join(projectRoot, '.nojekyll'), '');
   console.log('[GitHub Pages Fix] Created .nojekyll in root directory.');
 }
-
-
