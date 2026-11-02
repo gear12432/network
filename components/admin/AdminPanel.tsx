@@ -527,36 +527,87 @@ export default function AdminPanel() {
   const [vipLevels, setVipLevels] = useState<VipLevelRecord[]>([]);
   const [selectedLevelNum, setSelectedLevelNum] = useState<number>(1);
   const [levelAmount, setLevelAmount] = useState<string>('500');
+  const [levelCommission, setLevelCommission] = useState<string>('12.5');
   const [levelPercentage, setLevelPercentage] = useState<string>('2.5');
   const [levelSaveMsg, setLevelSaveMsg] = useState<string>('');
   const [savingLevel, setSavingLevel] = useState<boolean>(false);
+
+  // Sync inputs when selectedLevelNum changes
+  useEffect(() => {
+    const existing = vipLevels.find((r) => r.levelNumber === selectedLevelNum);
+    let amt = 500;
+    let pct = 2.5;
+
+    if (existing) {
+      amt = existing.minAmount || 500;
+      pct = existing.dailyPercentage || 2.5;
+    } else {
+      const defaultAmounts = [500, 1000, 2500, 5000, 10000, 15000, 25000, 35000, 50000, 100000];
+      const defaultRates = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.5, 10.0];
+      const idx = selectedLevelNum - 1;
+      amt = defaultAmounts[idx] || 1000 * selectedLevelNum;
+      pct = defaultRates[idx] || 2 + selectedLevelNum * 0.5;
+    }
+
+    const calcComm = (amt * (pct / 100)).toFixed(2);
+    setLevelAmount(String(amt));
+    setLevelPercentage(String(pct));
+    setLevelCommission(calcComm);
+  }, [selectedLevelNum, vipLevels]);
 
   useEffect(() => {
     const fetchLevels = async () => {
       const recs = await getAllVipLevelsFromFirestore();
       setVipLevels(recs);
-      const lvl1 = recs.find((r) => r.levelNumber === 1);
-      if (lvl1) {
-        setLevelAmount(String(lvl1.minAmount));
-        setLevelPercentage(String(lvl1.dailyPercentage));
-      }
     };
     fetchLevels();
   }, []);
 
-  useEffect(() => {
-    const existing = vipLevels.find((r) => r.levelNumber === selectedLevelNum);
-    if (existing) {
-      setLevelAmount(String(existing.minAmount));
-      setLevelPercentage(String(existing.dailyPercentage));
-    } else {
-      const defaultAmounts = [500, 1000, 2500, 5000, 10000, 15000, 25000, 35000, 50000, 100000];
-      const defaultRates = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.5, 10.0];
-      const idx = selectedLevelNum - 1;
-      setLevelAmount(String(defaultAmounts[idx] || 1000 * selectedLevelNum));
-      setLevelPercentage(String(defaultRates[idx] || 2 + selectedLevelNum * 0.5));
+  // Handler for Amount Input change
+  const handleAmountInputChange = (val: string) => {
+    setLevelAmount(val);
+    const numAmt = parseFloat(val);
+    const numComm = parseFloat(levelCommission);
+    const numPct = parseFloat(levelPercentage);
+
+    if (!isNaN(numAmt) && numAmt > 0) {
+      if (!isNaN(numComm) && numComm > 0) {
+        // Auto fit percentage from commission: (Commission / Amount) * 100
+        const calcPct = (numComm / numAmt) * 100;
+        setLevelPercentage(calcPct % 1 === 0 ? String(calcPct) : calcPct.toFixed(2));
+      } else if (!isNaN(numPct) && numPct > 0) {
+        // Auto fit commission from percentage: Amount * (Percentage / 100)
+        const calcComm = numAmt * (numPct / 100);
+        setLevelCommission(calcComm % 1 === 0 ? String(calcComm) : calcComm.toFixed(2));
+      }
     }
-  }, [selectedLevelNum, vipLevels]);
+  };
+
+  // Handler for Commission Amount Input change (calculates percentage automatically)
+  const handleCommissionInputChange = (val: string) => {
+    setLevelCommission(val);
+    const numAmt = parseFloat(levelAmount);
+    const numComm = parseFloat(val);
+
+    if (!isNaN(numAmt) && numAmt > 0 && !isNaN(numComm)) {
+      // Auto fit percentage: (Commission / Amount) * 100
+      const calcPct = (numComm / numAmt) * 100;
+      setLevelPercentage(calcPct % 1 === 0 ? String(calcPct) : calcPct.toFixed(2));
+    }
+  };
+
+  // Handler for Percentage Input change
+  const handlePercentageInputChange = (val: string) => {
+    setLevelPercentage(val);
+    const numAmt = parseFloat(levelAmount);
+    const numPct = parseFloat(val);
+
+    if (!isNaN(numAmt) && numAmt > 0 && !isNaN(numPct)) {
+      // Auto fit commission: Amount * (Percentage / 100)
+      const calcComm = numAmt * (numPct / 100);
+      setLevelCommission(calcComm % 1 === 0 ? String(calcComm) : calcComm.toFixed(2));
+    }
+  };
 
   const handleSaveVipLevel = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -588,7 +639,7 @@ export default function AdminPanel() {
     setSavingLevel(false);
 
     if (res.success) {
-      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('level' collection) successfully! 🟢`);
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('level' collection) successfully with ${pct}% Daily Rate! 🟢`);
     } else {
       setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved locally!`);
     }
@@ -3119,38 +3170,65 @@ export default function AdminPanel() {
                   </select>
                 </div>
 
-                {/* Amount Input Box (₹) */}
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Required Minimum Investment Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="any"
-                    value={levelAmount}
-                    onChange={(e) => setLevelAmount(e.target.value)}
-                    placeholder="e.g. 5000"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
-                  />
+                {/* Amount (Invest Amount) & Commission Amount Side-by-Side Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Invest Amount Input Box (₹) */}
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      Invest Amount (₹) / इन्वेस्टमेंट
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="any"
+                      value={levelAmount}
+                      onChange={(e) => handleAmountInputChange(e.target.value)}
+                      placeholder="e.g. 5000"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
+                    />
+                  </div>
+
+                  {/* Commission Amount Input Box (₹) - Right side of Amount */}
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      Commission Amount (₹) / कमीशन
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={levelCommission}
+                      onChange={(e) => handleCommissionInputChange(e.target.value)}
+                      placeholder="e.g. 175"
+                      className="w-full px-3.5 py-2.5 bg-amber-50/60 border border-amber-300 rounded-xl font-mono font-bold text-amber-900 focus:outline-none focus:border-amber-600"
+                    />
+                  </div>
                 </div>
 
-                {/* Percentage Input Box (%) */}
+                {/* Percentage Input Box (%) - Auto fitted from Amount & Commission */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Daily Profit Income Percentage (%)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-slate-700 block">
+                      Daily Profit Income Percentage (%) / % दर
+                    </label>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
+                      Auto Fitted ✨
+                    </span>
+                  </div>
                   <input
                     type="number"
                     required
                     min="0"
                     step="any"
                     value={levelPercentage}
-                    onChange={(e) => setLevelPercentage(e.target.value)}
+                    onChange={(e) => handlePercentageInputChange(e.target.value)}
                     placeholder="e.g. 3.5"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
+                    className="w-full px-3.5 py-2.5 bg-emerald-50/60 border border-emerald-300 rounded-xl font-mono font-bold text-emerald-900 focus:outline-none focus:border-emerald-600"
                   />
+                  <p className="text-[10px] text-slate-500 mt-1 font-medium">
+                    ⚡ जैसे ही आप इन्वेस्टमेंट अमाउंट या कमीशन अमाउंट बदलेंगे, परसेंटेज (Percentage) ऑटो-कैलकुलेट हो जाएगा। (सेव करने पर % दर सेव होगी)
+                  </p>
                 </div>
 
                 {levelSaveMsg && (
