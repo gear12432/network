@@ -36,44 +36,44 @@ export default function WalletScreen({
   });
 
   return (
-    <div className="space-y-4 pb-20 sm:pb-8">
+    <div className="space-y-4 pb-20 sm:pb-8 bg-slate-50 min-h-screen">
       {/* Wallet Balance Hero Card */}
-      <div className="bg-gradient-to-br from-[#3b200b] via-[#593315] to-[#804c1f] text-white rounded-3xl p-5 shadow-sm border-2 border-[#dfbe7e] relative overflow-hidden">
-        {/* Ornate Gold Filigree Corner Accents */}
-        <div className="absolute top-1.5 left-2 text-[#e5ab48] text-xs select-none">✦</div>
-        <div className="absolute top-1.5 right-2 text-[#e5ab48] text-xs select-none">✦</div>
-
+      <div className="bg-white rounded-3xl p-5 shadow-xs border border-slate-200/80 relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#fed788] font-serif font-bold flex items-center gap-1.5">
-              <Wallet className="w-4 h-4 text-[#ffd786]" />
-              <span>Available Wallet Balance</span>
+            <span className="text-xs text-slate-600 font-bold flex items-center gap-1.5">
+              <Wallet className="w-4.5 h-4.5 text-[#020618] stroke-[2.2]" />
+              <span className="text-slate-800">Available Wallet Balance</span>
             </span>
-            <span className="text-[10px] bg-[#fff0cc]/20 text-[#ffe2a2] font-bold px-2 py-0.5 rounded-full border border-[#d6a54d]/50">
+            <span className="text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
               Verified 24/7
             </span>
           </div>
 
           <div className="my-2">
-            <h2 className="text-3xl sm:text-4xl font-serif font-black font-mono tracking-tight text-white drop-shadow-xs">
+            <h2 className="text-3xl sm:text-4xl font-serif font-black font-mono tracking-tight text-slate-900">
               ₹{stats.walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </h2>
-            <span className="text-xs text-[#fdebd0]/80">Net withdrawable funds</span>
+            <span className="text-xs text-slate-500 font-medium">Net withdrawable funds</span>
           </div>
 
           {/* Deposit & Withdraw Buttons */}
-          <div className="grid grid-cols-2 gap-3 mt-4 pt-2 border-t border-white/15">
+          <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100">
+            {/* Add Money Button (#008000) */}
             <button
               onClick={onOpenDeposit}
-              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#d9a54c] via-[#e5ab48] to-[#be8832] hover:brightness-105 active:scale-95 text-[#3d2008] font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-md"
+              style={{ backgroundColor: '#008000' }}
+              className="py-2.5 px-3 rounded-xl hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
               <ArrowDownLeft className="w-4 h-4 stroke-[3]" />
               <span>Add Money</span>
             </button>
 
+            {/* Withdraw Button (#FF8904) */}
             <button
               onClick={onOpenWithdraw}
-              className="py-2.5 px-3 rounded-xl bg-[#4e2e0f] hover:bg-[#3b220a] active:scale-95 text-[#ffebbe] font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all border border-[#d6a54d]/60 shadow-xs"
+              style={{ backgroundColor: '#FF8904' }}
+              className="py-2.5 px-3 rounded-xl hover:brightness-110 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
               <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
               <span>Withdraw</span>
@@ -83,98 +83,114 @@ export default function WalletScreen({
       </div>
 
       {/* Instant Transfer Banner */}
-      <div className="bg-gradient-to-r from-[#fff9eb] via-[#fcf3e0] to-[#f6e5c5] border border-[#dfbe7e] rounded-2xl p-3.5 flex items-center gap-3 shadow-2xs">
-        <div className="w-9 h-9 rounded-xl bg-[#4e2e0f] text-[#fed788] flex items-center justify-center shrink-0 shadow-xs">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 flex items-center gap-3 shadow-2xs">
+        <div className="w-9 h-9 rounded-xl bg-slate-900 text-amber-300 flex items-center justify-center shrink-0 shadow-xs">
           <ShieldCheck className="w-5 h-5" />
         </div>
         <div className="text-xs">
-          <span className="font-serif font-black text-[#46280b] block">Instant Automated Payouts</span>
-          <span className="text-[#784f29] leading-tight">
+          <span className="font-serif font-black text-slate-900 block">Instant Automated Payouts</span>
+          <span className="text-slate-600 leading-tight font-medium">
             Direct UPI and IMPS bank transfers processed within 60 seconds with 0% gateway deductions.
           </span>
         </div>
       </div>
 
       {/* Transaction History Section */}
-      <div className="space-y-3 pt-2">
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h4 className="font-serif font-black text-[#46280b] text-sm">Transaction Logs</h4>
-          <span className="text-xs text-[#8a5b28] font-bold">{filteredTransactions.length} records</span>
+          <h4 className="font-serif font-black text-slate-900 text-sm">Transaction Logs</h4>
+          <span className="text-xs text-slate-500 font-bold">{filteredTransactions.length} records</span>
         </div>
 
-        {/* Transaction Filters */}
+        {/* Transaction Filter Buttons (#1A7595 for selected) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
           {[
             { id: 'all', label: 'All' },
             { id: 'deposit', label: 'Deposits' },
             { id: 'withdrawal', label: 'Withdrawals' },
             { id: 'roi_credit', label: 'Daily ROI' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilter(tab.id as any)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-2xs ${
-                filter === tab.id
-                  ? 'bg-gradient-to-r from-[#4e2e0f] to-[#3a1d06] text-[#fed788] border border-[#caa050] font-bold'
-                  : 'bg-white/90 text-[#71471f] border border-[#dfbe7e] hover:bg-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Transactions List */}
-        <div className="space-y-2">
-          {filteredTransactions.map((tx) => {
-            const isCredit =
-              tx.type === 'deposit' || tx.type === 'roi_credit' || tx.type === 'referral_bonus';
-
+          ].map((tab) => {
+            const isSelected = filter === tab.id;
             return (
-              <div
-                key={tx.id}
-                className="bg-gradient-to-b from-[#fffefc] via-[#fffbf3] to-[#fbf2dd] rounded-2xl p-3 border border-[#dfc38d] shadow-2xs flex items-center justify-between gap-3"
+              <button
+                key={tab.id}
+                onClick={() => setFilter(tab.id as any)}
+                style={isSelected ? { backgroundColor: '#1A7595', borderColor: '#1A7595' } : {}}
+                className={`px-3.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  isSelected
+                    ? 'text-white shadow-2xs font-extrabold'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200/80 hover:bg-slate-200/60'
+                }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isCredit
-                        ? 'bg-[#faecd4] text-[#965c19] border border-[#ebd2aa]'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200'
-                    }`}
-                  >
-                    {isCredit ? (
-                      <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
-                    ) : (
-                      <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-                    )}
-                  </div>
-
-                  <div className="truncate">
-                    <span className="font-serif font-black text-xs text-[#46280b] block truncate">
-                      {tx.title}
-                    </span>
-                    <span className="text-[10px] text-[#86592a] block">
-                      {tx.timestamp} • Ref: {tx.referenceId}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <span
-                    className={`text-xs sm:text-sm font-black block font-mono ${
-                      isCredit ? 'text-[#965c19]' : 'text-slate-900'
-                    }`}
-                  >
-                    {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[9px] font-bold text-[#8c5929] uppercase bg-[#faecd4] border border-[#e5cfab] px-1.5 py-0.2 rounded-full">
-                    {tx.status}
-                  </span>
-                </div>
-              </div>
+                {tab.label}
+              </button>
             );
           })}
+        </div>
+
+        {/* Transactions List View (NO CARD BOX, NO BG COLOR, BOTTOM LINE DIVIDER ONLY) */}
+        <div className="divide-y divide-slate-200/80 pt-1">
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map((tx) => {
+              const isCredit =
+                tx.type === 'deposit' || tx.type === 'roi_credit' || tx.type === 'referral_bonus';
+
+              return (
+                <div
+                  key={tx.id}
+                  className="py-3 bg-transparent border-b border-slate-200/80 flex items-center justify-between gap-3 transition-colors hover:bg-slate-50/50 px-1"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        isCredit
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                          : 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                      }`}
+                    >
+                      {isCredit ? (
+                        <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                      ) : (
+                        <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                      )}
+                    </div>
+
+                    <div className="truncate min-w-0">
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate">
+                        {tx.title}
+                      </span>
+                      <span className="text-[10.5px] text-slate-500 block font-medium">
+                        {tx.timestamp} • Ref: {tx.referenceId}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span
+                      className={`text-xs sm:text-sm font-black block font-mono ${
+                        isCredit ? 'text-emerald-700' : 'text-slate-900'
+                      }`}
+                    >
+                      {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
+                    </span>
+                    <span
+                      className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                        tx.status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {tx.status}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-8 text-center text-slate-500 text-xs font-semibold">
+              No transactions found for this filter.
+            </div>
+          )}
         </div>
       </div>
     </div>
