@@ -1,21 +1,18 @@
 import React from 'react';
 
+export const dynamic = 'force-static';
+
 export default function NotFound() {
   return (
-    <html lang="en">
-      <head>
-        <title>404 - Page Not Found</title>
-      </head>
-      <body className="bg-[#1c1007] text-white flex flex-col items-center justify-center min-h-screen p-6 text-center font-sans">
-        <h1 className="text-4xl font-black text-[#ffd485] mb-2">404</h1>
-        <p className="text-sm text-[#cfbc9e] mb-6">Page Not Found</p>
-        <a
-          href="/"
-          className="px-5 py-2.5 rounded-xl bg-[#d0872e] text-white font-bold text-sm shadow-lg hover:bg-[#b87324] transition-all"
-        >
-          Return to Home
-        </a>
-      </body>
-    </html>
+    <div className="bg-[#1c1007] text-white flex flex-col items-center justify-center min-h-screen p-6 text-center font-sans">
+      <h1 className="text-4xl font-black text-[#ffd485] mb-2">404</h1>
+      <p className="text-sm text-[#cfbc9e] mb-6">Page Not Found</p>
+      <a
+        href="/"
+        className="px-5 py-2.5 rounded-xl bg-[#d0872e] text-white font-bold text-sm shadow-lg hover:bg-[#b87324] transition-all"
+      >
+        Return to Home
+      </a>
+    </div>
   );
 }
