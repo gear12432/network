@@ -1,54 +1,72 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+
     match /users/{userId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /deposits/{depositId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /withdrawals/{withdrawalId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /plans/{planId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /sliders/{sliderId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /settings/{docId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /customers/{customerId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /customer/{customerId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /investments/{investmentId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
     }
 
     match /invest/{investId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      allow read, write: if true;
+    }
+
+    match /level/{levelId} {
+      allow read, write: if true;
+    }
+
+    match /levels/{levelId} {
+      allow read, write: if true;
+    }
+
+    match /vip level/{levelId} {
+      allow read, write: if true;
+    }
+
+    match /vip_level/{levelId} {
+      allow read, write: if true;
+    }
+
+    match /viplevel/{levelId} {
+      allow read, write: if true;
+    }
+
+    match /support_chats/{msgId} {
+      allow read, write: if true;
     }
 
     match /test/{docId} {
@@ -56,4 +74,3 @@ service cloud.firestore {
     }
   }
 }
-

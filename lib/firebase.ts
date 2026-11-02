@@ -850,24 +850,27 @@ export async function saveVipLevelToFirestore(
     }
   }
 
-  try {
-    const docRef1 = doc(db, 'vip level', levelData.id);
-    const docRef2 = doc(db, 'level', levelData.id);
-    const docRef3 = doc(db, 'levels', levelData.id);
-    const docRef4 = doc(db, 'vip_level', levelData.id);
-    const docRef5 = doc(db, 'viplevel', levelData.id);
-    await Promise.allSettled([
-      withTimeout(setDoc(docRef1, levelData), 4000),
-      withTimeout(setDoc(docRef2, levelData), 4000),
-      withTimeout(setDoc(docRef3, levelData), 4000),
-      withTimeout(setDoc(docRef4, levelData), 4000),
-      withTimeout(setDoc(docRef5, levelData), 4000),
-    ]);
-    return { success: true };
-  } catch (err: unknown) {
-    console.warn('Warning saving level to Firestore (saved locally):', err);
-    return { success: false, error: 'Saved locally' };
+  const collectionsToSave = ['vip level', 'level', 'levels', 'vip_level', 'viplevel'];
+  let savedCount = 0;
+  let lastError: unknown = null;
+
+  for (const colName of collectionsToSave) {
+    try {
+      const docRef = doc(db, colName, levelData.id);
+      await withTimeout(setDoc(docRef, levelData), 4000);
+      savedCount++;
+    } catch (err) {
+      lastError = err;
+      console.warn(`Warning writing VIP level to collection '${colName}':`, err);
+    }
   }
+
+  if (savedCount > 0) {
+    return { success: true };
+  }
+
+  const errorMsg = lastError instanceof Error ? lastError.message : 'Saved locally only';
+  return { success: false, error: errorMsg };
 }
 
 export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> {
@@ -881,11 +884,10 @@ export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> 
       if (!snap.empty) {
         snap.forEach((docSnap) => {
           const data = docSnap.data() as VipLevelRecord;
-          if (!levelsFromFirestore.some((l) => l.levelNumber === data.levelNumber)) {
+          if (data && data.levelNumber && !levelsFromFirestore.some((l) => l.levelNumber === data.levelNumber)) {
             levelsFromFirestore.push(data);
           }
         });
-        if (levelsFromFirestore.length > 0) break;
       }
     } catch (err) {
       console.warn(`Error fetching levels from Firestore collection '${colName}':`, err);
@@ -893,13 +895,14 @@ export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> 
   }
 
   if (levelsFromFirestore.length > 0) {
+    const sorted = levelsFromFirestore.sort((a, b) => a.levelNumber - b.levelNumber);
     if (typeof window !== 'undefined') {
       localStorage.setItem(
         'network_join_pro_vip_levels',
-        JSON.stringify(levelsFromFirestore)
+        JSON.stringify(sorted)
       );
     }
-    return levelsFromFirestore.sort((a, b) => a.levelNumber - b.levelNumber);
+    return sorted;
   }
 
   if (typeof window !== 'undefined') {
@@ -915,6 +918,7 @@ export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> 
 
   return [];
 }
+
 
 
 
