@@ -561,6 +561,34 @@ export default function AdminPanel() {
       setVipLevels(recs);
     };
     fetchLevels();
+
+    // Real-time Firestore Listener for viplevel collection
+    try {
+      const colRef = collection(db, 'viplevel');
+      const unsubscribe = onSnapshot(
+        colRef,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list: VipLevelRecord[] = [];
+            snapshot.forEach((docSnap) => {
+              const data = docSnap.data() as VipLevelRecord;
+              if (data && data.levelNumber) {
+                list.push(data);
+              }
+            });
+            if (list.length > 0) {
+              setVipLevels(list.sort((a, b) => a.levelNumber - b.levelNumber));
+            }
+          }
+        },
+        (err) => {
+          console.warn('Realtime viplevel listener warning:', err);
+        }
+      );
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn('Error listening to viplevel collection:', e);
+    }
   }, []);
 
   // Handler for Amount Input change
@@ -639,11 +667,15 @@ export default function AdminPanel() {
     setSavingLevel(false);
 
     if (res.success) {
-      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('vip level' folder) successfully with ${pct}% Daily Rate! 🟢`);
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved to Firebase ('viplevel' collection) successfully with ${pct}% Daily Rate! 🟢`);
+      // Reset input fields per user requirement ("এবং খালি হয়ে যাবে")
+      setLevelAmount('');
+      setLevelCommission('');
+      setLevelPercentage('');
     } else {
-      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved locally!`);
+      setLevelSaveMsg(`VIP Level ${selectedLevelNum} saved locally! (${res.error || ''})`);
     }
-    setTimeout(() => setLevelSaveMsg(''), 3500);
+    setTimeout(() => setLevelSaveMsg(''), 4000);
   };
 
   // Load all Firebase data

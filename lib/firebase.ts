@@ -850,7 +850,7 @@ export async function saveVipLevelToFirestore(
     }
   }
 
-  const collectionsToSave = ['vip level', 'level', 'levels', 'vip_level', 'viplevel'];
+  const collectionsToSave = ['viplevel', 'level', 'levels', 'vip_level', 'vip level'];
   let savedCount = 0;
   let lastError: unknown = null;
 
@@ -875,7 +875,7 @@ export async function saveVipLevelToFirestore(
 
 export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> {
   let levelsFromFirestore: VipLevelRecord[] = [];
-  const collectionsToTry = ['vip level', 'level', 'levels', 'vip_level', 'viplevel'];
+  const collectionsToTry = ['viplevel', 'level', 'levels', 'vip_level', 'vip level'];
 
   for (const colName of collectionsToTry) {
     try {

@@ -124,6 +124,21 @@
         "upiId": { "type": "string" },
         "qrCodeUrl": { "type": "string" }
       }
+    },
+    "VipLevel": {
+      "title": "VipLevel",
+      "description": "VIP level settings including investment amount and percentage daily return rate",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "levelNumber": { "type": "number" },
+        "levelName": { "type": "string" },
+        "minAmount": { "type": "number" },
+        "dailyPercentage": { "type": "number" },
+        "icon": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "levelNumber", "minAmount", "dailyPercentage"]
     }
   },
   "firestore": {
@@ -150,6 +165,14 @@
     "/settings/{docId}": {
       "schema": "Setting",
       "description": "App and payment gateway configurations"
+    },
+    "/viplevel/{levelId}": {
+      "schema": "VipLevel",
+      "description": "VIP level settings"
+    },
+    "/level/{levelId}": {
+      "schema": "VipLevel",
+      "description": "VIP level settings collection"
     }
   }
 }
