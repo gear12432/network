@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   User,
@@ -405,10 +405,23 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
         console.warn('Firestore write warning:', res.error);
       }
 
-      // Also persist to localStorage for instant offline access
+      // Also persist to localStorage for instant offline access (strip heavy base64 images to prevent QuotaExceededError)
       if (typeof window !== 'undefined') {
-        localStorage.setItem(`user_${generatedUid}`, JSON.stringify(newUserData));
-        localStorage.setItem('network_join_pro_last_registered', JSON.stringify(newUserData));
+        try {
+          const userForCache = {
+            ...newUserData,
+            kycDetails: {
+              ...newUserData.kycDetails,
+              panImage: undefined,
+              aadhaarFrontImage: undefined,
+              aadhaarBackImage: undefined,
+            },
+          };
+          localStorage.setItem(`user_${generatedUid}`, JSON.stringify(userForCache));
+          localStorage.setItem('network_join_pro_last_registered', JSON.stringify(userForCache));
+        } catch (storageErr) {
+          console.warn('localStorage save warning (Quota or Restricted):', storageErr);
+        }
       }
 
       // Trigger Confetti celebration
@@ -526,7 +539,20 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
 
       // Login Successful (Account is active & KYC approved!)
       if (typeof window !== 'undefined') {
-        localStorage.setItem('network_join_pro_user', JSON.stringify(user));
+        try {
+          const userForCache = {
+            ...user,
+            kycDetails: user.kycDetails ? {
+              ...user.kycDetails,
+              panImage: undefined,
+              aadhaarFrontImage: undefined,
+              aadhaarBackImage: undefined,
+            } : undefined,
+          };
+          localStorage.setItem('network_join_pro_user', JSON.stringify(userForCache));
+        } catch (storageErr) {
+          console.warn('localStorage login save warning:', storageErr);
+        }
       }
       setApprovedNoticeUser(user);
     } catch (err: unknown) {

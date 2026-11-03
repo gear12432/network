@@ -20,7 +20,8 @@ import {
 } from 'lucide-react';
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
 import PlanCard from '@/components/PlanCard';
-import { getCustomSlidersFromFirestore, saveWithdrawalToFirestore } from '@/lib/firebase';
+import { getCustomSlidersFromFirestore, saveWithdrawalToFirestore, db } from '@/lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { Joins3DIcon, Earned3DIcon, Payout3DIcon, Active3DIcon } from '@/components/ui/Stat3DIcons';
 import { triggerConfetti } from '@/lib/confetti';
 
@@ -87,53 +88,43 @@ export default function HomeScreen({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [customSlides, setCustomSlides] = useState<any[]>([]);
 
-  // Fetch custom sliders from Firebase on mount
+  // Real-time Firestore listener for custom sliders
   useEffect(() => {
-    let isMounted = true;
-    getCustomSlidersFromFirestore().then((sliders) => {
-      if (isMounted && sliders && sliders.length > 0) {
-        setCustomSlides(sliders);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
+    try {
+      const sliderRef = collection(db, 'sliders');
+      const unsub = onSnapshot(
+        sliderRef,
+        (snap) => {
+          const loaded: any[] = [];
+          snap.forEach((docSnap) => {
+            loaded.push(docSnap.data());
+          });
+          setCustomSlides(loaded);
+        },
+        (err) => {
+          console.warn('Realtime sliders listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up sliders real-time listener:', e);
+    }
   }, []);
 
-  const defaultSlides = [
+  const fallbackSlide = [
     {
       id: 0,
-      badgeLeft: 'SECURE & FAST',
-      badgeRight: '0% Platform Fee',
-      title: 'Instant Withdrawal Guarantee',
-      subtext: 'Transfer funds directly to your bank or UPI ID instantly 24/7.',
-      btnText: 'Plans',
+      badgeLeft: 'NETWORKJOIN',
+      badgeRight: 'FIREBASE LIVE',
+      title: 'Welcome to NetworkJoin Pro',
+      subtext: 'Manage investment plans & instant payouts in real-time.',
+      btnText: 'Explore Plans',
       action: () => onSelectCategory('All Plans'),
       bgGradient: 'from-[#2c180a] via-[#4a280e] to-[#6d3e16]',
     },
-    {
-      id: 1,
-      badgeLeft: 'FULL KYC ACTIVE',
-      badgeRight: 'Verified Tier 3',
-      title: 'Full KYC & Unlimited Payouts',
-      subtext: 'Aadhaar & PAN linked for up to ₹5,00,000 daily bank withdrawals.',
-      btnText: 'Full KYC',
-      action: () => onOpenFullKyc?.(),
-      bgGradient: 'from-[#231206] via-[#3a200a] to-[#593414]',
-    },
-    {
-      id: 2,
-      badgeLeft: 'GUARANTEED RETURNS',
-      badgeRight: 'Up to 110% ROI',
-      title: 'High-Yield Daily Compounding',
-      subtext: 'Earn guaranteed daily profits credited every 24 hours to your wallet.',
-      btnText: 'Invest',
-      action: () => onSelectCategory('VIP' as Category),
-      bgGradient: 'from-[#381f0b] via-[#5c3713] to-[#8c5720]',
-    },
   ];
 
-  const slides = customSlides.length > 0 ? customSlides : defaultSlides;
+  const slides = customSlides.length > 0 ? customSlides : fallbackSlide;
 
   // Auto-rotate slider every 5 seconds
   useEffect(() => {

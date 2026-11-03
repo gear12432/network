@@ -1,209 +1,37 @@
 import { InvestmentPlan, Transaction, UserStats, ReferralMember, ActiveInvestment, Customer } from '@/types/investment';
 
 export const INITIAL_USER_STATS: UserStats = {
-  walletBalance: 5450,
-  totalJoins: 1428,
-  totalEarned: 48500,
-  totalPayout: 35000,
-  activeInvestmentsCount: 3,
-  unclaimedRoi: 248.50,
-  referralCode: 'NETJOIN8829',
-  level: 'VIP PRO',
-  userName: 'Sk Jiyaul',
-  userInitials: 'SJ',
-  isVip: true,
+  walletBalance: 0,
+  totalJoins: 0,
+  totalEarned: 0,
+  totalPayout: 0,
+  activeInvestmentsCount: 0,
+  unclaimedRoi: 0,
+  referralCode: '',
+  level: 'Basic',
+  userName: 'User',
+  userInitials: 'U',
+  isVip: false,
 };
 
-export const INITIAL_PLANS: InvestmentPlan[] = [
-  {
-    id: 'plan-starter-booster',
-    name: 'Starter Booster Plan',
-    category: 'Bronze',
-    durationDays: 15,
-    roiPercentage: 18,
-    amount: 499,
-    dailyEarnings: 39.26,
-    totalReturn: 588.82,
-    iconType: 'lightning',
-    totalInvestors: 642,
-    description: 'Ideal entry plan with fast 15-day cycle and guaranteed 18% net ROI return.',
-  },
-  {
-    id: 'plan-silver-tier1',
-    name: 'Silver Network Tier 1',
-    category: 'Silver',
-    durationDays: 30,
-    roiPercentage: 25,
-    amount: 999,
-    dailyEarnings: 41.62,
-    totalReturn: 1248.75,
-    iconType: 'shield',
-    featured: true,
-    totalInvestors: 1120,
-    description: 'High stability 30-day plan with weekly compounding rewards and 25% total gain.',
-  },
-  {
-    id: 'plan-gold-accelerator',
-    name: 'Gold Elite Accelerator',
-    category: 'Gold',
-    durationDays: 45,
-    roiPercentage: 40,
-    amount: 2499,
-    dailyEarnings: 77.75,
-    totalReturn: 3498.60,
-    iconType: 'badge',
-    featured: true,
-    totalInvestors: 874,
-    description: 'Accelerated growth package with 40% returns paid directly each evening.',
-  },
-  {
-    id: 'plan-platinum-maximizer',
-    name: 'Platinum Wealth Maximizer',
-    category: 'Platinum',
-    durationDays: 60,
-    roiPercentage: 65,
-    amount: 4999,
-    dailyEarnings: 137.47,
-    totalReturn: 8248.35,
-    iconType: 'gem',
-    totalInvestors: 430,
-    description: 'Premium wealth builder with 65% total yields, VIP priority withdrawal support.',
-  },
-  {
-    id: 'plan-vip-diamond',
-    name: 'VIP Diamond Pro',
-    category: 'VIP',
-    durationDays: 90,
-    roiPercentage: 110,
-    amount: 9999,
-    dailyEarnings: 233.31,
-    totalReturn: 20997.90,
-    iconType: 'crown',
-    totalInvestors: 295,
-    description: 'Maximum tier plan offering over 110% net profit, instant 24/7 dedicated RM.',
-  },
-];
+export const INITIAL_PLANS: InvestmentPlan[] = [];
 
 export const INITIAL_ACTIVE_INVESTMENTS: ActiveInvestment[] = [];
 
-export const INITIAL_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'tx-101',
-    type: 'roi_credit',
-    title: 'Daily ROI Payout - Silver Tier 1',
-    amount: 41.62,
-    timestamp: 'Today, 08:30 AM',
-    status: 'completed',
-    referenceId: 'REF894218',
-  },
-  {
-    id: 'tx-102',
-    type: 'referral_bonus',
-    title: 'Tier 1 Referral Bonus (Arun K.)',
-    amount: 99.90,
-    timestamp: 'Today, 06:15 AM',
-    status: 'completed',
-    referenceId: 'REF894190',
-  },
-  {
-    id: 'tx-103',
-    type: 'withdrawal',
-    title: 'Instant Bank Withdrawal (HDFC)',
-    amount: 1500,
-    timestamp: 'Yesterday, 07:45 PM',
-    status: 'completed',
-    paymentMethod: 'UPI: skjiyaul@okhdfcbank',
-    referenceId: 'TXN992143',
-  },
-  {
-    id: 'tx-104',
-    type: 'investment',
-    title: 'Subscribed to Gold Elite Accelerator',
-    amount: 2499,
-    timestamp: '18 Oct 2026, 04:20 PM',
-    status: 'completed',
-    referenceId: 'INV302914',
-  },
-  {
-    id: 'tx-105',
-    type: 'deposit',
-    title: 'Wallet Recharge via PhonePe',
-    amount: 5000,
-    timestamp: '18 Oct 2026, 03:55 PM',
-    status: 'completed',
-    paymentMethod: 'UPI FastPay',
-    referenceId: 'DEP441092',
-  },
-];
+export const INITIAL_TRANSACTIONS: Transaction[] = [];
 
-export const INITIAL_REFERRALS: ReferralMember[] = [
-  {
-    id: 'ref-1',
-    name: 'Rahul Sharma',
-    phone: '+91 98*** 42109',
-    tier: 1,
-    joinDate: '20 Oct 2026',
-    investedTotal: 4999,
-    commissionEarned: 499.90,
-  },
-  {
-    id: 'ref-2',
-    name: 'Amit Patel',
-    phone: '+91 87*** 66321',
-    tier: 1,
-    joinDate: '19 Oct 2026',
-    investedTotal: 2499,
-    commissionEarned: 249.90,
-  },
-  {
-    id: 'ref-3',
-    name: 'Vikram Singh',
-    phone: '+91 91*** 11840',
-    tier: 2,
-    joinDate: '17 Oct 2026',
-    investedTotal: 999,
-    commissionEarned: 49.95,
-  },
-  {
-    id: 'ref-4',
-    name: 'Deepak Verma',
-    phone: '+91 70*** 98452',
-    tier: 3,
-    joinDate: '15 Oct 2026',
-    investedTotal: 499,
-    commissionEarned: 9.98,
-  },
-];
+export const INITIAL_REFERRALS: ReferralMember[] = [];
 
-// Activity chart data matching screenshot 1 (1 April to 12 April)
-export const ACTIVITY_CHART_DATA = [
-  { day: '1 April', overview: 65, sales: 48 },
-  { day: '2 April', overview: 38, sales: 25 },
-  { day: '3 April', overview: 52, sales: 40 },
-  { day: '4 April', overview: 88, sales: 74 },
-  { day: '5 April', overview: 45, sales: 32 },
-  { day: '6 April', overview: 72, sales: 58 },
-  { day: '7 April', overview: 68, sales: 50 },
-  { day: '8 April', overview: 58, sales: 46 },
-  { day: '9 April', overview: 82, sales: 69 },
-  { day: '10 April', overview: 92, sales: 84 },
-  { day: '11 April', overview: 50, sales: 42 },
-  { day: '12 April', overview: 76, sales: 63 },
-];
+export const ACTIVITY_CHART_DATA: any[] = [];
 
-export const BROWSER_ACTIVITY_DATA = [
-  { name: 'Chrome', percent: 68, color: '#10b981' },
-  { name: 'Safari', percent: 24, color: '#3b82f6' },
-  { name: 'Firefox', percent: 10, color: '#f59e0b' },
-];
+export const BROWSER_ACTIVITY_DATA: any[] = [];
 
 export const FINANCE_SUMMARY_DATA = {
-  annualTaxes: '₹500,580',
-  nextTaxReviewDate: 'April 26, 2025',
-  averageProductPrice: '₹65.54',
-  satisfactionRate: 68,
-  teamAvatars: ['AI', 'LS', 'DJ', 'RE', 'SA'],
+  annualTaxes: '₹0',
+  nextTaxReviewDate: 'N/A',
+  averageProductPrice: '₹0',
+  satisfactionRate: 100,
+  teamAvatars: [],
 };
 
 export const INITIAL_CUSTOMERS: Customer[] = [];
-

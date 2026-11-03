@@ -96,6 +96,7 @@ export interface UserAccountData {
   status?: string; // 'active' | 'blocked' | 'pending_approval' | 'rejected'
   kycStatus?: 'pending' | 'approved' | 'rejected' | string;
   createdAt?: string;
+  photoUrl?: string;
 }
 
 // Generate unique Login UID e.g. "GK37643"
@@ -276,6 +277,21 @@ export async function updateUserBalanceInFirestore(
     return true;
   } catch (err) {
     console.warn('Error updating user balance in Firestore:', err);
+    return false;
+  }
+}
+
+// 3b. Update user profile or avatar photo in Firestore
+export async function updateUserProfileInFirestore(
+  loginUid: string,
+  updates: Partial<UserAccountData>
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    await withTimeout(updateDoc(docRef, updates), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating user profile in Firestore:', err);
     return false;
   }
 }

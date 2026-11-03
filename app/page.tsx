@@ -43,7 +43,8 @@ import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, getCustomPlansFromFirestore, getAllCustomersFromFirestore, getAllInvestmentsFromFirestore, saveInvestmentToFirestore, saveCustomerToFirestore } from '@/lib/firebase';
+import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, db } from '@/lib/firebase';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { triggerConfetti } from '@/lib/confetti';
 
 function subscribeWindowResize(callback: () => void) {
@@ -181,63 +182,215 @@ export default function InvestmentApp() {
     };
   }, []);
 
-  // Fetch Custom Admin-created Plans on Mount
+  // 1. Real-time Subscription for Investment Plans
   useEffect(() => {
-    let isMounted = true;
-    getCustomPlansFromFirestore().then((customPlans) => {
-      if (!isMounted) return;
-      if (customPlans && customPlans.length > 0) {
-        const formattedCustomPlans: InvestmentPlan[] = customPlans.map((p: any) => {
-          const amt = p.amount ?? p.price ?? 0;
-          const days = p.durationDays ?? p.validityDays ?? 30;
-          const roi = p.roiPercentage ?? p.dailyPercent ?? 0;
-          const daily = p.dailyEarnings ?? p.dailyReturn ?? (amt * (roi / 100));
-          const total = p.totalReturn ?? (amt + (daily * days));
-          const cat = p.category || 'Starter';
+    try {
+      const plansRef = collection(db, 'plans');
+      const unsub = onSnapshot(
+        plansRef,
+        (snap) => {
+          const loadedPlans: InvestmentPlan[] = [];
+          snap.forEach((docSnap) => {
+            const p = docSnap.data();
+            if (!p) return;
+            const amt = p.amount ?? p.price ?? 0;
+            const days = p.durationDays ?? p.validityDays ?? 30;
+            const roi = p.roiPercentage ?? p.dailyPercent ?? 0;
+            const daily = p.dailyEarnings ?? p.dailyReturn ?? amt * (roi / 100);
+            const total = p.totalReturn ?? amt + daily * days;
+            const cat = p.category || 'Starter';
 
-          return {
-            id: String(p.id),
-            name: p.name || 'Investment Plan',
-            category: cat,
-            durationDays: days,
-            roiPercentage: roi,
-            amount: amt,
-            dailyEarnings: Math.round(daily * 100) / 100,
-            totalReturn: Math.round(total * 100) / 100,
-            iconType: p.iconType || (cat === 'VIP' ? 'crown' : cat === 'Platinum' ? 'gem' : cat === 'Gold' ? 'badge' : cat === 'Silver' ? 'shield' : 'lightning'),
-            featured: p.featured ?? true,
-            totalInvestors: p.totalInvestors ?? Math.floor(100 + Math.random() * 500),
-            description: p.description || `${p.name} - ${days} Days high return plan.`,
-          };
-        });
-        setPlans(formattedCustomPlans);
-      } else {
-        setPlans([]);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
+            loadedPlans.push({
+              id: String(p.id || docSnap.id),
+              name: p.name || 'Investment Plan',
+              category: cat,
+              durationDays: days,
+              roiPercentage: roi,
+              amount: amt,
+              dailyEarnings: Math.round(daily * 100) / 100,
+              totalReturn: Math.round(total * 100) / 100,
+              iconType:
+                p.iconType ||
+                (cat === 'VIP'
+                  ? 'crown'
+                  : cat === 'Platinum'
+                  ? 'gem'
+                  : cat === 'Gold'
+                  ? 'badge'
+                  : cat === 'Silver'
+                  ? 'shield'
+                  : 'lightning'),
+              featured: p.featured ?? true,
+              totalInvestors: p.totalInvestors ?? 0,
+              description: p.description || `${p.name} - ${days} Days high return plan.`,
+            });
+          });
+          setPlans(loadedPlans);
+        },
+        (err) => {
+          console.warn('Realtime plans listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up plans real-time listener:', e);
+    }
   }, []);
 
-  // Fetch Saved Customers & Investments from Firestore on Mount
+  // 2. Real-time Subscription for Active Investments
   useEffect(() => {
-    let isMounted = true;
-    getAllCustomersFromFirestore().then((custs) => {
-      if (isMounted && custs && custs.length > 0) {
-        setCustomers(custs);
-      }
-    });
+    try {
+      const invRef = collection(db, 'investments');
+      const unsub = onSnapshot(
+        invRef,
+        (snap) => {
+          const list: ActiveInvestment[] = [];
+          snap.forEach((docSnap) => {
+            const data = docSnap.data() as ActiveInvestment;
+            if (data && data.id) {
+              list.push(data);
+            }
+          });
+          setActiveInvestments(list);
+        },
+        (err) => {
+          console.warn('Realtime investments listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up investments real-time listener:', e);
+    }
+  }, []);
 
-    getAllInvestmentsFromFirestore().then((invs) => {
-      if (isMounted && invs && invs.length > 0) {
-        setActiveInvestments(invs);
-      }
-    });
+  // 3. Real-time Subscription for Customers
+  useEffect(() => {
+    try {
+      const custRef = collection(db, 'customers');
+      const unsub = onSnapshot(
+        custRef,
+        (snap) => {
+          const list: Customer[] = [];
+          snap.forEach((docSnap) => {
+            const data = docSnap.data() as Customer;
+            if (data && data.id) {
+              list.push(data);
+            }
+          });
+          setCustomers(list);
+        },
+        (err) => {
+          console.warn('Realtime customers listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up customers real-time listener:', e);
+    }
+  }, []);
 
-    return () => {
-      isMounted = false;
-    };
+  // 4. Real-time Subscription for Current User Document
+  useEffect(() => {
+    if (!currentUser?.loginUid) return;
+    try {
+      const userDocRef = doc(db, 'users', currentUser.loginUid);
+      const unsub = onSnapshot(
+        userDocRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const u = docSnap.data() as UserAccountData;
+            setCurrentUser(u);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('network_join_pro_user', JSON.stringify(u));
+            }
+            const initials =
+              u.fullName
+                ?.split(' ')
+                .map((n) => n[0])
+                .join('')
+                .substring(0, 2)
+                .toUpperCase() || 'GK';
+
+            setUserStats((prev) => ({
+              ...prev,
+              walletBalance: u.balance ?? 0,
+              userName: u.fullName || prev.userName,
+              userInitials: initials,
+              loginUid: u.loginUid,
+              mobile: u.mobile,
+              email: u.email,
+              photoUrl: u.photoUrl || prev.photoUrl,
+            }));
+          }
+        },
+        (err) => {
+          console.warn('Realtime user doc listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up user doc real-time listener:', e);
+    }
+  }, [currentUser?.loginUid]);
+
+  // 5. Real-time Subscription for Deposits & Withdrawals (Transactions Log)
+  useEffect(() => {
+    try {
+      const depRef = collection(db, 'deposits');
+      const wdRef = collection(db, 'withdrawals');
+
+      let currentDeposits: Transaction[] = [];
+      let currentWithdrawals: Transaction[] = [];
+
+      const unsubDep = onSnapshot(depRef, (snap) => {
+        const list: Transaction[] = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (d) {
+            list.push({
+              id: String(d.id || docSnap.id),
+              type: 'deposit',
+              title: `Wallet Deposit (INR ${d.amount})`,
+              amount: Number(d.amount) || 0,
+              timestamp: d.dateTime || d.createdAt || 'Recent',
+              status: d.status === 'Approved' ? 'completed' : d.status === 'Rejected' ? 'failed' : 'processing',
+              paymentMethod: d.utrNumber ? `UTR: ${d.utrNumber}` : 'UPI',
+              referenceId: String(d.id),
+            });
+          }
+        });
+        currentDeposits = list;
+        setTransactions([...currentDeposits, ...currentWithdrawals]);
+      });
+
+      const unsubWd = onSnapshot(wdRef, (snap) => {
+        const list: Transaction[] = [];
+        snap.forEach((docSnap) => {
+          const w = docSnap.data();
+          if (w) {
+            list.push({
+              id: String(w.id || docSnap.id),
+              type: 'withdrawal',
+              title: w.planName ? `Payout for ${w.planName}` : `Bank/UPI Withdrawal`,
+              amount: Number(w.amount) || 0,
+              timestamp: w.dateTime || w.createdAt || 'Recent',
+              status: w.status === 'Approved' ? 'completed' : w.status === 'Rejected' ? 'failed' : 'processing',
+              paymentMethod: w.bankDetails || 'UPI Settlement',
+              referenceId: String(w.id),
+            });
+          }
+        });
+        currentWithdrawals = list;
+        setTransactions([...currentDeposits, ...currentWithdrawals]);
+      });
+
+      return () => {
+        unsubDep();
+        unsubWd();
+      };
+    } catch (e) {
+      console.warn('Error setting up transactions real-time listener:', e);
+    }
   }, []);
 
   // Sync external window width safely
@@ -288,6 +441,7 @@ export default function InvestmentApp() {
       email: user.email,
       mobile: user.mobile,
       walletBalance: user.balance ?? prev.walletBalance,
+      photoUrl: user.photoUrl || prev.photoUrl,
     }));
 
     showToast(`Welcome, ${user.fullName}! (Login Successful)`);
@@ -313,12 +467,18 @@ export default function InvestmentApp() {
       return;
     }
 
+    const newBal = userStats.walletBalance - plan.amount;
+
     setUserStats((prev) => ({
       ...prev,
-      walletBalance: prev.walletBalance - plan.amount,
+      walletBalance: newBal,
       totalJoins: prev.totalJoins + 1,
       activeInvestmentsCount: prev.activeInvestmentsCount + 1,
     }));
+
+    if (currentUser?.loginUid) {
+      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+    }
 
     const newInvestment: ActiveInvestment = {
       id: `act-${Date.now()}`,
@@ -372,10 +532,16 @@ export default function InvestmentApp() {
   };
 
   const handleDepositSuccess = (amount: number, method: string) => {
+    const newBal = userStats.walletBalance + amount;
+
     setUserStats((prev) => ({
       ...prev,
-      walletBalance: prev.walletBalance + amount,
+      walletBalance: newBal,
     }));
+
+    if (currentUser?.loginUid) {
+      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+    }
 
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
@@ -398,11 +564,17 @@ export default function InvestmentApp() {
       return;
     }
 
+    const newBal = userStats.walletBalance - amount;
+
     setUserStats((prev) => ({
       ...prev,
-      walletBalance: prev.walletBalance - amount,
+      walletBalance: newBal,
       totalPayout: prev.totalPayout + amount,
     }));
+
+    if (currentUser?.loginUid) {
+      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+    }
 
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
@@ -423,12 +595,18 @@ export default function InvestmentApp() {
     if (userStats.unclaimedRoi <= 0) return;
 
     const claimed = userStats.unclaimedRoi;
+    const newBal = userStats.walletBalance + claimed;
+
     setUserStats((prev) => ({
       ...prev,
-      walletBalance: prev.walletBalance + claimed,
+      walletBalance: newBal,
       totalEarned: prev.totalEarned + claimed,
       unclaimedRoi: 0,
     }));
+
+    if (currentUser?.loginUid) {
+      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+    }
 
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,

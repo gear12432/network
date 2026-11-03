@@ -149,9 +149,17 @@ export default function DesktopHeader({
             title="Profile & Account"
           >
             <div className="relative">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-[#ffe7b8] to-[#f4d188] border-2 border-[#d9a54c] flex items-center justify-center text-xs font-extrabold text-[#46280b] shadow-2xs">
-                {currentStats?.userInitials || 'GK'}
-              </div>
+              {currentStats?.photoUrl ? (
+                <img
+                  src={currentStats.photoUrl}
+                  alt="Profile"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#d9a54c] shadow-2xs"
+                />
+              ) : (
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-[#ffe7b8] to-[#f4d188] border-2 border-[#d9a54c] flex items-center justify-center text-xs font-extrabold text-[#46280b] shadow-2xs">
+                  {currentStats?.userInitials || 'GK'}
+                </div>
+              )}
               {currentStats?.isVip && (
                 <div className="absolute -bottom-1 -right-1 bg-[#d9a54c] text-[#2b1706] p-0.5 rounded-full shadow-xs">
                   <Crown className="w-2.5 h-2.5 fill-[#2b1706]" />

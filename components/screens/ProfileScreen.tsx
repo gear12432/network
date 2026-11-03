@@ -15,6 +15,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { UserStats } from '@/types/investment';
+import { updateUserProfileInFirestore } from '@/lib/firebase';
 import HelpdeskChatModal from '@/components/modals/HelpdeskChatModal';
 
 interface ProfileScreenProps {
@@ -35,7 +36,7 @@ export default function ProfileScreen({
   onLogout,
 }: ProfileScreenProps) {
   const [isDark, setIsDark] = useState<boolean>(false);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(stats.photoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Security & Withdrawal PIN Modal State
@@ -64,6 +65,12 @@ export default function ProfileScreen({
   ];
 
   useEffect(() => {
+    if (stats.photoUrl) {
+      setProfilePhoto(stats.photoUrl);
+    }
+  }, [stats.photoUrl]);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       // 1. Load Theme
       const savedTheme = localStorage.getItem('app_theme');
@@ -74,9 +81,11 @@ export default function ProfileScreen({
       }
 
       // 2. Load Saved Profile Photo
-      const savedPhoto = localStorage.getItem('user_profile_photo');
-      if (savedPhoto) {
-        setProfilePhoto(savedPhoto);
+      if (!stats.photoUrl) {
+        const savedPhoto = localStorage.getItem('user_profile_photo');
+        if (savedPhoto) {
+          setProfilePhoto(savedPhoto);
+        }
       }
 
       // 3. Load Saved PIN status
@@ -85,7 +94,7 @@ export default function ProfileScreen({
         setHasSavedPin(true);
       }
     }
-  }, []);
+  }, [stats.photoUrl]);
 
   // Profile Image Upload Handler
   const handleAvatarClick = () => {
@@ -96,11 +105,14 @@ export default function ProfileScreen({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const result = reader.result as string;
         setProfilePhoto(result);
         if (typeof window !== 'undefined') {
           localStorage.setItem('user_profile_photo', result);
+        }
+        if (stats.loginUid) {
+          await updateUserProfileInFirestore(stats.loginUid, { photoUrl: result });
         }
       };
       reader.readAsDataURL(file);

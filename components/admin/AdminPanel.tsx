@@ -673,9 +673,65 @@ export default function AdminPanel() {
   useEffect(() => {
     refreshData();
 
-    // Subscribe to real-time VIP level updates from Firestore
-    try {
-      const unsub = onSnapshot(collection(db, 'viplevel'), (snap) => {
+    // 1. Subscribe to real-time Users updates
+    const unsubUsers = onSnapshot(
+      collection(db, 'users'),
+      (snap) => {
+        const list: UserAccountData[] = [];
+        snap.forEach((d) => list.push(d.data() as UserAccountData));
+        setUsers(list);
+      },
+      (err) => console.warn('Users listener warning:', err)
+    );
+
+    // 2. Subscribe to real-time Deposits updates
+    const unsubDeposits = onSnapshot(
+      collection(db, 'deposits'),
+      (snap) => {
+        const list: DepositRecord[] = [];
+        snap.forEach((d) => list.push(d.data() as DepositRecord));
+        setDeposits(list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      },
+      (err) => console.warn('Deposits listener warning:', err)
+    );
+
+    // 3. Subscribe to real-time Withdrawals updates
+    const unsubWithdrawals = onSnapshot(
+      collection(db, 'withdrawals'),
+      (snap) => {
+        const list: WithdrawalRecord[] = [];
+        snap.forEach((d) => list.push(d.data() as WithdrawalRecord));
+        setWithdrawals(list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      },
+      (err) => console.warn('Withdrawals listener warning:', err)
+    );
+
+    // 4. Subscribe to real-time Plans updates
+    const unsubPlans = onSnapshot(
+      collection(db, 'plans'),
+      (snap) => {
+        const list: any[] = [];
+        snap.forEach((d) => list.push(d.data()));
+        setPlans(list);
+      },
+      (err) => console.warn('Plans listener warning:', err)
+    );
+
+    // 5. Subscribe to real-time Sliders updates
+    const unsubSliders = onSnapshot(
+      collection(db, 'sliders'),
+      (snap) => {
+        const list: any[] = [];
+        snap.forEach((d) => list.push(d.data()));
+        setSliders(list);
+      },
+      (err) => console.warn('Sliders listener warning:', err)
+    );
+
+    // 6. Subscribe to real-time VIP level updates from Firestore
+    const unsubVip = onSnapshot(
+      collection(db, 'viplevel'),
+      (snap) => {
         if (!snap.empty) {
           const loaded: VipLevelRecord[] = [];
           snap.forEach((docSnap) => {
@@ -686,11 +742,18 @@ export default function AdminPanel() {
           });
           setVipLevels(loaded.sort((a, b) => a.levelNumber - b.levelNumber));
         }
-      });
-      return () => unsub();
-    } catch (e) {
-      console.warn('Vip level snapshot listener error:', e);
-    }
+      },
+      (err) => console.warn('Vip level listener warning:', err)
+    );
+
+    return () => {
+      unsubUsers();
+      unsubDeposits();
+      unsubWithdrawals();
+      unsubPlans();
+      unsubSliders();
+      unsubVip();
+    };
   }, []);
 
   // Filtered Users

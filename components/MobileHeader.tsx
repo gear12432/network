@@ -44,6 +44,7 @@ export default function MobileHeader({
   }
 
   const currentStats = stats || userStats || INITIAL_USER_STATS;
+  const avatarSrc = currentStats?.photoUrl || profilePhoto;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
@@ -55,9 +56,9 @@ export default function MobileHeader({
           title="View Profile & Full KYC"
         >
           <div className="relative">
-            {profilePhoto ? (
+            {avatarSrc ? (
               <img
-                src={profilePhoto}
+                src={avatarSrc}
                 alt="Profile"
                 className="w-9 h-9 rounded-full object-cover border-2 border-blue-600 shadow-xs"
               />

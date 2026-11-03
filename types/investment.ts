@@ -76,6 +76,7 @@ export interface UserStats {
   loginUid?: string;
   email?: string;
   mobile?: string;
+  photoUrl?: string;
 }
 
 export interface ReferralMember {
