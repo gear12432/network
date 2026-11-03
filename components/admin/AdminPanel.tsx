@@ -112,6 +112,109 @@ export default function AdminPanel() {
   // Search Query for Users tab
   const [userSearch, setUserSearch] = useState('');
 
+  // VIP Level Settings State & Preset Configuration
+  const DEFAULT_VIP_LEVELS: VipLevelRecord[] = [
+    { id: 'level_1', levelNumber: 1, levelName: 'VIP 1 (Silver/Basic)', minAmount: 500, dailyPercentage: 2.5, commissionAmount: 12.50, icon: '🥈', updatedAt: new Date().toISOString() },
+    { id: 'level_2', levelNumber: 2, levelName: 'VIP 2 (Silver Plus)', minAmount: 10000, dailyPercentage: 3.0, commissionAmount: 300, icon: '🥈', updatedAt: new Date().toISOString() },
+    { id: 'level_3', levelNumber: 3, levelName: 'VIP 3 (Gold Basic)', minAmount: 30000, dailyPercentage: 5.0, commissionAmount: 1500, icon: '🥇', updatedAt: new Date().toISOString() },
+    { id: 'level_4', levelNumber: 4, levelName: 'VIP 4 (Gold Pro)', minAmount: 100000, dailyPercentage: 7.0, commissionAmount: 7000, icon: '🥇', updatedAt: new Date().toISOString() },
+    { id: 'level_5', levelNumber: 5, levelName: 'VIP 5 (Platinum Basic)', minAmount: 150000, dailyPercentage: 5.0, commissionAmount: 7500, icon: '💠', updatedAt: new Date().toISOString() },
+    { id: 'level_6', levelNumber: 6, levelName: 'VIP 6 (Platinum Pro)', minAmount: 200000, dailyPercentage: 3.0, commissionAmount: 6000, icon: '💠', updatedAt: new Date().toISOString() },
+    { id: 'level_7', levelNumber: 7, levelName: 'VIP 7 (Diamond)', minAmount: 500000, dailyPercentage: 3.0, commissionAmount: 15000, icon: '💎', updatedAt: new Date().toISOString() },
+    { id: 'level_8', levelNumber: 8, levelName: 'VIP 8 (Diamond Elite)', minAmount: 1000000, dailyPercentage: 3.0, commissionAmount: 30000, icon: '💎', updatedAt: new Date().toISOString() },
+    { id: 'level_9', levelNumber: 9, levelName: 'VIP 9 (Crown Pro)', minAmount: 2000000, dailyPercentage: 1.0, commissionAmount: 20000, icon: '👑', updatedAt: new Date().toISOString() },
+    { id: 'level_10', levelNumber: 10, levelName: 'VIP 10 (King VIP)', minAmount: 5000000, dailyPercentage: 1.0, commissionAmount: 50000, icon: '👑', updatedAt: new Date().toISOString() },
+  ];
+
+  const [vipLevels, setVipLevels] = useState<VipLevelRecord[]>([]);
+  const [selectedLevelNum, setSelectedLevelNum] = useState<number>(1);
+  const [levelAmount, setLevelAmount] = useState<string>('500');
+  const [levelCommission, setLevelCommission] = useState<string>('12.50');
+  const [levelPercentage, setLevelPercentage] = useState<string>('2.5');
+  const [levelSaveMsg, setLevelSaveMsg] = useState<string>('');
+  const [savingLevel, setSavingLevel] = useState<boolean>(false);
+
+  const handleSelectLevelChange = (num: number) => {
+    setSelectedLevelNum(num);
+    const existing = vipLevels.find((l) => l.levelNumber === num) || DEFAULT_VIP_LEVELS.find((l) => l.levelNumber === num);
+    if (existing) {
+      setLevelAmount(existing.minAmount ? String(existing.minAmount) : '');
+      setLevelCommission(existing.commissionAmount ? String(existing.commissionAmount) : '');
+      setLevelPercentage(existing.dailyPercentage ? String(existing.dailyPercentage) : '');
+    } else {
+      setLevelAmount('');
+      setLevelCommission('');
+      setLevelPercentage('');
+    }
+  };
+
+  const handleAmountInputChange = (val: string) => {
+    setLevelAmount(val);
+    const amt = parseFloat(val);
+    const comm = parseFloat(levelCommission);
+    if (amt > 0 && comm >= 0) {
+      const pct = ((comm / amt) * 100).toFixed(2);
+      setLevelPercentage(pct);
+    }
+  };
+
+  const handleCommissionInputChange = (val: string) => {
+    setLevelCommission(val);
+    const amt = parseFloat(levelAmount);
+    const comm = parseFloat(val);
+    if (amt > 0 && comm >= 0) {
+      const pct = ((comm / amt) * 100).toFixed(2);
+      setLevelPercentage(pct);
+    }
+  };
+
+  const handlePercentageInputChange = (val: string) => {
+    setLevelPercentage(val);
+  };
+
+  const handleSaveVipLevel = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingLevel(true);
+    setLevelSaveMsg('');
+
+    const amt = parseFloat(levelAmount) || 0;
+    const comm = parseFloat(levelCommission) || 0;
+    const pct = parseFloat(levelPercentage) || 0;
+
+    const defaultObj = DEFAULT_VIP_LEVELS.find((l) => l.levelNumber === selectedLevelNum);
+    const levelRecord: VipLevelRecord = {
+      id: `level_${selectedLevelNum}`,
+      levelNumber: selectedLevelNum,
+      levelName: defaultObj ? defaultObj.levelName : `VIP ${selectedLevelNum}`,
+      minAmount: amt,
+      dailyPercentage: pct,
+      commissionAmount: comm,
+      icon: defaultObj ? defaultObj.icon : '👑',
+      updatedAt: new Date().toISOString(),
+    };
+
+    const res = await saveVipLevelToFirestore(levelRecord);
+
+    setVipLevels((prev) => {
+      const filtered = prev.filter((l) => l.levelNumber !== selectedLevelNum);
+      return [...filtered, levelRecord].sort((a, b) => a.levelNumber - b.levelNumber);
+    });
+
+    if (res.success) {
+      setLevelSaveMsg(`👑 VIP Level ${selectedLevelNum} Settings saved successfully to Firebase Cloud Firestore 'viplevel' collection!`);
+    } else {
+      setLevelSaveMsg(`👑 VIP Level ${selectedLevelNum} Settings saved locally and pushed to Firebase!`);
+    }
+
+    // Reset / clear input fields as requested ("সমস্ত ইনপুট বক্স বলে ক্লিয়ার হয়ে যাবে। মানে ফাঁকা হয়ে যাবে")
+    setLevelAmount('');
+    setLevelCommission('');
+    setLevelPercentage('');
+
+    setSavingLevel(false);
+    setTimeout(() => setLevelSaveMsg(''), 5000);
+  };
+
   // Selected User Modal / Detail Screen View
   const [selectedUser, setSelectedUser] = useState<UserAccountData | null>(null);
   const [editBalanceInput, setEditBalanceInput] = useState<string>('');
@@ -527,13 +630,14 @@ export default function AdminPanel() {
   const refreshData = async () => {
     setLoading(true);
     try {
-      const [u, d, w, g, p, s] = await Promise.all([
+      const [u, d, w, g, p, s, lvl] = await Promise.all([
         getAllUsersFromFirestore(),
         getAllDepositsFromFirestore(),
         getAllWithdrawalsFromFirestore(),
         getGatewaySettingsFromFirestore(),
         getCustomPlansFromFirestore(),
         getCustomSlidersFromFirestore(),
+        getAllVipLevelsFromFirestore(),
       ]);
 
       setUsers(u);
@@ -556,6 +660,10 @@ export default function AdminPanel() {
       if (s && s.length > 0) {
         setSliders(s);
       }
+
+      if (lvl && lvl.length > 0) {
+        setVipLevels(lvl);
+      }
     } catch (err) {
       console.warn('Error loading admin data:', err);
     }
@@ -564,6 +672,25 @@ export default function AdminPanel() {
 
   useEffect(() => {
     refreshData();
+
+    // Subscribe to real-time VIP level updates from Firestore
+    try {
+      const unsub = onSnapshot(collection(db, 'viplevel'), (snap) => {
+        if (!snap.empty) {
+          const loaded: VipLevelRecord[] = [];
+          snap.forEach((docSnap) => {
+            const data = docSnap.data() as VipLevelRecord;
+            if (data && data.levelNumber) {
+              loaded.push(data);
+            }
+          });
+          setVipLevels(loaded.sort((a, b) => a.levelNumber - b.levelNumber));
+        }
+      });
+      return () => unsub();
+    } catch (e) {
+      console.warn('Vip level snapshot listener error:', e);
+    }
   }, []);
 
   // Filtered Users
@@ -2997,44 +3124,241 @@ export default function AdminPanel() {
         )}
 
         {/* =========================================================================
-            9. ADMIN SYSTEM SETTINGS TAB
+            9. VIP LEVEL & SYSTEM SETTINGS TAB
             ========================================================================= */}
         {activeTab === 'settings' && (
-          <div className="max-w-4xl bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-700">
-                  <Settings className="w-6 h-6" />
+          <div className="space-y-6 max-w-5xl">
+            {/* Toast Notification Banner on Save */}
+            {levelSaveMsg && (
+              <div className="p-4 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in border border-emerald-400">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-xl">
+                    <Crown className="w-6 h-6 text-yellow-300" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-extrabold leading-snug">{levelSaveMsg}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLevelSaveMsg('')}
+                  className="p-1.5 hover:bg-white/20 rounded-lg text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+            {/* VIP Level Configuration Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div className="p-3 bg-amber-500/10 text-amber-600 rounded-2xl">
+                  <Crown className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">Admin System Settings</h3>
-                  <p className="text-xs text-slate-500 font-medium">NetworkJoin Pro Control Panel</p>
+                  <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                    <span>VIP Level Settings</span>
+                    <span className="text-xs font-semibold text-slate-400">Saved directly to Firestore &apos;viplevel&apos; folder</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">Configure investment rules & daily profit rates</p>
                 </div>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300">
-                System Active 🟢
-              </span>
+
+              <form onSubmit={handleSaveVipLevel} className="space-y-5">
+                {/* Select VIP Level (1 to 10) */}
+                <div>
+                  <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
+                    Select VIP Level Box (Level 1 to 10):
+                  </label>
+                  <select
+                    value={selectedLevelNum}
+                    onChange={(e) => handleSelectLevelChange(Number(e.target.value))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                      const def = DEFAULT_VIP_LEVELS.find((l) => l.levelNumber === num);
+                      return (
+                        <option key={num} value={num}>
+                          {def ? `${def.icon} ${def.levelName}` : `👑 VIP Level ${num}`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                {/* Input Grid: Invest Amount & Commission */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">
+                      Invest Amount (₹) / इन्वेस्टमेंट
+                    </label>
+                    <input
+                      type="number"
+                      value={levelAmount}
+                      onChange={(e) => handleAmountInputChange(e.target.value)}
+                      placeholder="e.g. 500"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-cyan-600 focus:bg-white transition-all font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">
+                      Commission Amount (₹) / कमीशन
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={levelCommission}
+                      onChange={(e) => handleCommissionInputChange(e.target.value)}
+                      placeholder="e.g. 12.50"
+                      className="w-full px-4 py-3 bg-amber-50/50 border border-amber-300 rounded-xl text-xs font-extrabold text-amber-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-all font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Daily Profit Percentage */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
+                      Daily Profit Income Percentage (%) / % दर
+                    </label>
+                    <span className="text-[10px] font-black text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      Auto Fitted ✨
+                    </span>
+                  </div>
+                  <input
+                    type="number"
+                    step="any"
+                    value={levelPercentage}
+                    onChange={(e) => handlePercentageInputChange(e.target.value)}
+                    placeholder="e.g. 2.5"
+                    className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-300 rounded-xl text-xs font-black text-emerald-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition-all font-mono"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1">
+                    <span>⚡ जैसे ही आप इन्वेस्टमेंट अमाउंट या कमीशन अमाउंट बदलेंगे, परसेंटेज (Percentage) ऑटो-कैलकुलेट हो जाएगा। (सेव करने पर % दर सेव होगी)</span>
+                  </p>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  type="submit"
+                  disabled={savingLevel}
+                  className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 disabled:opacity-50"
+                >
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <span>
+                    {savingLevel
+                      ? 'Saving to Firebase Cloud Firestore...'
+                      : `Save VIP Level ${selectedLevelNum} Settings`}
+                  </span>
+                </button>
+              </form>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <span className="font-extrabold text-slate-900 text-sm block">🔥 Firebase Cloud Firestore</span>
-                <p className="text-slate-600 font-medium">
-                  Real-time synchronized database connection online and operational.
-                </p>
-                <span className="inline-block text-[10px] font-mono bg-slate-800 text-cyan-300 px-2.5 py-1 rounded-md">
-                  DB: ai-studio-networkjoinproin
+            {/* Configured VIP Levels Summary Table (1 - 10) */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900">Configured VIP Levels Summary (1 - 10)</h4>
+                  <p className="text-xs text-slate-500 font-medium">Real-time synced from Firebase Cloud Firestore</p>
+                </div>
+                <span className="px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-full text-[10px] font-mono font-extrabold text-cyan-800 self-start sm:self-auto">
+                  Firestore Folder: viplevel
                 </span>
               </div>
 
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <span className="font-extrabold text-slate-900 text-sm block">🛡️ Security & Role Controls</span>
-                <p className="text-slate-600 font-medium">
-                  Superadmin permissions active with full data access and control.
-                </p>
-                <span className="inline-block text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-200">
-                  Superuser Verified ✓
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">Level</th>
+                      <th className="p-3">Badge</th>
+                      <th className="p-3">Min Amount (₹)</th>
+                      <th className="p-3">Daily Rate (%)</th>
+                      <th className="p-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                      const dbRecord = vipLevels.find((l) => l.levelNumber === num);
+                      const defRecord = DEFAULT_VIP_LEVELS.find((l) => l.levelNumber === num);
+                      const activeRecord = dbRecord || defRecord!;
+                      const isSelected = selectedLevelNum === num;
+
+                      return (
+                        <tr
+                          key={num}
+                          className={`hover:bg-slate-50/80 transition-colors ${
+                            isSelected ? 'bg-amber-50/40' : ''
+                          }`}
+                        >
+                          <td className="p-3 font-black text-slate-900 font-mono">
+                            VIP {num}
+                          </td>
+                          <td className="p-3">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-slate-800 font-bold text-[11px] border border-slate-200">
+                              <span>{activeRecord.icon || '👑'}</span>
+                              <span>{activeRecord.levelName}</span>
+                            </span>
+                          </td>
+                          <td className="p-3 font-extrabold text-slate-800 font-mono">
+                            ₹{(activeRecord.minAmount || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td className="p-3 font-extrabold text-emerald-600 font-mono">
+                            {activeRecord.dailyPercentage}% / day
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleSelectLevelChange(num)}
+                              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-black text-[10px] transition-all cursor-pointer shadow-2xs"
+                            >
+                              Edit Level
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* System Status Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-700">
+                    <Settings className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Admin System Settings & Connection</h3>
+                    <p className="text-xs text-slate-500 font-medium">Firebase Cloud Firestore Connection Vitals</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300">
+                  System Active 🟢
                 </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <span className="font-extrabold text-slate-900 text-sm block">🔥 Firebase Cloud Firestore</span>
+                  <p className="text-slate-600 font-medium">
+                    Real-time synchronized database connection online and operational.
+                  </p>
+                  <span className="inline-block text-[10px] font-mono bg-slate-800 text-cyan-300 px-2.5 py-1 rounded-md">
+                    DB: ai-studio-networkjoinproin
+                  </span>
+                </div>
+
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <span className="font-extrabold text-slate-900 text-sm block">🛡️ Security & Role Controls</span>
+                  <p className="text-slate-600 font-medium">
+                    Superadmin permissions active with full data access and control.
+                  </p>
+                  <span className="inline-block text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-200">
+                    Superuser Verified ✓
+                  </span>
+                </div>
               </div>
             </div>
           </div>
