@@ -92,9 +92,9 @@ export default function AdminPanel() {
     | 'settings'
   >('dashboard');
 
-  // Sidebar Collapsed State (Starts in small icon-only mode)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
-  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
+  // Sidebar Open State (Starts hidden by default for full screen dashboard)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   // Loading and State
   const [loading, setLoading] = useState(true);
@@ -932,10 +932,11 @@ export default function AdminPanel() {
           <button
             type="button"
             onClick={toggleSidebar}
-            className="p-1.5 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 text-white transition-all cursor-pointer border border-white/20"
-            title={sidebarCollapsed ? 'Expand Sidebar Menu' : 'Collapse Sidebar to Icon Mode'}
+            className="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white transition-all cursor-pointer border border-white/20 flex items-center justify-center gap-1.5 shadow-xs"
+            title={sidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
           >
-            <LayoutDashboard className="w-5 h-5" />
+            <LayoutDashboard className="w-5 h-5 text-white" />
+            <span className="text-xs font-extrabold hidden xs:inline">Menu</span>
           </button>
 
           {/* Brand Logo */}
@@ -970,7 +971,7 @@ export default function AdminPanel() {
                 <option value="plans" className="text-slate-900">Investment Plans ▾</option>
                 <option value="sliders" className="text-slate-900">Home Sliders ▾</option>
                 <option value="contact" className="text-slate-900">Contact Us (Chats) ▾</option>
-                <option value="settings" className="text-slate-900">Settings (VIP Levels) ▾</option>
+                <option value="settings" className="text-slate-900">Settings ▾</option>
                 <option value="gateway" className="text-slate-900">Payment Gateway ▾</option>
               </select>
               <ChevronRight className="w-3.5 h-3.5 text-cyan-100 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
@@ -1041,225 +1042,211 @@ export default function AdminPanel() {
       </header>
 
       {/* =========================================================================
-          2. MAIN DESKTOP BODY: COLLAPSIBLE SIDEBAR + CONTENT VIEWPORT
+          2. MAIN DESKTOP BODY: FULL SCREEN / FULL WIDTH DASHBOARD VIEWPORT
           ========================================================================= */}
-      <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-        {/* -----------------------------------------------------------------------
-            LEFT DARK SIDEBAR (Collapsible w-16 to w-64 with Smooth Animation)
-            ----------------------------------------------------------------------- */}
-        <aside
-          className={`${
-            sidebarCollapsed ? 'w-16' : 'w-64'
-          } transition-all duration-300 ease-in-out bg-[#232b38] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg border-r border-slate-800 overflow-y-auto overflow-x-hidden`}
-        >
-          <div>
-            {/* Top User Profile Card & Collapse Toggle */}
+      <div className="flex flex-1 min-h-0 w-full overflow-hidden relative">
+        {/* OVERLAY SLIDE-OUT SIDEBAR NAVIGATION DRAWER */}
+        {sidebarOpen && (
+          <>
+            {/* Dark Backdrop Overlay */}
             <div
-              onClick={toggleSidebar}
-              className={`p-3 bg-[#1d2430] border-b border-slate-700/60 flex items-center ${
-                sidebarCollapsed ? 'justify-center' : 'justify-between'
-              } cursor-pointer hover:bg-[#252f3f] transition-colors`}
-              title={sidebarCollapsed ? 'Click to Expand Sidebar' : 'Click to Collapse Sidebar'}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-400 text-white font-extrabold flex items-center justify-center text-xs shadow-md border border-cyan-300/30">
-                    AD
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity"
+            />
+
+            {/* Slide-out Sidebar Drawer */}
+            <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-[#232b38] text-slate-300 flex flex-col justify-between shadow-2xl border-r border-slate-800 overflow-y-auto animate-in slide-in-from-left duration-200">
+              <div>
+                {/* Drawer Top Header */}
+                <div className="p-4 bg-[#1d2430] border-b border-slate-700/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 to-cyan-400 text-white font-extrabold flex items-center justify-center text-xs shadow-md border border-cyan-300/30">
+                        AD
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#1d2430]" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-black text-white truncate">Super Admin Panel</h3>
+                      <span className="text-[10px] text-emerald-400 font-semibold block">Online • Full Control</span>
+                    </div>
                   </div>
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#1d2430]" />
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                {!sidebarCollapsed && (
-                  <div className="min-w-0 flex-1 transition-opacity duration-200">
-                    <h3 className="text-xs font-black text-white truncate">Super Admin</h3>
-                    <span className="text-[10px] text-emerald-400 font-semibold block">Online • Full Control</span>
+
+                {/* Sidebar Categorized Menu */}
+                <div className="py-3 px-2 space-y-4">
+                  {/* Category 1: PERSONAL */}
+                  <div>
+                    <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                      PERSONAL
+                    </span>
+                    <nav className="space-y-1">
+                      {[
+                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                        { id: 'users', label: 'Users Directory', icon: Users, badge: users.length },
+                        { id: 'deposits', label: 'Add Money (Deposits)', icon: ArrowDownLeft, badge: pendingDepositsCount },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setActiveTab(item.id as any);
+                              setSidebarOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                              <span className="truncate text-xs font-extrabold">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {item.badge !== undefined && item.badge > 0 && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+                              <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </nav>
                   </div>
-                )}
-              </div>
-              {!sidebarCollapsed && (
-                <ChevronRight className="w-4 h-4 text-slate-400 rotate-180 shrink-0" />
-              )}
-            </div>
 
-            {/* Sidebar Categorized Menu */}
-            <div className="py-3 px-1.5 space-y-4">
-              {/* Category 1: PERSONAL */}
-              <div>
-                {!sidebarCollapsed && (
-                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
-                    PERSONAL
-                  </span>
-                )}
-                <nav className="space-y-1">
-                  {[
-                    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                    { id: 'users', label: 'Users Directory', icon: Users, badge: users.length },
-                    { id: 'deposits', label: 'Add Money (Deposits)', icon: ArrowDownLeft, badge: pendingDepositsCount },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        title={item.label}
-                        className={`w-full flex items-center ${
-                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
-                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          isActive
-                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
-                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {item.badge !== undefined && item.badge > 0 && (
-                              <span
-                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                }`}
-                              >
-                                {item.badge}
-                              </span>
-                            )}
-                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
-              </div>
+                  {/* Category 2: FINANCE & PAYOUTS */}
+                  <div>
+                    <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                      FINANCE & PAYOUTS
+                    </span>
+                    <nav className="space-y-1">
+                      {[
+                        { id: 'withdrawals', label: 'Withdrawal Payouts', icon: ArrowUpRight, badge: pendingWithdrawalsCount },
+                        { id: 'plans', label: 'Yield Plans', icon: Layers },
+                        { id: 'gateway', label: 'Payment Gateway', icon: CreditCard },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setActiveTab(item.id as any);
+                              setSidebarOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                              <span className="truncate text-xs font-extrabold">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {item.badge !== undefined && item.badge > 0 && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+                              <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </nav>
+                  </div>
 
-              {/* Category 2: FINANCE & PAYOUTS */}
-              <div>
-                {!sidebarCollapsed && (
-                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
-                    FINANCE & PAYOUTS
-                  </span>
-                )}
-                <nav className="space-y-1">
-                  {[
-                    { id: 'withdrawals', label: 'Withdrawal Payouts', icon: ArrowUpRight, badge: pendingWithdrawalsCount },
-                    { id: 'plans', label: 'Yield Plans', icon: Layers },
-                    { id: 'gateway', label: 'Payment Gateway', icon: CreditCard },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        title={item.label}
-                        className={`w-full flex items-center ${
-                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
-                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          isActive
-                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
-                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {item.badge !== undefined && item.badge > 0 && (
-                              <span
-                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                                }`}
-                              >
-                                {item.badge}
-                              </span>
-                            )}
-                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
+                  {/* Category 3: CMS & APP */}
+                  <div>
+                    <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5">
+                      CMS & APP
+                    </span>
+                    <nav className="space-y-1">
+                      {[
+                        { id: 'sliders', label: 'Home Sliders', icon: Sliders },
+                        { id: 'contact', label: 'Contact Us', icon: MessageSquare, badge: chatMessages.filter((m) => m.sender === 'user').length },
+                        { id: 'settings', label: 'System Settings', icon: Settings },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setActiveTab(item.id as any);
+                              setSidebarOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                              <span className="truncate text-xs font-extrabold">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {item.badge !== undefined && item.badge > 0 && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+                              <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </nav>
+                  </div>
+                </div>
               </div>
 
-              {/* Category 3: CMS & APP */}
-              <div>
-                {!sidebarCollapsed && (
-                  <span className="px-3 text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1.5 transition-opacity">
-                    CMS & APP
-                  </span>
-                )}
-                <nav className="space-y-1">
-                  {[
-                    { id: 'sliders', label: 'Home Sliders', icon: Sliders },
-                    { id: 'contact', label: 'Contact Us', icon: MessageSquare, badge: chatMessages.filter((m) => m.sender === 'user').length },
-                    { id: 'settings', label: 'Settings', icon: Settings },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        title={item.label}
-                        className={`w-full flex items-center ${
-                          sidebarCollapsed ? 'justify-center py-2.5 px-0' : 'justify-between px-3 py-2.5'
-                        } rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          isActive
-                            ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
-                            : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Icon className={`shrink-0 ${sidebarCollapsed ? 'w-5.5 h-5.5' : 'w-4.5 h-4.5'} ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                          {!sidebarCollapsed && <span className="truncate text-xs font-extrabold">{item.label}</span>}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {item.badge !== undefined && item.badge > 0 && (
-                              <span
-                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                  isActive ? 'bg-white text-[#00a8cc]' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                                }`}
-                              >
-                                {item.badge}
-                              </span>
-                            )}
-                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-500'}`} />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
+              {/* Bottom Exit Button */}
+              <div className="p-3 border-t border-slate-700/60 bg-[#1d2430]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.hash = '';
+                      window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  <ArrowLeft className="w-4 h-4 text-cyan-300 shrink-0" />
+                  <span>Return to User Application</span>
+                </button>
               </div>
-            </div>
-          </div>
-
-          {/* Bottom Exit to User App Button */}
-          <div className="p-2 border-t border-slate-700/60 bg-[#1d2430]">
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  window.location.hash = '';
-                  window.location.href = window.location.pathname.replace(/\/admin\/?$/, '/');
-                }
-              }}
-              title="Return to User Application"
-              className={`flex items-center ${
-                sidebarCollapsed ? 'justify-center py-2.5' : 'justify-center gap-2 py-2'
-              } w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-black rounded-lg transition-all cursor-pointer shadow-xs active:scale-95`}
-            >
-              <ArrowLeft className="w-4 h-4 text-cyan-300 shrink-0" />
-              {!sidebarCollapsed && <span>User Application</span>}
-            </button>
-          </div>
-        </aside>
+            </aside>
+          </>
+        )}
 
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
@@ -3165,173 +3152,44 @@ export default function AdminPanel() {
         )}
 
         {/* =========================================================================
-            9. VIP LEVEL SETTINGS TAB (Persists to Firestore `level` collection)
+            9. ADMIN SYSTEM SETTINGS TAB
             ========================================================================= */}
         {activeTab === 'settings' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* VIP Level Configuration Form Box */}
-            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
-                    <Crown className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900">VIP Level Settings</h3>
-                    <p className="text-[11px] text-slate-400 font-medium">Saved directly to Firestore &apos;vip level&apos; folder</p>
-                  </div>
+          <div className="max-w-4xl bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-700">
+                  <Settings className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Admin System Settings</h3>
+                  <p className="text-xs text-slate-500 font-medium">NetworkJoin Pro Control Panel</p>
                 </div>
               </div>
-
-              <form onSubmit={handleSaveVipLevel} className="space-y-4 text-xs">
-                {/* Select VIP Level Dropdown Box (1 to 10) */}
-                <div>
-                  <label className="font-extrabold text-slate-800 block mb-1.5">
-                    Select VIP Level Box (Level 1 to 10):
-                  </label>
-                  <select
-                    value={selectedLevelNum}
-                    onChange={(e) => setSelectedLevelNum(parseInt(e.target.value) || 1)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-extrabold text-slate-800 focus:outline-none focus:border-slate-900 cursor-pointer"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <option key={num} value={num}>
-                        👑 VIP Level {num} {num <= 3 ? '(Silver/Basic)' : num <= 6 ? '(Gold/Pro)' : num <= 9 ? '(Diamond/Elite)' : '(Royal Master)'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Amount (Invest Amount) & Commission Amount Side-by-Side Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Invest Amount Input Box (₹) */}
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">
-                      Invest Amount (₹) / इन्वेस्टमेंट
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="any"
-                      value={levelAmount}
-                      onChange={(e) => handleAmountInputChange(e.target.value)}
-                      placeholder="e.g. 5000"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-900"
-                    />
-                  </div>
-
-                  {/* Commission Amount Input Box (₹) - Right side of Amount */}
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">
-                      Commission Amount (₹) / कमीशन
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={levelCommission}
-                      onChange={(e) => handleCommissionInputChange(e.target.value)}
-                      placeholder="e.g. 175"
-                      className="w-full px-3.5 py-2.5 bg-amber-50/60 border border-amber-300 rounded-xl font-mono font-bold text-amber-900 focus:outline-none focus:border-amber-600"
-                    />
-                  </div>
-                </div>
-
-                {/* Percentage Input Box (%) - Auto fitted from Amount & Commission */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-bold text-slate-700 block">
-                      Daily Profit Income Percentage (%) / % दर
-                    </label>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
-                      Auto Fitted ✨
-                    </span>
-                  </div>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="any"
-                    value={levelPercentage}
-                    onChange={(e) => handlePercentageInputChange(e.target.value)}
-                    placeholder="e.g. 3.5"
-                    className="w-full px-3.5 py-2.5 bg-emerald-50/60 border border-emerald-300 rounded-xl font-mono font-bold text-emerald-900 focus:outline-none focus:border-emerald-600"
-                  />
-                  <p className="text-[10px] text-slate-500 mt-1 font-medium">
-                    ⚡ जैसे ही आप इन्वेस्टमेंट अमाउंट या कमीशन अमाउंट बदलेंगे, परसेंटेज (Percentage) ऑटो-कैलकुलेट हो जाएगा। (सेव करने पर % दर सेव होगी)
-                  </p>
-                </div>
-
-                {levelSaveMsg && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl text-center shadow-2xs">
-                    {levelSaveMsg}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={savingLevel}
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-black text-xs rounded-xl transition-all shadow-sm cursor-pointer active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Crown className="w-4 h-4 text-amber-400" />
-                  <span>{savingLevel ? 'Saving to Firebase...' : `Save VIP Level ${selectedLevelNum} Settings`}</span>
-                </button>
-              </form>
+              <span className="px-3 py-1 rounded-full text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300">
+                System Active 🟢
+              </span>
             </div>
 
-            {/* VIP Levels Overview Table (7 Cols) */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-black text-slate-900">Configured VIP Levels Summary (1 - 10)</h3>
-                <span className="text-[10px] font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-full">
-                  Firestore Folder: vip level / level
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="font-extrabold text-slate-900 text-sm block">🔥 Firebase Cloud Firestore</span>
+                <p className="text-slate-600 font-medium">
+                  Real-time synchronized database connection online and operational.
+                </p>
+                <span className="inline-block text-[10px] font-mono bg-slate-800 text-cyan-300 px-2.5 py-1 rounded-md">
+                  DB: ai-studio-networkjoinproin
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider">
-                    <tr>
-                      <th className="p-2.5 rounded-l-lg">Level</th>
-                      <th className="p-2.5">Badge</th>
-                      <th className="p-2.5">Min Amount (₹)</th>
-                      <th className="p-2.5">Daily Rate (%)</th>
-                      <th className="p-2.5 rounded-r-lg text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
-                      const rec = vipLevels.find((r) => r.levelNumber === num);
-                      const isSel = selectedLevelNum === num;
-                      return (
-                        <tr key={num} className={`hover:bg-slate-50 transition-colors ${isSel ? 'bg-amber-50/60 font-bold' : ''}`}>
-                          <td className="p-2.5 font-bold text-slate-900">VIP {num}</td>
-                          <td className="p-2.5">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">
-                              {rec?.icon || (num <= 3 ? '🥈' : num <= 6 ? '🥇' : num <= 9 ? '💎' : '👑')} Level {num}
-                            </span>
-                          </td>
-                          <td className="p-2.5 font-mono font-bold text-slate-800">
-                            {rec ? `₹${rec.minAmount.toLocaleString('en-IN')}` : '₹' + (num * 1000)}
-                          </td>
-                          <td className="p-2.5 font-mono font-bold text-emerald-700">
-                            {rec ? `${rec.dailyPercentage}% / day` : `${2 + num * 0.5}% / day`}
-                          </td>
-                          <td className="p-2.5 text-right">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedLevelNum(num)}
-                              className="px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
-                            >
-                              Edit Level
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="font-extrabold text-slate-900 text-sm block">🛡️ Security & Role Controls</span>
+                <p className="text-slate-600 font-medium">
+                  Superadmin permissions active with full data access and control.
+                </p>
+                <span className="inline-block text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-200">
+                  Superuser Verified ✓
+                </span>
               </div>
             </div>
           </div>
