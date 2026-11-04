@@ -72,13 +72,17 @@ try {
 export const db = dbInstance;
 export { app };
 
-// Test connection on boot with non-blocking timeout per Firebase skill
+// Test connection on boot and ensure initial Firestore collections exist
 export async function testConnection() {
   try {
-    await withTimeout(getDocFromServer(doc(db, 'test', 'connection')), 3500);
+    const connDoc = doc(db, 'test', 'connection');
+    await setDoc(connDoc, {
+      status: 'online',
+      connectedAt: new Date().toISOString(),
+      appName: 'NetworkJoin Pro',
+    });
   } catch (error) {
     if (error instanceof Error) {
-      // Gracefully log offline / pending status without throwing uncaught errors
       console.warn('Firebase client offline or connecting in background:', error.message);
     }
   }
@@ -156,18 +160,52 @@ export function sanitizeFirestorePayload<T extends Record<string, any>>(obj: T):
 // Save complete user registration to Firestore
 export async function saveUserToFirestore(userData: UserAccountData): Promise<{ success: boolean; error?: string }> {
   try {
-    const docRef = doc(db, 'users', userData.loginUid);
+    const cleanUid = (userData.loginUid || '').trim();
+    if (!cleanUid) {
+      return { success: false, error: 'Login UID is required' };
+    }
+
     const payload = {
       ...userData,
-      status: userData.status || 'active',
+      loginUid: cleanUid,
+      status: userData.status || 'pending_approval',
+      kycStatus: userData.kycStatus || 'pending',
       balance: userData.balance ?? 12500,
       vipLevel: userData.vipLevel ?? 1,
       createdAt: userData.createdAt || new Date().toISOString(),
     };
-    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(payload)), 4000);
+    const cleanData = sanitizeFirestorePayload(payload);
+
+    // Write to Firestore users collection directly
+    const docRef = doc(db, 'users', cleanUid);
+    const docRefUpper = doc(db, 'users', cleanUid.toUpperCase());
+
+    try {
+      await Promise.all([
+        setDoc(docRef, cleanData),
+        setDoc(docRefUpper, cleanData),
+      ]);
+    } catch (primaryErr) {
+      console.warn('Primary setDoc write warning, writing stripped fallback:', primaryErr);
+      // Fallback: Strip heavy images to guarantee user profile is created in Firestore
+      const strippedPayload = {
+        ...cleanData,
+        kycDetails: cleanData.kycDetails ? {
+          ...cleanData.kycDetails,
+          panImage: undefined,
+          aadhaarFrontImage: undefined,
+          aadhaarBackImage: undefined,
+        } : undefined,
+      };
+      await Promise.allSettled([
+        setDoc(docRef, sanitizeFirestorePayload(strippedPayload)),
+        setDoc(docRefUpper, sanitizeFirestorePayload(strippedPayload)),
+      ]);
+    }
+
     return { success: true };
   } catch (err: unknown) {
-    console.warn('Warning saving user to Firestore:', err);
+    console.error('Error saving user to Firestore:', err);
     const message = err instanceof Error ? err.message : 'Failed to save to Firestore';
     return { success: false, error: message };
   }

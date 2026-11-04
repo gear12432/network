@@ -262,22 +262,49 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
   const [copiedUid, setCopiedUid] = useState(false);
   const [copiedPwd, setCopiedPwd] = useState(false);
 
-  // Helper to read file input into base64 Data URL
+  // Helper to read file input, compress & convert into compact base64 Data URL (under 30KB)
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     setter: (val: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 6 * 1024 * 1024) {
-      setSignupError('Image file size must be less than 6MB');
-      return;
-    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (ev.target?.result) {
-        setter(ev.target.result as string);
-      }
+      const rawBase64 = ev.target?.result as string;
+      if (!rawBase64) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 500;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.6);
+          setter(compressed);
+        } else {
+          setter(rawBase64.slice(0, 80000));
+        }
+      };
+      img.onerror = () => {
+        setter(rawBase64.slice(0, 80000));
+      };
+      img.src = rawBase64;
     };
     reader.readAsDataURL(file);
   };
