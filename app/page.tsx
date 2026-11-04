@@ -43,7 +43,7 @@ import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, db } from '@/lib/firebase';
+import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, findUserInFirestore, db } from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { triggerConfetti } from '@/lib/confetti';
 
@@ -132,29 +132,69 @@ export default function InvestmentApp() {
     // 2. Always show Onboarding Slider Screen on App Launch
     setShowOnboarding(true);
 
-    // 3. Check Logged In User
+    // 3. Check Logged In User and Validate with Firestore
     try {
       const saved = localStorage.getItem('network_join_pro_user');
       if (saved) {
         const u = JSON.parse(saved);
-        setCurrentUser(u);
-        const initials =
-          u.fullName
-            ?.split(' ')
-            .map((n: string) => n[0])
-            .join('')
-            .substring(0, 2)
-            .toUpperCase() || 'GK';
+        if (u && u.loginUid) {
+          // Immediately set initial state for smooth UI transition
+          setCurrentUser(u);
+          const initials =
+            u.fullName
+              ?.split(' ')
+              .map((n: string) => n[0])
+              .join('')
+              .substring(0, 2)
+              .toUpperCase() || 'GK';
 
-        setUserStats((prev) => ({
-          ...prev,
-          userName: u.fullName || prev.userName,
-          userInitials: initials,
-          loginUid: u.loginUid,
-          email: u.email,
-          mobile: u.mobile,
-          walletBalance: u.balance ?? prev.walletBalance,
-        }));
+          setUserStats((prev) => ({
+            ...prev,
+            userName: u.fullName || prev.userName,
+            userInitials: initials,
+            loginUid: u.loginUid,
+            email: u.email,
+            mobile: u.mobile,
+            walletBalance: u.balance ?? prev.walletBalance,
+          }));
+
+          // Validate against Firestore in background to purge stale or non-existent demo accounts
+          findUserInFirestore(u.loginUid)
+            .then((validUser) => {
+              if (validUser && (validUser.status === 'active' || validUser.kycStatus === 'approved')) {
+                setCurrentUser(validUser);
+                try {
+                  localStorage.setItem('network_join_pro_user', JSON.stringify(validUser));
+                } catch {
+                  // ignore
+                }
+                const freshInitials =
+                  validUser.fullName
+                    ?.split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase() || 'GK';
+
+                setUserStats((prev) => ({
+                  ...prev,
+                  userName: validUser.fullName || prev.userName,
+                  userInitials: freshInitials,
+                  loginUid: validUser.loginUid,
+                  email: validUser.email,
+                  mobile: validUser.mobile,
+                  walletBalance: validUser.balance ?? prev.walletBalance,
+                }));
+              } else if (!validUser) {
+                // User doc does not exist in Firestore (legacy demo user) -> clear session and show Auth
+                localStorage.removeItem('network_join_pro_user');
+                setCurrentUser(null);
+              }
+            })
+            .catch(() => {
+              // Ignore network errors in background validation
+            });
+        }
       }
     } catch {
       // fallback
