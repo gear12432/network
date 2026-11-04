@@ -16,8 +16,24 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '@/firebase-applet-config.json';
 
+export const EXACT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDiJz5mrUCIzfPipdk31jHXsIg3z6XqXco",
+  authDomain: "sas-app-fe83e.firebaseapp.com",
+  databaseURL: "https://sas-app-fe83e-default-rtdb.firebaseio.com",
+  projectId: "sas-app-fe83e",
+  storageBucket: "sas-app-fe83e.firebasestorage.app",
+  messagingSenderId: "287373150271",
+  appId: "1:287373150271:web:d5b9a27535bcef03d2108a",
+  measurementId: "G-YCN7FC527N"
+};
+
+const activeConfig = {
+  ...EXACT_FIREBASE_CONFIG,
+  ...(firebaseConfig || {}),
+};
+
 // Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = !getApps().length ? initializeApp(activeConfig) : getApp();
 
 // Helper to prevent long hangs on slow or intermittent network
 function withTimeout<T>(promise: Promise<T>, ms: number = 4000): Promise<T> {
