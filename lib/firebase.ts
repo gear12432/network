@@ -120,6 +120,23 @@ export async function generateUniqueLoginUid(): Promise<string> {
   return `GK${Math.floor(10000 + Math.random() * 90000)}`;
 }
 
+// Helper to sanitize objects for Firestore (removes any undefined properties which cause Firestore setDoc to fail)
+export function sanitizeFirestorePayload<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const clean: Record<string, any> = {};
+  if (!obj || typeof obj !== 'object') return clean;
+  Object.keys(obj).forEach((key) => {
+    const val = obj[key];
+    if (val !== undefined) {
+      if (val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
+        clean[key] = sanitizeFirestorePayload(val);
+      } else {
+        clean[key] = val;
+      }
+    }
+  });
+  return clean;
+}
+
 // Save complete user registration to Firestore
 export async function saveUserToFirestore(userData: UserAccountData): Promise<{ success: boolean; error?: string }> {
   try {
@@ -131,10 +148,10 @@ export async function saveUserToFirestore(userData: UserAccountData): Promise<{ 
       vipLevel: userData.vipLevel ?? 1,
       createdAt: userData.createdAt || new Date().toISOString(),
     };
-    await withTimeout(setDoc(docRef, payload), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(payload)), 4000);
     return { success: true };
   } catch (err: unknown) {
-    console.warn('Warning saving user to Firestore (will rely on local storage):', err);
+    console.warn('Warning saving user to Firestore:', err);
     const message = err instanceof Error ? err.message : 'Failed to save to Firestore';
     return { success: false, error: message };
   }
@@ -202,7 +219,7 @@ export async function saveDepositToFirestore(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const docRef = doc(db, 'deposits', depositData.id);
-    await withTimeout(setDoc(docRef, depositData), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(depositData)), 4000);
     return { success: true };
   } catch (err: unknown) {
     console.warn('Warning saving deposit to Firestore:', err);
@@ -378,7 +395,7 @@ export async function saveWithdrawalToFirestore(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const docRef = doc(db, 'withdrawals', withdrawalData.id);
-    await withTimeout(setDoc(docRef, withdrawalData), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(withdrawalData)), 4000);
     return { success: true };
   } catch (err) {
     console.warn('Error saving withdrawal to Firestore:', err);
@@ -473,10 +490,10 @@ export async function saveGatewaySettingsToFirestore(
 
   try {
     const docRef = doc(db, 'settings', 'gateway');
-    await withTimeout(setDoc(docRef, settings), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(settings)), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving gateway settings to Firestore (saved locally):', err);
+    console.warn('Error saving gateway settings to Firestore:', err);
     return false;
   }
 }
@@ -496,10 +513,10 @@ export async function saveCustomPlanToFirestore(plan: any): Promise<boolean> {
 
   try {
     const docRef = doc(db, 'plans', String(plan.id));
-    await withTimeout(setDoc(docRef, plan), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(plan)), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving plan to Firestore (saved locally):', err);
+    console.warn('Error saving plan to Firestore:', err);
     return false;
   }
 }
@@ -573,10 +590,10 @@ export async function saveCustomSliderToFirestore(slider: any): Promise<boolean>
 
   try {
     const docRef = doc(db, 'sliders', String(slider.id));
-    await withTimeout(setDoc(docRef, slider), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(slider)), 4000);
     return true;
   } catch (err) {
-    console.warn('Error saving slider to Firestore (saved locally):', err);
+    console.warn('Error saving slider to Firestore:', err);
     return false;
   }
 }
@@ -639,13 +656,7 @@ export async function getCustomSlidersFromFirestore(): Promise<any[]> {
 export async function saveCustomerToFirestore(
   customerData: any
 ): Promise<{ success: boolean; error?: string }> {
-  // Clean payload: remove any undefined keys so Firestore never rejects setDoc
-  const cleanData: Record<string, any> = {};
-  Object.keys(customerData).forEach((key) => {
-    if (customerData[key] !== undefined) {
-      cleanData[key] = customerData[key];
-    }
-  });
+  const cleanData = sanitizeFirestorePayload(customerData);
 
   if (typeof window !== 'undefined') {
     try {
@@ -667,7 +678,7 @@ export async function saveCustomerToFirestore(
     ]);
     return { success: true };
   } catch (err: unknown) {
-    console.warn('Warning saving customer to Firestore (saved locally):', err);
+    console.warn('Warning saving customer to Firestore:', err);
     const message = err instanceof Error ? err.message : 'Failed to save customer to Firestore';
     return { success: false, error: message };
   }
@@ -714,12 +725,7 @@ export async function getAllCustomersFromFirestore(): Promise<any[]> {
 export async function saveInvestmentToFirestore(
   investmentData: any
 ): Promise<{ success: boolean; error?: string }> {
-  const cleanData: Record<string, any> = {};
-  Object.keys(investmentData).forEach((key) => {
-    if (investmentData[key] !== undefined) {
-      cleanData[key] = investmentData[key];
-    }
-  });
+  const cleanData = sanitizeFirestorePayload(investmentData);
 
   if (typeof window !== 'undefined') {
     try {
@@ -741,7 +747,7 @@ export async function saveInvestmentToFirestore(
     ]);
     return { success: true };
   } catch (err: unknown) {
-    console.warn('Warning saving investment to Firestore (saved locally):', err);
+    console.warn('Warning saving investment to Firestore:', err);
     const message = err instanceof Error ? err.message : 'Failed to save investment to Firestore';
     return { success: false, error: message };
   }
@@ -804,7 +810,7 @@ export async function saveChatMessageToFirestore(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const docRef = doc(db, 'support_chats', msg.id);
-    await withTimeout(setDoc(docRef, msg), 4000);
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(msg)), 4000);
     return { success: true };
   } catch (err: unknown) {
     console.warn('Warning saving chat message to Firestore:', err);
@@ -852,13 +858,15 @@ export interface VipLevelRecord {
 export async function saveVipLevelToFirestore(
   levelData: VipLevelRecord
 ): Promise<{ success: boolean; error?: string }> {
+  const cleanLevel = sanitizeFirestorePayload(levelData) as VipLevelRecord;
+
   if (typeof window !== 'undefined') {
     try {
       const localStr = localStorage.getItem('network_join_pro_vip_levels');
       const existing = localStr ? JSON.parse(localStr) : [];
       const updated = [
-        levelData,
-        ...existing.filter((l: any) => String(l.id) !== String(levelData.id)),
+        cleanLevel,
+        ...existing.filter((l: any) => String(l.id) !== String(cleanLevel.id)),
       ];
       localStorage.setItem('network_join_pro_vip_levels', JSON.stringify(updated));
     } catch (e) {
@@ -872,8 +880,8 @@ export async function saveVipLevelToFirestore(
 
   for (const colName of collectionsToSave) {
     try {
-      const docRef = doc(db, colName, levelData.id);
-      await withTimeout(setDoc(docRef, levelData), 4000);
+      const docRef = doc(db, colName, cleanLevel.id);
+      await withTimeout(setDoc(docRef, cleanLevel), 4000);
       savedCount++;
     } catch (err) {
       lastError = err;

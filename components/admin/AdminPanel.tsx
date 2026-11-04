@@ -732,16 +732,14 @@ export default function AdminPanel() {
     const unsubVip = onSnapshot(
       collection(db, 'viplevel'),
       (snap) => {
-        if (!snap.empty) {
-          const loaded: VipLevelRecord[] = [];
-          snap.forEach((docSnap) => {
-            const data = docSnap.data() as VipLevelRecord;
-            if (data && data.levelNumber) {
-              loaded.push(data);
-            }
-          });
-          setVipLevels(loaded.sort((a, b) => a.levelNumber - b.levelNumber));
-        }
+        const loaded: VipLevelRecord[] = [];
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() as VipLevelRecord;
+          if (data && data.levelNumber) {
+            loaded.push(data);
+          }
+        });
+        setVipLevels(loaded.sort((a, b) => a.levelNumber - b.levelNumber));
       },
       (err) => console.warn('Vip level listener warning:', err)
     );

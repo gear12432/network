@@ -490,32 +490,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
         }
       }
 
-      // 3. Demo fallback if user enters demo credentials
-      if (!user && (identifier.toUpperCase() === 'GK37643' || identifier.toLowerCase() === 'skjiyaul842@gmail.com')) {
-        user = {
-          loginUid: 'GK37643',
-          fullName: 'Sk Jiyaul',
-          mobile: '9876543210',
-          email: 'skjiyaul842@gmail.com',
-          password: pwd || '123456',
-          kycDetails: {
-            idType: 'Aadhaar Card',
-            idNumber: 'XXXX-XXXX-8942',
-            dob: '1995-05-15',
-            gender: 'Male',
-          },
-          addressDetails: {
-            street: 'Station Road, Ward 4',
-            city: 'Kolkata',
-            state: 'West Bengal',
-            pincode: '700001',
-          },
-          balance: 14850,
-          vipLevel: 3,
-          status: 'active',
-          kycStatus: 'approved',
-        };
-      }
+
 
       if (!user) {
         setLoginError('Account not found with this Login UID or Email. Please check details or create a new account.');
