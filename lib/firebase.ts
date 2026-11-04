@@ -117,6 +117,56 @@ export interface UserAccountData {
   kycStatus?: 'pending' | 'approved' | 'rejected' | string;
   createdAt?: string;
   photoUrl?: string;
+  deviceId?: string;
+}
+
+// Generate/retrieve persistent Device ID for current browser/device
+export function getOrCreateDeviceId(): string {
+  if (typeof window === 'undefined') return 'server_device';
+
+  const STORAGE_KEY = 'network_join_pro_device_id';
+  try {
+    let existing = localStorage.getItem(STORAGE_KEY);
+    if (!existing) {
+      const ua = navigator.userAgent || '';
+      const screenRes = `${window.screen?.width || 0}x${window.screen?.height || 0}x${window.screen?.colorDepth || 0}`;
+      const lang = navigator.language || '';
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const rawString = `${ua}|${screenRes}|${lang}|${timeZone}`;
+      
+      let hash = 0;
+      for (let i = 0; i < rawString.length; i++) {
+        const char = rawString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+      }
+      const hexHash = Math.abs(hash).toString(16).padStart(8, '0');
+      const randomPart = Math.floor(100000 + Math.random() * 900000);
+      existing = `DEV_${hexHash}_${randomPart}`;
+      localStorage.setItem(STORAGE_KEY, existing);
+    }
+    return existing;
+  } catch {
+    return 'DEV_UNKNOWN_DEVICE';
+  }
+}
+
+// Check if a user with given Device ID already exists in Firestore
+export async function findUserByDeviceId(deviceId: string): Promise<UserAccountData | null> {
+  if (!deviceId || deviceId === 'DEV_UNKNOWN_DEVICE') return null;
+
+  try {
+    const usersRef = collection(db, 'users');
+    const qDev = query(usersRef, where('deviceId', '==', deviceId));
+    const snap = await withTimeout(getDocs(qDev), 3500);
+    if (!snap.empty) {
+      return snap.docs[0].data() as UserAccountData;
+    }
+    return null;
+  } catch (err) {
+    console.warn('Error checking device ID in Firestore:', err);
+    return null;
+  }
 }
 
 // Generate unique Login UID e.g. "GK37643"
@@ -170,9 +220,10 @@ export async function saveUserToFirestore(userData: UserAccountData): Promise<{ 
       loginUid: cleanUid,
       status: userData.status || 'pending_approval',
       kycStatus: userData.kycStatus || 'pending',
-      balance: userData.balance ?? 12500,
+      balance: userData.balance ?? 0,
       vipLevel: userData.vipLevel ?? 1,
       createdAt: userData.createdAt || new Date().toISOString(),
+      deviceId: userData.deviceId || '',
     };
     const cleanData = sanitizeFirestorePayload(payload);
 

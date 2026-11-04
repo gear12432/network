@@ -26,6 +26,8 @@ import {
   saveUserToFirestore,
   findUserInFirestore,
   generateUniqueLoginUid,
+  getOrCreateDeviceId,
+  findUserByDeviceId,
   UserAccountData,
 } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
@@ -388,11 +390,32 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
     else if (currentStep === 'confirm') setCurrentStep('address');
   };
 
-  // Confirm and save to Firebase Firestore
+  // Confirm and save to Firebase Firestore (1 Account Per Device Restriction)
   const handleConfirmAndRegister = async () => {
     setSignupLoading(true);
     setSignupError(null);
     try {
+      // 0. Device ID Check - Only 1 Account Allowed Per Device
+      const currentDeviceId = getOrCreateDeviceId();
+
+      // Check local device registry marker
+      if (typeof window !== 'undefined') {
+        const localRegistered = localStorage.getItem('network_join_pro_registered_device');
+        if (localRegistered) {
+          setSignupError('Registration Blocked: An account is already registered on this device! Only 1 account per device is allowed.');
+          setSignupLoading(false);
+          return;
+        }
+      }
+
+      // Check Firestore database for matching Device ID
+      const existingDeviceAccount = await findUserByDeviceId(currentDeviceId);
+      if (existingDeviceAccount) {
+        setSignupError(`Registration Blocked: An account (${existingDeviceAccount.loginUid}) is already registered on this device! Only 1 account per device is allowed.`);
+        setSignupLoading(false);
+        return;
+      }
+
       // 1. Generate unique UID e.g. GK37643
       const generatedUid = await generateUniqueLoginUid();
 
@@ -419,17 +442,28 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
           state: state.trim(),
           pincode: pincode.trim(),
         },
-        balance: 12500,
+        balance: 0, // Initial balance starting at ₹0
         vipLevel: 1,
         status: 'pending_approval',
         kycStatus: 'pending',
         createdAt: new Date().toISOString(),
+        deviceId: currentDeviceId,
       };
 
       // 2. Save into Firestore
       const res = await saveUserToFirestore(newUserData);
       if (!res.success) {
         console.warn('Firestore write warning:', res.error);
+      }
+
+      // Store device registration marker locally
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('network_join_pro_registered_device', 'true');
+          localStorage.setItem('network_join_pro_device_id', currentDeviceId);
+        } catch {
+          // ignore
+        }
       }
 
       // Also persist to localStorage for instant offline access (strip heavy base64 images to prevent QuotaExceededError)

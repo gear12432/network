@@ -1853,6 +1853,19 @@ export default function AdminPanel() {
                         </span>
                       </div>
                     </div>
+
+                    <div className="sm:col-span-2 p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Lock className="w-5 h-5 text-amber-600 shrink-0" />
+                        <div>
+                          <span className="text-[10px] text-amber-800 block font-normal uppercase font-mono">REGISTERED DEVICE ID (1 ACCOUNT RULE)</span>
+                          <span className="text-slate-900 font-mono text-xs font-black">{selectedUser.deviceId || 'DEV_RECORDED_ON_REGISTRATION'}</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300 shrink-0">
+                        1 Device Verified 🔒
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
