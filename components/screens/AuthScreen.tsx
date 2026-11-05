@@ -444,8 +444,8 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
         },
         balance: 0, // Initial balance starting at ₹0
         vipLevel: 1,
-        status: 'pending_approval',
-        kycStatus: 'pending',
+        status: 'active', // Account is active immediately upon registration
+        kycStatus: 'approved', // KYC approved immediately upon registration
         createdAt: new Date().toISOString(),
         deviceId: currentDeviceId,
       };

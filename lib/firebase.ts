@@ -218,8 +218,8 @@ export async function saveUserToFirestore(userData: UserAccountData): Promise<{ 
     const payload = {
       ...userData,
       loginUid: cleanUid,
-      status: userData.status || 'pending_approval',
-      kycStatus: userData.kycStatus || 'pending',
+      status: userData.status || 'active',
+      kycStatus: userData.kycStatus || 'approved',
       balance: userData.balance ?? 0,
       vipLevel: userData.vipLevel ?? 1,
       createdAt: userData.createdAt || new Date().toISOString(),
