@@ -87,6 +87,8 @@ export interface UserStats {
   email?: string;
   mobile?: string;
   photoUrl?: string;
+  vipLevel?: number;
+  totalCustomerInvested?: number;
 }
 
 export interface ReferralMember {

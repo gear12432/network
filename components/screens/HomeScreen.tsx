@@ -409,15 +409,38 @@ export default function HomeScreen({
             </div>
 
             {/* Earned Card */}
-            <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+            <div className="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200 shadow-2xs flex flex-col justify-between relative overflow-hidden">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">EARNED</span>
                 <Earned3DIcon />
               </div>
-              <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
-                ₹{stats.totalEarned.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[9px] text-emerald-600 font-bold">Guaranteed ROI</span>
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
+                  ₹{Number(stats.unclaimedRoi || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                </span>
+                {stats.vipLevel ? (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                    VIP {stats.vipLevel}
+                  </span>
+                ) : null}
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[9px] text-emerald-600 font-bold">Guaranteed ROI</span>
+                {/* Claim button: ONLY show if value > 0; hide when value is 0 */}
+                {(stats.unclaimedRoi || 0) > 0 ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClaimDailyRoi();
+                    }}
+                    className="inline-flex items-center justify-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 rounded-lg shadow-xs transition-all animate-pulse"
+                    title="Click to claim earnings to wallet"
+                  >
+                    <Gift className="w-3 h-3 stroke-[2.5]" />
+                    Claim
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             {/* Payout Card */}

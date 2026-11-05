@@ -112,7 +112,10 @@ export interface UserAccountData {
     pincode: string;
   };
   balance?: number;
+  unclaimedRoi?: number;
+  totalEarned?: number;
   vipLevel?: number;
+  totalCustomerInvested?: number;
   status?: string; // 'active' | 'blocked' | 'pending_approval' | 'rejected'
   kycStatus?: 'pending' | 'approved' | 'rejected' | string;
   createdAt?: string;
@@ -404,6 +407,27 @@ export async function updateUserBalanceInFirestore(
     return true;
   } catch (err) {
     console.warn('Error updating user balance in Firestore:', err);
+    return false;
+  }
+}
+
+// 3a. Update user earnings & VIP metrics in Firestore
+export async function updateUserEarningsInFirestore(
+  loginUid: string,
+  updates: {
+    balance?: number;
+    unclaimedRoi?: number;
+    totalEarned?: number;
+    vipLevel?: number;
+    totalCustomerInvested?: number;
+  }
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'users', loginUid);
+    await withTimeout(updateDoc(docRef, sanitizeFirestorePayload(updates)), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Error updating user earnings in Firestore:', err);
     return false;
   }
 }
@@ -966,6 +990,7 @@ export interface VipLevelRecord {
   levelName: string; // "VIP 1", "VIP 2", etc.
   minAmount: number;
   dailyPercentage: number;
+  commissionAmount?: number;
   icon?: string;
   updatedAt: string;
 }

@@ -43,7 +43,20 @@ import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
 import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, findUserInFirestore, getOrCreateDeviceId, findUserByDeviceId, db } from '@/lib/firebase';
+import AccountBlockedScreen from '@/components/screens/AccountBlockedScreen';
+import {
+  UserAccountData,
+  testConnection,
+  saveInvestmentToFirestore,
+  saveCustomerToFirestore,
+  updateUserBalanceInFirestore,
+  updateUserEarningsInFirestore,
+  findUserInFirestore,
+  getOrCreateDeviceId,
+  findUserByDeviceId,
+  VipLevelRecord,
+  db,
+} from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { triggerConfetti } from '@/lib/confetti';
 
@@ -99,6 +112,7 @@ function InvestmentAppMain() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserAccountData | null>(null);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('signup');
+  const [vipLevels, setVipLevels] = useState<VipLevelRecord[]>([]);
 
   // Main App State
   const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS);
@@ -176,6 +190,10 @@ function InvestmentAppMain() {
             email: u.email,
             mobile: u.mobile,
             walletBalance: u.balance ?? prev.walletBalance,
+            unclaimedRoi: u.unclaimedRoi ?? prev.unclaimedRoi ?? 0,
+            totalEarned: u.totalEarned ?? prev.totalEarned ?? 0,
+            vipLevel: u.vipLevel ?? prev.vipLevel ?? 1,
+            totalCustomerInvested: u.totalCustomerInvested ?? prev.totalCustomerInvested ?? 0,
           }));
 
           // Background sync with Firestore without purging local session on network timeouts
@@ -198,6 +216,10 @@ function InvestmentAppMain() {
                   email: validUser.email,
                   mobile: validUser.mobile,
                   walletBalance: validUser.balance ?? prev.walletBalance,
+                  unclaimedRoi: validUser.unclaimedRoi ?? prev.unclaimedRoi ?? 0,
+                  totalEarned: validUser.totalEarned ?? prev.totalEarned ?? 0,
+                  vipLevel: validUser.vipLevel ?? prev.vipLevel ?? 1,
+                  totalCustomerInvested: validUser.totalCustomerInvested ?? prev.totalCustomerInvested ?? 0,
                 }));
               }
             })
@@ -227,6 +249,10 @@ function InvestmentAppMain() {
                 email: deviceUser.email,
                 mobile: deviceUser.mobile,
                 walletBalance: deviceUser.balance ?? prev.walletBalance,
+                unclaimedRoi: deviceUser.unclaimedRoi ?? prev.unclaimedRoi ?? 0,
+                totalEarned: deviceUser.totalEarned ?? prev.totalEarned ?? 0,
+                vipLevel: deviceUser.vipLevel ?? prev.vipLevel ?? 1,
+                totalCustomerInvested: deviceUser.totalCustomerInvested ?? prev.totalCustomerInvested ?? 0,
               }));
             }
           })
@@ -315,6 +341,34 @@ function InvestmentAppMain() {
     }
   }, []);
 
+  // 1b. Real-time Subscription for VIP Levels from Firestore 'viplevel' collection
+  useEffect(() => {
+    try {
+      const vipRef = collection(db, 'viplevel');
+      const unsub = onSnapshot(
+        vipRef,
+        (snap) => {
+          const loaded: VipLevelRecord[] = [];
+          snap.forEach((docSnap) => {
+            const data = docSnap.data() as VipLevelRecord;
+            if (data && data.levelNumber) {
+              loaded.push(data);
+            }
+          });
+          if (loaded.length > 0) {
+            setVipLevels(loaded.sort((a, b) => a.levelNumber - b.levelNumber));
+          }
+        },
+        (err) => {
+          console.warn('Realtime viplevel listener warning:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up viplevel real-time listener:', e);
+    }
+  }, []);
+
   // 2. Real-time Subscription for Active Investments
   useEffect(() => {
     try {
@@ -386,6 +440,10 @@ function InvestmentAppMain() {
             setUserStats((prev) => ({
               ...prev,
               walletBalance: u.balance ?? 0,
+              unclaimedRoi: u.unclaimedRoi ?? prev.unclaimedRoi ?? 0,
+              totalEarned: u.totalEarned ?? prev.totalEarned ?? 0,
+              vipLevel: u.vipLevel ?? prev.vipLevel ?? 1,
+              totalCustomerInvested: u.totalCustomerInvested ?? prev.totalCustomerInvested ?? 0,
               userName: u.fullName || prev.userName,
               userInitials: initials,
               loginUid: u.loginUid,
@@ -523,17 +581,61 @@ function InvestmentAppMain() {
       return;
     }
 
-    const newBal = userStats.walletBalance - plan.amount;
+    const planCost = plan.amount;
+    const newBal = userStats.walletBalance - planCost;
+
+    // Track total customer investments and calculate user VIP Level
+    const prevCustInvested = currentUser?.totalCustomerInvested ?? userStats.totalCustomerInvested ?? 0;
+    const newTotalCustomerInvested = prevCustInvested + planCost;
+
+    // Determine VIP Level dynamically based on Firestore 'viplevel' settings
+    let calculatedLevel = currentUser?.vipLevel ?? userStats.vipLevel ?? 1;
+    if (vipLevels && vipLevels.length > 0) {
+      const sortedLevels = [...vipLevels].sort((a, b) => a.levelNumber - b.levelNumber);
+      for (const lvl of sortedLevels) {
+        if (newTotalCustomerInvested >= (lvl.minAmount || 0)) {
+          calculatedLevel = lvl.levelNumber;
+        }
+      }
+    }
+
+    // Determine Commission according to user VIP Level
+    const activeLevelConfig = vipLevels.find((l) => l.levelNumber === calculatedLevel);
+    let commissionEarned = 0;
+    if (activeLevelConfig) {
+      if (activeLevelConfig.dailyPercentage && activeLevelConfig.dailyPercentage > 0) {
+        commissionEarned = (planCost * activeLevelConfig.dailyPercentage) / 100;
+      } else if (activeLevelConfig.commissionAmount && activeLevelConfig.commissionAmount > 0) {
+        commissionEarned = activeLevelConfig.commissionAmount;
+      }
+    } else {
+      // Default baseline percentage
+      commissionEarned = (planCost * 2.5) / 100;
+    }
+    commissionEarned = Math.round(commissionEarned * 100) / 100;
+
+    const newUnclaimed = (userStats.unclaimedRoi || 0) + commissionEarned;
+    const newTotalEarned = (userStats.totalEarned || 0) + commissionEarned;
 
     setUserStats((prev) => ({
       ...prev,
       walletBalance: newBal,
       totalJoins: prev.totalJoins + 1,
       activeInvestmentsCount: prev.activeInvestmentsCount + 1,
+      unclaimedRoi: newUnclaimed,
+      totalEarned: newTotalEarned,
+      vipLevel: calculatedLevel,
+      totalCustomerInvested: newTotalCustomerInvested,
     }));
 
     if (currentUser?.loginUid) {
-      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+      updateUserEarningsInFirestore(currentUser.loginUid, {
+        balance: newBal,
+        unclaimedRoi: newUnclaimed,
+        totalEarned: newTotalEarned,
+        vipLevel: calculatedLevel,
+        totalCustomerInvested: newTotalCustomerInvested,
+      });
     }
 
     const newInvestment: ActiveInvestment = {
@@ -655,7 +757,7 @@ function InvestmentAppMain() {
   };
 
   const handleClaimDailyRoi = () => {
-    if (userStats.unclaimedRoi <= 0) return;
+    if ((userStats.unclaimedRoi || 0) <= 0) return;
 
     const claimed = userStats.unclaimedRoi;
     const newBal = userStats.walletBalance + claimed;
@@ -663,18 +765,20 @@ function InvestmentAppMain() {
     setUserStats((prev) => ({
       ...prev,
       walletBalance: newBal,
-      totalEarned: prev.totalEarned + claimed,
       unclaimedRoi: 0,
     }));
 
     if (currentUser?.loginUid) {
-      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
+      updateUserEarningsInFirestore(currentUser.loginUid, {
+        balance: newBal,
+        unclaimedRoi: 0,
+      });
     }
 
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
       type: 'roi_credit',
-      title: 'Daily ROI Payout Credited',
+      title: 'VIP Commission Payout Credited',
       amount: claimed,
       timestamp: 'Just now',
       status: 'completed',
@@ -683,7 +787,7 @@ function InvestmentAppMain() {
     setTransactions((prev) => [newTx, ...prev]);
 
     triggerConfetti();
-    showToast(`₹${claimed.toFixed(2)} daily income credited to wallet!`);
+    showToast(`₹${claimed.toFixed(2)} commission earnings successfully claimed into wallet!`);
   };
 
   const handleSaveCustomer = (newCustomer: Customer) => {
@@ -710,6 +814,11 @@ function InvestmentAppMain() {
   // 2. If user is NOT logged in, render Auth / Sign Up screen directly!
   if (!currentUser) {
     return <AuthScreen onLoginSuccess={handleLoginSuccess} initialMode={authInitialMode} />;
+  }
+
+  // 3. If user is blocked, render dedicated Account Blocked screen in real time!
+  if (currentUser?.status === 'blocked') {
+    return <AccountBlockedScreen user={currentUser} onLogout={handleLogout} />;
   }
 
   // 4. Render Logged In User Dashboard
