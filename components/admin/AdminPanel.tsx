@@ -43,7 +43,10 @@ import {
   Settings,
   Send,
   Crown,
+  Check,
+  MessageCircle,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   getAllUsersFromFirestore,
   updateUserStatusInFirestore,
@@ -219,6 +222,31 @@ export default function AdminPanel() {
   const [selectedUser, setSelectedUser] = useState<UserAccountData | null>(null);
   const [editBalanceInput, setEditBalanceInput] = useState<string>('');
   const [balanceMsg, setBalanceMsg] = useState<string>('');
+
+  // Selected Withdrawal Request Modal / Control Detail Screen View (Right to Left Slide)
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRecord | null>(null);
+  const [withdrawalCopiedField, setWithdrawalCopiedField] = useState<string | null>(null);
+  const [withdrawalStatusMsg, setWithdrawalStatusMsg] = useState<string>('');
+
+  const handleCopyWithdrawalField = (text: string | undefined, fieldKey: string) => {
+    if (!text) return;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setWithdrawalCopiedField(fieldKey);
+      setTimeout(() => setWithdrawalCopiedField(null), 2500);
+    } catch {
+      // fallback
+    }
+  };
 
   // Image Modal Preview for Payment Screenshots
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -833,12 +861,17 @@ export default function AdminPanel() {
   };
 
   // Handle Withdrawal Status Change
-  const handleWithdrawalAction = async (wd: WithdrawalRecord, newStatus: 'Approved' | 'Rejected') => {
+  const handleWithdrawalAction = async (wd: WithdrawalRecord, newStatus: 'Approved' | 'Rejected' | 'Pending') => {
     setWithdrawals((prev) =>
       prev.map((item) => (item.id === wd.id ? { ...item, status: newStatus } : item))
     );
+    if (selectedWithdrawal?.id === wd.id) {
+      setSelectedWithdrawal((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+    setWithdrawalStatusMsg(`Withdrawal for ${wd.customerName || wd.userName || wd.id} updated to ${newStatus}!`);
     await updateWithdrawalStatusInFirestore(wd.id, newStatus);
     refreshData();
+    setTimeout(() => setWithdrawalStatusMsg(''), 4000);
   };
 
   // Handle Add New Plan
@@ -1284,7 +1317,7 @@ export default function AdminPanel() {
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' ? 'p-1.5 sm:p-3 md:p-6 space-y-3 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' ? 'p-1.5 sm:p-3 md:p-6 space-y-3 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
           {/* Sub-Header / Breadcrumb Bar */}
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
             <div>
@@ -2326,108 +2359,468 @@ export default function AdminPanel() {
             4. WITHDRAWALS TAB
             ========================================================================= */}
         {activeTab === 'withdrawals' && (
-          <div className="space-y-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
-              <h3 className="text-sm font-black text-slate-900 mb-3 pb-2 border-b border-slate-100">
-                Withdrawal Requests (Total: {withdrawals.length})
-              </h3>
+          <div className="space-y-4 w-full">
+            {/* Status Feedback Toast */}
+            {withdrawalStatusMsg && (
+              <div className="p-3.5 sm:p-4 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in border border-emerald-400 w-full text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-200" />
+                  <span>{withdrawalStatusMsg}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWithdrawalStatusMsg('')}
+                  className="p-1 hover:bg-white/20 rounded-lg text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Main Withdrawal Requests Full-Width Box */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-5 shadow-2xs w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-100">
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900">
+                    Withdrawal Requests (Total: {withdrawals.length})
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Review customer payouts, copy bank account and IFSC details, and control approval status.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-bold">
+                    Pending: {withdrawals.filter((w) => w.status === 'Pending').length}
+                  </span>
+                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-[10px] font-bold">
+                    Approved: {withdrawals.filter((w) => w.status === 'Approved').length}
+                  </span>
+                  <span className="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-lg text-[10px] font-bold">
+                    Rejected: {withdrawals.filter((w) => w.status === 'Rejected').length}
+                  </span>
+                </div>
+              </div>
 
               {withdrawals.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-xs">
+                <div className="text-center py-12 text-slate-400 text-xs">
                   No withdrawal requests found.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto w-full">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-2.5 px-3">User</th>
-                        <th className="py-2.5 px-3">Amount</th>
-                        <th className="py-2.5 px-3">Bank / UPI Details</th>
-                        <th className="py-2.5 px-3">Date & Time</th>
-                        <th className="py-2.5 px-3">Status</th>
-                        <th className="py-2.5 px-3 text-right">Action</th>
+                      <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600 uppercase tracking-wider font-extrabold text-[10px]">
+                        <th className="py-3 px-3">Customer Name</th>
+                        <th className="py-3 px-3">Amount</th>
+                        <th className="py-3 px-3">Date & Time</th>
+                        <th className="py-3 px-3">Status</th>
+                        <th className="py-3 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      {withdrawals.map((wd) => (
-                        <tr key={wd.id} className="hover:bg-slate-50 transition-all">
-                          <td className="py-3 px-3">
-                            <span className="font-bold text-slate-900 block">
-                              {wd.customerName || wd.userName || wd.loginUid}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-mono block">
-                              ID: {wd.customerId || wd.loginUid} • {wd.mobile || wd.customerMobile || ''}
-                            </span>
-                            {wd.planName && (
-                              <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5 inline-block font-semibold">
-                                {wd.planName}
+                      {withdrawals.map((wd) => {
+                        const custName = wd.customerName || wd.userName || wd.loginUid || 'Customer';
+                        const custId = wd.customerId || wd.loginUid || '';
+                        const mobile = wd.mobile || wd.customerMobile || '';
+                        const amt = wd.totalReturn || wd.amount || 0;
+
+                        return (
+                          <tr key={wd.id} className="hover:bg-slate-50/80 transition-all">
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-slate-900 text-amber-400 font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                  {custName[0] || 'C'}
+                                </div>
+                                <div>
+                                  <span className="font-extrabold text-slate-900 text-xs sm:text-sm block leading-tight">
+                                    {custName}
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                                    {custId ? `ID: ${custId}` : ''} {mobile ? `• 📞 ${mobile}` : ''}
+                                  </span>
+                                  {wd.planName && (
+                                    <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 mt-1 inline-block font-semibold">
+                                      {wd.planName}
+                                    </span>
+                                  )}
+                                  {wd.bankName && (
+                                    <span className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 mt-1 ml-1 inline-block font-medium">
+                                      🏦 {wd.bankName}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 font-mono font-black text-emerald-600 text-sm sm:text-base whitespace-nowrap">
+                              ₹{amt.toLocaleString('en-IN')}
+                            </td>
+                            <td className="py-3 px-3 text-[11px] text-slate-600 whitespace-nowrap">
+                              {wd.dateTime || wd.createdAt}
+                            </td>
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
+                                  wd.status === 'Approved'
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                    : wd.status === 'Rejected'
+                                    ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                    : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
+                                }`}
+                              >
+                                {wd.status === 'Pending' ? 'Pending ⏳' : wd.status === 'Approved' ? 'Approved 🟢' : 'Rejected 🔴'}
                               </span>
-                            )}
-                          </td>
-                          <td className="py-3 px-3 font-mono font-bold text-emerald-700 text-sm">
-                            ₹{(wd.totalReturn || wd.amount || 0).toLocaleString('en-IN')}
-                          </td>
-                          <td className="py-3 px-3 font-mono text-slate-800">
-                            {wd.bankName ? (
-                              <div className="space-y-0.5 text-xs">
-                                <div className="font-extrabold text-blue-900 flex items-center gap-1">
-                                  <span>🏦 {wd.bankName}</span>
-                                </div>
-                                <div className="text-[11px] text-slate-700 font-mono">
-                                  A/C: <span className="font-bold text-slate-900">{wd.accountNumber}</span>
-                                </div>
-                                <div className="text-[10px] text-slate-500 font-mono">
-                                  IFSC: <span className="font-bold">{wd.ifscCode}</span> • {wd.bankHolderName || wd.customerName}
-                                </div>
-                              </div>
-                            ) : (
-                              <span>{wd.bankDetails || 'Bank Details Linked'}</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-3 text-[11px] text-slate-600">{wd.dateTime}</td>
-                          <td className="py-3 px-3">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                wd.status === 'Approved'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : wd.status === 'Rejected'
-                                  ? 'bg-rose-100 text-rose-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {wd.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-3 text-right">
-                            {wd.status === 'Pending' ? (
-                              <div className="flex items-center justify-end gap-1.5">
-                                <button
-                                  onClick={() => handleWithdrawalAction(wd, 'Approved')}
-                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
-                                >
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() => handleWithdrawalAction(wd, 'Rejected')}
-                                  className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 text-[11px]">Completed</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="py-3 px-3 text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedWithdrawal(wd)}
+                                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-lg font-black text-xs inline-flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                                <span>View Details</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               )}
             </div>
-          </div>
-        )}
+
+            {/* WITHDRAWAL CONTROL DETAILS SCREEN (Smooth Right-to-Left Slide Animation) */}
+            <AnimatePresence>
+              {selectedWithdrawal && (
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+                  className="fixed inset-0 z-50 bg-[#edf1f5] w-full h-full min-h-screen overflow-y-auto flex flex-col"
+                >
+                  {/* Top Navigation Bar */}
+                  <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#009aaa] text-white px-4 py-3.5 shadow-md sticky top-0 z-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedWithdrawal(null)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer border border-white/25"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back to Withdrawals</span>
+                      </button>
+                      <div className="hidden sm:flex items-center gap-2 border-l border-white/25 pl-3">
+                        <span className="text-sm font-extrabold text-white">
+                          Withdrawal Control Details
+                        </span>
+                        <span className="text-xs text-amber-300 font-mono">
+                          (Ref: {selectedWithdrawal.id})
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedWithdrawal(null)}
+                      className="p-1.5 bg-white/15 hover:bg-white/25 text-white rounded-full cursor-pointer transition-all"
+                      title="Close Screen"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </header>
+
+                  {/* Main Content Area in Full Screen */}
+                  <main className="flex-1 max-w-4xl w-full mx-auto p-3.5 sm:p-6 lg:p-8 pb-36 space-y-5">
+                    {/* 1. PAYOUT AMOUNT & STATUS BANNER */}
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-sm">
+                          ₹
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                            Requested Payout Amount
+                          </span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                            ₹{(selectedWithdrawal.totalReturn || selectedWithdrawal.amount || 0).toLocaleString('en-IN')}
+                          </h2>
+                          <span className="text-xs text-slate-500 font-medium">
+                            Request Date: {selectedWithdrawal.dateTime || selectedWithdrawal.createdAt}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status Indicator */}
+                      <div className="flex flex-col items-start sm:items-end gap-1.5 self-start sm:self-auto">
+                        <span
+                          className={`px-3.5 py-1.5 rounded-full text-xs font-black border flex items-center gap-1.5 ${
+                            selectedWithdrawal.status === 'Approved'
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : selectedWithdrawal.status === 'Rejected'
+                              ? 'bg-rose-100 text-rose-800 border-rose-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
+                          }`}
+                        >
+                          {selectedWithdrawal.status === 'Approved' && <CheckCircle2 className="w-4 h-4 text-emerald-700" />}
+                          {selectedWithdrawal.status === 'Rejected' && <XCircle className="w-4 h-4 text-rose-700" />}
+                          {selectedWithdrawal.status === 'Pending' && <Clock className="w-4 h-4 text-amber-700" />}
+                          <span>Status: {selectedWithdrawal.status}</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500">
+                          ID: {selectedWithdrawal.id}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 2. CUSTOMER & CALL CONTACT DETAILS */}
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs space-y-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+                            <Users className="w-4 h-4" />
+                          </div>
+                          <h3 className="text-sm font-black text-slate-900">
+                            Customer & Call Contact Details
+                          </h3>
+                        </div>
+                        {selectedWithdrawal.planName && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                            {selectedWithdrawal.planName}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Customer Name
+                          </span>
+                          <span className="text-sm font-black text-slate-900 mt-0.5 block">
+                            {selectedWithdrawal.customerName || selectedWithdrawal.userName || 'N/A'}
+                          </span>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Customer ID / Login UID
+                          </span>
+                          <span className="text-sm font-mono font-bold text-slate-900 mt-0.5 block">
+                            {selectedWithdrawal.customerId || selectedWithdrawal.loginUid || 'N/A'}
+                          </span>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 sm:col-span-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Registered Mobile Number
+                          </span>
+                          <span className="text-sm font-mono font-black text-slate-900 mt-0.5 block">
+                            +91 {selectedWithdrawal.mobile || selectedWithdrawal.customerMobile || '9000000000'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Direct Call & WhatsApp Buttons */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <a
+                          href={`tel:${selectedWithdrawal.mobile || selectedWithdrawal.customerMobile || ''}`}
+                          className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                        >
+                          <Phone className="w-4 h-4" />
+                          <span>Call Customer (+91 {selectedWithdrawal.mobile || selectedWithdrawal.customerMobile || 'Call'})</span>
+                        </a>
+
+                        <a
+                          href={`https://wa.me/91${(selectedWithdrawal.mobile || selectedWithdrawal.customerMobile || '').replace(/\D/g, '')}?text=${encodeURIComponent(
+                            `Hello ${selectedWithdrawal.customerName || 'Customer'}, regarding your withdrawal request of ₹${selectedWithdrawal.totalReturn || selectedWithdrawal.amount} on NetworkJoin Pro.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-3 px-4 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>WhatsApp Customer</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* 3. FULL BANK ACCOUNT DETAILS (With 1-Click Copy Buttons) */}
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs space-y-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-cyan-50 text-cyan-700 rounded-xl">
+                            <Building2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-black text-slate-900">
+                              Full Bank Account & Settlement Details
+                            </h3>
+                            <p className="text-[11px] text-slate-500 font-medium">
+                              Click copy buttons to quickly copy Account Number and IFSC Code for NEFT / IMPS transfer
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3.5 text-xs">
+                        {/* Bank Name & Holder Name */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                              Bank Name
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Building2 className="w-4 h-4 text-blue-700" />
+                              <span className="text-sm font-black text-slate-900">
+                                {selectedWithdrawal.bankName || 'State Bank of India'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                              Account Holder Name
+                            </span>
+                            <span className="text-sm font-black text-slate-900 mt-1 block">
+                              {selectedWithdrawal.bankHolderName || selectedWithdrawal.customerName || selectedWithdrawal.userName || 'Account Holder'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Bank Account Number Box with 1-Click Copy */}
+                        <div className="p-4 bg-blue-50/60 border-2 border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block">
+                              Bank Account Number (A/C Number)
+                            </span>
+                            <span className="font-mono font-black text-lg sm:text-xl text-slate-900 tracking-wider mt-0.5 block select-all">
+                              {selectedWithdrawal.accountNumber || selectedWithdrawal.bankDetails || 'N/A'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopyWithdrawalField(
+                                selectedWithdrawal.accountNumber || selectedWithdrawal.bankDetails,
+                                'accountNumber'
+                              )
+                            }
+                            className={`px-4 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95 shrink-0 ${
+                              withdrawalCopiedField === 'accountNumber'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`}
+                          >
+                            {withdrawalCopiedField === 'accountNumber' ? (
+                              <>
+                                <Check className="w-4 h-4 stroke-[3]" />
+                                <span>Account No. Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4" />
+                                <span>Copy Account Number</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* IFSC Code Box with 1-Click Copy */}
+                        <div className="p-4 bg-amber-50/60 border-2 border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block">
+                              IFSC Code
+                            </span>
+                            <span className="font-mono font-black text-lg sm:text-xl text-slate-900 tracking-widest uppercase mt-0.5 block select-all">
+                              {selectedWithdrawal.ifscCode || 'N/A'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopyWithdrawalField(selectedWithdrawal.ifscCode, 'ifscCode')
+                            }
+                            className={`px-4 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95 shrink-0 ${
+                              withdrawalCopiedField === 'ifscCode'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-amber-600 hover:bg-amber-700 text-white'
+                            }`}
+                          >
+                            {withdrawalCopiedField === 'ifscCode' ? (
+                              <>
+                                <Check className="w-4 h-4 stroke-[3]" />
+                                <span>IFSC Code Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4" />
+                                <span>Copy IFSC Code</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. ADMIN STATUS UPDATE & CONTROL BUTTONS */}
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs space-y-3.5">
+                      <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+                        <ShieldAlert className="w-4 h-4 text-slate-800" />
+                        <h3 className="text-sm font-black text-slate-900">
+                          Withdrawal Action & Status Control
+                        </h3>
+                      </div>
+
+                      <p className="text-xs text-slate-500 font-medium">
+                        Verify account transfer completion, then approve or reject this withdrawal request. Status updates to Firebase Cloud Firestore immediately.
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleWithdrawalAction(selectedWithdrawal, 'Approved')}
+                          className={`py-3.5 px-6 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-95 text-white ${
+                            selectedWithdrawal.status === 'Approved'
+                              ? 'bg-emerald-700 opacity-90 ring-2 ring-emerald-400'
+                              : 'bg-emerald-600 hover:bg-emerald-700'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>{selectedWithdrawal.status === 'Approved' ? 'Already Approved ✓' : 'Approve Withdrawal'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleWithdrawalAction(selectedWithdrawal, 'Rejected')}
+                          className={`py-3.5 px-6 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-95 text-white ${
+                            selectedWithdrawal.status === 'Rejected'
+                          ? 'bg-rose-700 opacity-90 ring-2 ring-rose-400'
+                          : 'bg-rose-600 hover:bg-rose-700'
+                      }`}
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span>{selectedWithdrawal.status === 'Rejected' ? 'Already Rejected ✕' : 'Reject Withdrawal'}</span>
+                    </button>
+                  </div>
+
+                  {selectedWithdrawal.status !== 'Pending' && (
+                    <div className="pt-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleWithdrawalAction(selectedWithdrawal, 'Pending')}
+                        className="text-[11px] font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
+                      >
+                        Reset Status to Pending
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </main>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    )}
 
         {/* =========================================================================
             5. INVESTMENT PLANS TAB

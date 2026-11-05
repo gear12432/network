@@ -561,7 +561,7 @@ export async function getAllWithdrawalsFromFirestore(): Promise<WithdrawalRecord
 
 export async function updateWithdrawalStatusInFirestore(
   withdrawalId: string,
-  status: 'Approved' | 'Rejected'
+  status: 'Approved' | 'Rejected' | 'Pending' | string
 ): Promise<boolean> {
   try {
     const docRef = doc(db, 'withdrawals', withdrawalId);
