@@ -535,6 +535,13 @@ export default function InvestmentApp() {
       customerName: linkedCustomer?.name,
       customerMobile: linkedCustomer?.mobile,
       customerPhoto: linkedCustomer?.photo,
+      customerAddress: linkedCustomer ? `${linkedCustomer.address || ''}, ${linkedCustomer.district || ''}, ${linkedCustomer.state || ''} - ${linkedCustomer.pincode || ''}` : '',
+      bankName: linkedCustomer?.bankName || '',
+      accountNumber: linkedCustomer?.accountNumber || '',
+      ifscCode: linkedCustomer?.ifscCode || '',
+      bankHolderName: linkedCustomer?.bankHolderName || '',
+      loginUid: currentUser?.loginUid || 'GK',
+      purchasedAt: new Date().toISOString(),
     };
     setActiveInvestments((prev) => [newInvestment, ...prev]);
     saveInvestmentToFirestore(newInvestment);

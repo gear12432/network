@@ -46,6 +46,13 @@ export interface ActiveInvestment {
   customerName?: string;
   customerMobile?: string;
   customerPhoto?: string;
+  customerAddress?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  bankHolderName?: string;
+  loginUid?: string;
+  purchasedAt?: string;
 }
 
 export type TransactionType = 'deposit' | 'withdrawal' | 'investment' | 'roi_credit' | 'referral_bonus';
