@@ -128,10 +128,15 @@ export function getOrCreateDeviceId(): string {
   try {
     let existing = localStorage.getItem(STORAGE_KEY);
     if (!existing) {
-      const ua = navigator.userAgent || '';
-      const screenRes = `${window.screen?.width || 0}x${window.screen?.height || 0}x${window.screen?.colorDepth || 0}`;
-      const lang = navigator.language || '';
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+      const screenRes = typeof window !== 'undefined' && window.screen ? `${window.screen.width || 0}x${window.screen.height || 0}x${window.screen.colorDepth || 0}` : '0x0x0';
+      const lang = typeof navigator !== 'undefined' ? navigator.language || '' : '';
+      let timeZone = '';
+      try {
+        timeZone = Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone || '';
+      } catch {
+        // ignore
+      }
       const rawString = `${ua}|${screenRes}|${lang}|${timeZone}`;
       
       let hash = 0;

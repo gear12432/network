@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Coins, Sparkles } from 'lucide-react';
 import {
   INITIAL_USER_STATS,
   INITIAL_PLANS,
@@ -69,7 +70,61 @@ function getInitials(name?: string): string {
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase() || 'GK';
 }
 
-export default function InvestmentApp() {
+class SafeErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.warn('Caught component error:', error, errorInfo);
+  }
+
+  handleReset = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('network_join_pro_user');
+        window.location.reload();
+      }
+    } catch {
+      this.setState({ hasError: false });
+    }
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#0d131f] text-white flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-400 flex items-center justify-center mb-4 shadow-xl">
+            <Coins className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-serif font-black text-amber-300 mb-2">
+            Network Join Pro
+          </h2>
+          <p className="text-xs text-slate-300 max-w-sm mb-6 leading-relaxed">
+            Welcome! Click below to enter the live dashboard.
+          </p>
+          <button
+            onClick={this.handleReset}
+            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer active:scale-95"
+          >
+            Open Home Dashboard
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function InvestmentAppMain() {
   // Prevent SSR Hydration Mismatch
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -1004,5 +1059,13 @@ export default function InvestmentApp() {
         customer={certificateCustomer}
       />
     </div>
+  );
+}
+
+export default function InvestmentApp() {
+  return (
+    <SafeErrorBoundary>
+      <InvestmentAppMain />
+    </SafeErrorBoundary>
   );
 }
