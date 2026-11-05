@@ -35,6 +35,10 @@ function patchHtmlFile(filePath, depth = 0) {
   content = content.replace(/(href|src|data-href)=["'](?:\.\.\/|\/)*assets\//g, `$1="${prefix}assets/`);
   content = content.replace(/(href|src|data-href)=["'](?:https?:\/\/[^\/]+)?(?:\/[^\/]+)*?\/assets\//g, `$1="${prefix}assets/`);
   content = content.replace(/url\(["']?(?:\.\.\/|\/)*_next\//g, `url("${prefix}_next/`);
+  content = content.replace(/":HL\["\/_next\//g, `":HL["${prefix}_next/`);
+  content = content.replace(/"href":"\/_next\//g, `"href":"${prefix}_next/`);
+  content = content.replace(/"\/_next\//g, `"${prefix}_next/`);
+  content = content.replace(/'\/_next\//g, `'${prefix}_next/`);
 
   // 2. Inject helper script into <head> for GitHub Pages subpath and admin route resilience
   if (!content.includes('window.__IS_ADMIN_ROUTE__')) {

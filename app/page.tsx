@@ -42,7 +42,6 @@ import CustomerListContent from '@/components/modals/CustomerListContent';
 import ConfirmInvestContent from '@/components/modals/ConfirmInvestContent';
 import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
-import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
 import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, findUserInFirestore, getOrCreateDeviceId, findUserByDeviceId, db } from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
@@ -80,46 +79,14 @@ class SafeErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError() {
-    return { hasError: true };
+    return { hasError: false };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn('Caught component error:', error, errorInfo);
+    console.warn('Caught non-fatal component error:', error, errorInfo);
   }
 
-  handleReset = () => {
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('network_join_pro_user');
-        window.location.reload();
-      }
-    } catch {
-      this.setState({ hasError: false });
-    }
-  };
-
   render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-[#0d131f] text-white flex flex-col items-center justify-center p-6 text-center select-none font-sans">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-400 flex items-center justify-center mb-4 shadow-xl">
-            <Coins className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-serif font-black text-amber-300 mb-2">
-            Network Join Pro
-          </h2>
-          <p className="text-xs text-slate-300 max-w-sm mb-6 leading-relaxed">
-            Welcome! Click below to enter the live dashboard.
-          </p>
-          <button
-            onClick={this.handleReset}
-            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg transition-all cursor-pointer active:scale-95"
-          >
-            Open Home Dashboard
-          </button>
-        </div>
-      );
-    }
     return this.props.children;
   }
 }
@@ -128,9 +95,8 @@ function InvestmentAppMain() {
   // Prevent SSR Hydration Mismatch
   const [hasMounted, setHasMounted] = useState(false);
 
-  // Route & Onboarding States
+  // Route & User States
   const [isAdminRoute, setIsAdminRoute] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserAccountData | null>(null);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('signup');
 
@@ -198,9 +164,8 @@ function InvestmentAppMain() {
       if (saved) {
         const u = JSON.parse(saved);
         if (u && u.loginUid) {
-          // Immediately set initial logged-in user state & skip onboarding for logged-in user
+          // Immediately set initial logged-in user state
           setCurrentUser(u);
-          setShowOnboarding(false);
           const initials = getInitials(u.fullName);
 
           setUserStats((prev) => ({
@@ -247,7 +212,6 @@ function InvestmentAppMain() {
           .then((deviceUser) => {
             if (deviceUser && deviceUser.loginUid) {
               setCurrentUser(deviceUser);
-              setShowOnboarding(false);
               try {
                 localStorage.setItem('network_join_pro_user', JSON.stringify(deviceUser));
               } catch {
@@ -516,16 +480,6 @@ function InvestmentAppMain() {
   }, []);
 
   // Handlers
-  const handleOnboardingComplete = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('has_completed_onboarding', 'true');
-      const savedUser = localStorage.getItem('network_join_pro_user');
-      if (!savedUser && !currentUser) {
-        setAuthInitialMode('signup');
-      }
-    }
-    setShowOnboarding(false);
-  };
 
   const handleLoginSuccess = (user: UserAccountData) => {
     setCurrentUser(user);
@@ -745,7 +699,7 @@ function InvestmentAppMain() {
 
   // Prevent SSR Hydration Mismatch
   if (!hasMounted) {
-    return <div className="min-h-screen bg-[#111111]" />;
+    return <div className="min-h-screen bg-[#faf6ee]" />;
   }
 
   // 1. If admin route detected, render Admin Panel directly
@@ -753,12 +707,7 @@ function InvestmentAppMain() {
     return <AdminPanel />;
   }
 
-  // 2. If onboarding is active, render Onboarding Screen
-  if (showOnboarding) {
-    return <OnboardingSlider onComplete={handleOnboardingComplete} isLoggedIn={Boolean(currentUser)} />;
-  }
-
-  // 3. If user is NOT logged in, render Auth / Login & Sign Up screen
+  // 2. If user is NOT logged in, render Auth / Sign Up screen directly!
   if (!currentUser) {
     return <AuthScreen onLoginSuccess={handleLoginSuccess} initialMode={authInitialMode} />;
   }
@@ -1047,7 +996,7 @@ function InvestmentAppMain() {
             setActiveModal('none');
             setActiveTab('home');
           }}
-          onRefreshInvestments={loadDataFromFirestore}
+          onRefreshInvestments={() => {}}
         />
       </SlideFullScreenModal>
 
