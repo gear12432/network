@@ -478,6 +478,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
               aadhaarBackImage: undefined,
             },
           };
+          localStorage.setItem('network_join_pro_user', JSON.stringify(userForCache));
           localStorage.setItem(`user_${generatedUid}`, JSON.stringify(userForCache));
           localStorage.setItem('network_join_pro_last_registered', JSON.stringify(userForCache));
         } catch (storageErr) {
@@ -612,11 +613,12 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
 
   const handleSwitchToLoginWithCredentials = () => {
     if (createdUser) {
-      setLoginIdentifier(createdUser.loginUid);
-      setLoginPassword(createdUser.password);
+      const userToLogin = createdUser;
+      setCreatedUser(null);
+      onLoginSuccess(userToLogin);
+    } else {
+      setMode('login');
     }
-    setCreatedUser(null);
-    setMode('login');
   };
 
   return (

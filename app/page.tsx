@@ -43,7 +43,7 @@ import PurchaseHistoryContent from '@/components/modals/PurchaseHistoryContent';
 import InvestmentCertificateModal from '@/components/modals/InvestmentCertificateModal';
 import OnboardingSlider from '@/components/OnboardingSlider';
 import AdminPanel from '@/components/admin/AdminPanel';
-import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, findUserInFirestore, db } from '@/lib/firebase';
+import { UserAccountData, testConnection, saveInvestmentToFirestore, saveCustomerToFirestore, updateUserBalanceInFirestore, findUserInFirestore, getOrCreateDeviceId, findUserByDeviceId, db } from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { triggerConfetti } from '@/lib/confetti';
 
@@ -129,17 +129,15 @@ export default function InvestmentApp() {
       setIsAdminRoute(true);
     }
 
-    // 2. Always show Onboarding Slider Screen on App Launch
-    setShowOnboarding(true);
-
-    // 3. Check Logged In User and Validate with Firestore
+    // 2. Check Logged In User from localStorage or Device ID
     try {
       const saved = localStorage.getItem('network_join_pro_user');
       if (saved) {
         const u = JSON.parse(saved);
         if (u && u.loginUid) {
-          // Immediately set initial state for smooth UI transition
+          // Immediately set initial logged-in user state & skip onboarding for logged-in user
           setCurrentUser(u);
+          setShowOnboarding(false);
           const initials =
             u.fullName
               ?.split(' ')
@@ -158,10 +156,10 @@ export default function InvestmentApp() {
             walletBalance: u.balance ?? prev.walletBalance,
           }));
 
-          // Validate against Firestore in background to purge stale or non-existent demo accounts
+          // Background sync with Firestore without purging local session on network timeouts
           findUserInFirestore(u.loginUid)
             .then((validUser) => {
-              if (validUser && (validUser.status === 'active' || validUser.kycStatus === 'approved')) {
+              if (validUser && validUser.loginUid) {
                 setCurrentUser(validUser);
                 try {
                   localStorage.setItem('network_join_pro_user', JSON.stringify(validUser));
@@ -185,16 +183,47 @@ export default function InvestmentApp() {
                   mobile: validUser.mobile,
                   walletBalance: validUser.balance ?? prev.walletBalance,
                 }));
-              } else if (!validUser) {
-                // User doc does not exist in Firestore (legacy demo user) -> clear session and show Auth
-                localStorage.removeItem('network_join_pro_user');
-                setCurrentUser(null);
               }
             })
             .catch(() => {
-              // Ignore network errors in background validation
+              // Ignore network timeouts
             });
         }
+      } else {
+        // No localStorage user -> Check if this device ID is registered in Firestore
+        const currentDeviceId = getOrCreateDeviceId();
+        findUserByDeviceId(currentDeviceId)
+          .then((deviceUser) => {
+            if (deviceUser && deviceUser.loginUid) {
+              setCurrentUser(deviceUser);
+              setShowOnboarding(false);
+              try {
+                localStorage.setItem('network_join_pro_user', JSON.stringify(deviceUser));
+              } catch {
+                // ignore
+              }
+              const freshInitials =
+                deviceUser.fullName
+                  ?.split(' ')
+                  .map((n: string) => n[0])
+                  .join('')
+                  .substring(0, 2)
+                  .toUpperCase() || 'GK';
+
+              setUserStats((prev) => ({
+                ...prev,
+                userName: deviceUser.fullName || prev.userName,
+                userInitials: freshInitials,
+                loginUid: deviceUser.loginUid,
+                email: deviceUser.email,
+                mobile: deviceUser.mobile,
+                walletBalance: deviceUser.balance ?? prev.walletBalance,
+              }));
+            }
+          })
+          .catch(() => {
+            // ignore
+          });
       }
     } catch {
       // fallback
