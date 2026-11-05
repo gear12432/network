@@ -19,6 +19,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { triggerConfetti } from '@/lib/confetti';
+import { PlanCategoryIconBadge } from '@/components/modals/PurchaseHistoryContent';
 
 interface ConfirmInvestContentProps {
   plan?: InvestmentPlan | null;
@@ -194,11 +195,14 @@ export default function ConfirmInvestContent({
           </span>
         </div>
 
-        {/* Plan Header Strip - White Card */}
+        {/* Plan Header Strip with Category Icon */}
         <div className="bg-blue-600 text-white rounded-xl p-4 flex items-center justify-between shadow-xs">
-          <div>
-            <h3 className="text-base sm:text-lg font-black font-sans">{plan.name}</h3>
-            <p className="text-[11px] text-blue-100 mt-0.5">{plan.description}</p>
+          <div className="flex items-center gap-3">
+            <PlanCategoryIconBadge planName={plan.name} category={plan.category} iconUrl={plan.iconUrl} size="md" />
+            <div>
+              <h3 className="text-base sm:text-lg font-black font-sans">{plan.name}</h3>
+              <p className="text-[11px] text-blue-100 mt-0.5">{plan.description}</p>
+            </div>
           </div>
           <div className="text-right shrink-0">
             <span className="text-[10px] text-blue-200 block uppercase">Investment</span>

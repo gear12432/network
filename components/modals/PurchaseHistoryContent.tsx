@@ -28,6 +28,110 @@ import {
   WithdrawalRecord,
   UserAccountData,
 } from '@/lib/firebase';
+
+export function PlanCategoryIconBadge({
+  planName = '',
+  category = '',
+  iconUrl,
+  size = 'md',
+}: {
+  planName?: string;
+  category?: string;
+  iconUrl?: string;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  const sizeClasses =
+    size === 'sm'
+      ? 'w-7 h-7 rounded-lg text-sm'
+      : size === 'lg'
+      ? 'w-11 h-11 rounded-2xl text-2xl'
+      : 'w-9 h-9 rounded-xl text-lg';
+
+  if (iconUrl) {
+    return (
+      <img
+        src={iconUrl}
+        alt={planName || 'Plan'}
+        className={`${sizeClasses} object-cover shadow-xs ring-1 ring-amber-400/80 shrink-0`}
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+
+  const nameLower = planName.toLowerCase();
+  const catLower = category.toLowerCase();
+
+  if (nameLower.includes('krantikari') || nameLower.includes('क्रांतिकारी') || catLower.includes('krantikari')) {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#991b1b] via-[#dc2626] to-[#f97316] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400/90`}>
+        <span>🚩</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('starter') || catLower === 'starter') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#78350f] via-[#b45309] to-[#f59e0b] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400/80`}>
+        <span>🚀</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('basic') || catLower === 'basic') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#1e3a8a] via-[#1d4ed8] to-[#06b6d4] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-cyan-400/80`}>
+        <span>⚡</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('silver') || catLower === 'silver') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#334155] via-[#64748b] to-[#cbd5e1] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-slate-300`}>
+        <span>🥈</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('gold') || catLower === 'gold') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#78350f] via-[#d97706] to-[#fef08a] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-300`}>
+        <span>🥇</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('platinum') || catLower === 'platinum') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#1e293b] via-[#475569] to-[#e2e8f0] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-sky-300`}>
+        <span>💠</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('diamond') || catLower === 'diamond') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#0c4a6e] via-[#0284c7] to-[#7dd3fc] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-cyan-300`}>
+        <span>💎</span>
+      </div>
+    );
+  }
+
+  if (nameLower.includes('vip') || nameLower.includes('premium') || catLower === 'vip' || catLower === 'premium') {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#09090b] via-[#27272a] to-[#d97706] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400`}>
+        <span>👑</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${sizeClasses} bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-blue-300`}>
+      <span>💼</span>
+    </div>
+  );
+}
+
 interface PurchaseHistoryContentProps {
   activeInvestments: ActiveInvestment[];
   currentUser?: UserAccountData | null;
@@ -177,21 +281,57 @@ export default function PurchaseHistoryContent({
   const totalDailyReturn = activeInvestments.reduce((sum, inv) => sum + (inv.dailyReturn || 0), 0);
 
   // Filter investments based on search query and status filter
+  // Requirement:
+  // 1. When an investment is claimed (clean button clicked -> inv.claimed or inv.withdrawalStatus === 'Pending'),
+  //    its data is HIDDEN by default from normal view ("uska data hide ho jaega so Nahin hoaega").
+  // 2. BUT when the customer's mobile number (or name) is searched in the search bar, that data IS SHOWN!
+  //    ("Lekin Mobile number customer ka mobile number search bar mein search Karega to use data so hoga")
   const filteredInvestments = (activeInvestments || []).filter((inv) => {
     if (!inv) return false;
-    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+    const isClaimed = Boolean(
+      inv.claimed ||
+      inv.withdrawalStatus === 'Pending' ||
+      inv.withdrawalStatus === 'Withdrawal Pending' ||
+      inv.withdrawalStatus === 'Approved'
+    );
 
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return matchesStatus;
+    const cleanDigits = q.replace(/\D/g, '');
 
+    // Case 1: Search bar is EMPTY
+    if (!q) {
+      if (statusFilter === 'completed') {
+        return isClaimed || inv.status === 'completed';
+      }
+      if (statusFilter === 'active') {
+        return !isClaimed && inv.status !== 'completed';
+      }
+      // In 'All Purchases' tab: Hide claimed records so user sees only active/unclaimed ones
+      return !isClaimed;
+    }
+
+    // Case 2: User searched in search bar (e.g. customer mobile number)
+    const rawMobile = (inv.customerMobile || '').replace(/\D/g, '');
+    const matchesMobile = Boolean(
+      (cleanDigits.length > 0 && rawMobile.includes(cleanDigits)) ||
+      (inv.customerMobile && inv.customerMobile.toLowerCase().includes(q))
+    );
     const matchesName = Boolean(inv.planName?.toLowerCase().includes(q));
+    const matchesCustomer = Boolean(inv.customerName?.toLowerCase().includes(q));
     const matchesAmount = String(inv.investedAmount || '').includes(q);
-    const matchesCustomer =
-      Boolean(inv.customerName?.toLowerCase().includes(q)) ||
-      Boolean(inv.customerMobile?.includes(q));
     const matchesDate = Boolean(inv.startDate?.toLowerCase().includes(q));
 
-    return matchesStatus && (matchesName || matchesAmount || matchesCustomer || matchesDate);
+    const matchesSearch = matchesMobile || matchesName || matchesCustomer || matchesAmount || matchesDate;
+
+    if (statusFilter === 'active') {
+      return matchesSearch && !isClaimed;
+    }
+    if (statusFilter === 'completed') {
+      return matchesSearch && (isClaimed || inv.status === 'completed');
+    }
+
+    // When searching by mobile or keyword in All Purchases, include all matching data (even if claimed)
+    return matchesSearch;
   });
 
   return (
@@ -364,9 +504,7 @@ export default function PurchaseHistoryContent({
                 {/* Header: Plan Name, Status & Amount */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
-                      <Coins className="w-5 h-5 stroke-[2.2]" />
-                    </div>
+                    <PlanCategoryIconBadge planName={inv.planName} />
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h4 className="font-bold text-slate-900 text-sm sm:text-base font-serif leading-tight">
@@ -466,14 +604,16 @@ export default function PurchaseHistoryContent({
                   />
                 </div>
 
-                {/* Timer & Claim Action Section (where red box was indicated) */}
+                {/* Timer & Claim Action Section:
+                    - While duration is running: show Timer ONLY, hide Claim button
+                    - When duration is expired: hide Timer, show Clean / Claim button
+                    - When claimed: show black 'विड्रॉल पेंडिंग' button */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-600">
                     <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                     <span>Duration: {inv.totalDays || 30} Days ({(inv.totalDays || 30) * 24} Hours)</span>
                   </div>
 
-                  {/* Real-time Timer vs Claim Button vs Black Pending Button */}
                   {isWithdrawalPending ? (
                     <button
                       disabled
@@ -491,28 +631,20 @@ export default function PurchaseHistoryContent({
                       <span>Withdrawal Approved</span>
                     </button>
                   ) : !isComplete ? (
-                    <div className="flex items-center gap-2">
-                      <div className="px-3 py-1.5 bg-slate-900 text-amber-400 font-mono font-black text-xs rounded-xl border border-amber-500/40 flex items-center gap-1.5 shadow-2xs">
-                        <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        <span className="tracking-widest">{timerStr}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleClaimAndWithdraw(inv)}
-                        title="Instant Claim for testing"
-                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg border border-slate-300 cursor-pointer"
-                      >
-                        Claim Now
-                      </button>
+                    /* DURATION NOT EXPIRED: SHOW TIMER ONLY, HIDE CLAIM BUTTON */
+                    <div className="px-3.5 py-1.5 bg-slate-900 text-amber-400 font-mono font-black text-xs rounded-xl border border-amber-500/40 flex items-center gap-1.5 shadow-2xs">
+                      <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                      <span className="tracking-widest">{timerStr}</span>
                     </div>
                   ) : (
+                    /* DURATION EXPIRED: HIDE TIMER, SHOW CLEAN / CLAIM BUTTON */
                     <button
                       onClick={() => handleClaimAndWithdraw(inv)}
                       disabled={claimingMap[inv.id]}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                      <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim & Withdraw'}</span>
+                      <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim Now'}</span>
                     </button>
                   )}
                 </div>
@@ -537,21 +669,24 @@ export default function PurchaseHistoryContent({
                 className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span
-                      className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
-                        isWithdrawalPending
-                          ? 'bg-black text-white border-slate-800'
-                          : 'bg-blue-50 text-blue-700 border-blue-200'
-                      }`}
-                    >
-                      {isWithdrawalPending ? 'Pending' : inv.status}
-                    </span>
-                    <h4 className="font-extrabold text-slate-900 text-sm font-serif mt-1">
-                      {inv.planName}
-                    </h4>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <PlanCategoryIconBadge planName={inv.planName} size="sm" />
+                    <div className="min-w-0">
+                      <span
+                        className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
+                          isWithdrawalPending
+                            ? 'bg-black text-white border-slate-800'
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}
+                      >
+                        {isWithdrawalPending ? 'Pending' : inv.status}
+                      </span>
+                      <h4 className="font-extrabold text-slate-900 text-sm font-serif mt-1 truncate">
+                        {inv.planName}
+                      </h4>
+                    </div>
                   </div>
-                  <span className="text-base font-black text-slate-900 font-mono">
+                  <span className="text-base font-black text-slate-900 font-mono shrink-0">
                     ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -560,6 +695,11 @@ export default function PurchaseHistoryContent({
                   <div className="text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
                     <span className="text-[10px] text-slate-400 block uppercase font-bold">Customer</span>
                     <span className="font-bold text-slate-800">{inv.customerName}</span>
+                    {inv.customerMobile && (
+                      <span className="text-[10px] text-slate-500 font-mono block">
+                        +91 {inv.customerMobile}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -568,6 +708,7 @@ export default function PurchaseHistoryContent({
                   <span className="text-emerald-600 font-bold">Total: ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
                 </div>
 
+                {/* Grid View Timer vs Claim button vs Black Pending button */}
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
                   {isWithdrawalPending ? (
                     <button
@@ -580,17 +721,19 @@ export default function PurchaseHistoryContent({
                   ) : isApproved ? (
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
                   ) : !isComplete ? (
+                    /* DURATION NOT EXPIRED: TIMER ONLY */
                     <div className="px-2.5 py-1 bg-slate-900 text-amber-400 font-mono font-bold text-[11px] rounded-lg border border-amber-500/30 flex items-center gap-1">
                       <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
                       <span>{timerStr}</span>
                     </div>
                   ) : (
+                    /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */
                     <button
                       onClick={() => handleClaimAndWithdraw(inv)}
                       disabled={claimingMap[inv.id]}
-                      className="px-3 py-1 bg-emerald-600 text-white font-bold text-[11px] rounded-lg shadow-2xs hover:bg-emerald-700 cursor-pointer"
+                      className="px-3 py-1 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-bold text-[11px] rounded-lg shadow-2xs transition-all cursor-pointer"
                     >
-                      Claim & Withdraw
+                      Claim Now
                     </button>
                   )}
                 </div>

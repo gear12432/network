@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 import { getAllCustomersFromFirestore } from '@/lib/firebase';
+import { PlanCategoryIconBadge } from '@/components/modals/PurchaseHistoryContent';
 
 interface PlanDetailContentProps {
   plan?: InvestmentPlan | null;
@@ -353,17 +354,25 @@ export default function PlanDetailContent({
         </div>
       ) : null}
 
-      {/* Selected Plan Snapshot Bar */}
+      {/* Selected Plan Snapshot Bar with Category Icon */}
       <div className="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between border border-slate-800 shadow-sm">
-        <div>
-          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block">
-            Plan Selected
-          </span>
-          <span className="text-sm sm:text-base font-extrabold text-white font-serif">
-            {plan.name} <span className="text-xs text-slate-300 font-normal">({plan.category} Tier)</span>
-          </span>
+        <div className="flex items-center gap-3 min-w-0">
+          <PlanCategoryIconBadge
+            planName={plan.name}
+            category={plan.category}
+            iconUrl={plan.iconUrl}
+            size="md"
+          />
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block">
+              Plan Selected
+            </span>
+            <span className="text-sm sm:text-base font-extrabold text-white font-serif truncate block">
+              {plan.name} <span className="text-xs text-slate-300 font-normal">({plan.category} Tier)</span>
+            </span>
+          </div>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <span className="text-[10px] text-slate-400 block">Required Investment</span>
           <span className="text-base sm:text-lg font-black font-mono text-amber-400">
             ₹{plan.amount.toLocaleString('en-IN')}
