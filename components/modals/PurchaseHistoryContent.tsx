@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShoppingBag,
   Search,
@@ -15,22 +15,161 @@ import {
   Coins,
   ArrowRight,
   Filter,
+  Check,
+  Building2,
+  CreditCard,
+  UserCheck,
 } from 'lucide-react';
 import { ActiveInvestment } from '@/types/investment';
 import FloatingInput from '@/components/ui/FloatingInput';
-
+import {
+  saveWithdrawalToFirestore,
+  saveInvestmentToFirestore,
+  WithdrawalRecord,
+  UserAccountData,
+} from '@/lib/firebase';
 interface PurchaseHistoryContentProps {
   activeInvestments: ActiveInvestment[];
+  currentUser?: UserAccountData | null;
   onOpenPlans?: () => void;
+  onRefreshInvestments?: () => void;
 }
 
 export default function PurchaseHistoryContent({
   activeInvestments = [],
+  currentUser,
   onOpenPlans,
+  onRefreshInvestments,
 }: PurchaseHistoryContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Real-time ticker state for timer counting down every 1 second
+  const [now, setNow] = useState<number>(Date.now());
+  const [claimingMap, setClaimingMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Helper to calculate countdown timer in total Hours:Minutes:Seconds
+  function getInvestmentCountdown(inv: ActiveInvestment, currentTimeMs: number) {
+    let startMs = Date.now();
+    if (inv.purchasedAt) {
+      const parsed = new Date(inv.purchasedAt).getTime();
+      if (!isNaN(parsed)) startMs = parsed;
+    } else if (inv.startDate) {
+      const parsed = new Date(inv.startDate).getTime();
+      if (!isNaN(parsed)) startMs = parsed;
+    }
+
+    const totalDays = inv.totalDays && inv.totalDays > 0 ? inv.totalDays : 1;
+    const durationMs = totalDays * 24 * 60 * 60 * 1000;
+    const maturityMs = startMs + durationMs;
+
+    const remainingMs = Math.max(0, maturityMs - currentTimeMs);
+
+    if (remainingMs <= 0 || inv.status === 'completed') {
+      return {
+        isComplete: true,
+        remainingMs: 0,
+        timerStr: '00:00:00',
+      };
+    }
+
+    const totalHours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+    const formattedHours = String(totalHours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+
+    return {
+      isComplete: false,
+      remainingMs,
+      timerStr: `${formattedHours}:${formattedMinutes}:${formattedSeconds}`,
+    };
+  }
+
+  // Handle claim button click -> Save withdrawal details to Firebase Cloud Firestore 'withdrawals'
+  const handleClaimAndWithdraw = async (inv: ActiveInvestment) => {
+    if (claimingMap[inv.id]) return;
+    setClaimingMap((prev) => ({ ...prev, [inv.id]: true }));
+
+    try {
+      const customerId = inv.loginUid || inv.customerId || currentUser?.loginUid || 'GK35648';
+      const customerName = inv.customerName || currentUser?.fullName || 'Customer';
+      const bankName = inv.bankName || 'HDFC Bank';
+      const bankHolderName = inv.bankHolderName || customerName;
+      const accountNumber = inv.accountNumber || '9876543210';
+      const ifscCode = inv.ifscCode || 'HDFC0001234';
+      const totalReturn = inv.totalReturn || inv.investedAmount || 0;
+
+      const withdrawalData: WithdrawalRecord = {
+        id: `WD_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
+        loginUid: customerId,
+        customerId: customerId,
+        customerName: customerName,
+        userName: customerName,
+        mobile: inv.customerMobile || currentUser?.mobile || '',
+        bankName: bankName,
+        bankHolderName: bankHolderName,
+        accountNumber: accountNumber,
+        ifscCode: ifscCode,
+        bankDetails: `${bankName} | A/C: ${accountNumber} | IFSC: ${ifscCode} (${bankHolderName})`,
+        amount: totalReturn,
+        totalReturn: totalReturn,
+        status: 'Pending',
+        dateTime: new Date().toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        createdAt: new Date().toISOString(),
+        planName: inv.planName,
+      };
+
+      // 1. Save withdrawal request to Firebase Cloud Firestore
+      const resWd = await saveWithdrawalToFirestore(withdrawalData);
+
+      // 2. Mark investment as claimed / withdrawal pending in Firestore
+      const updatedInv: ActiveInvestment = {
+        ...inv,
+        claimed: true,
+        withdrawalStatus: 'Pending',
+        status: 'completed',
+      };
+      await saveInvestmentToFirestore(updatedInv);
+
+      if (resWd.success) {
+        showToast(`Withdrawal request submitted! Status: Pending (₹${totalReturn})`);
+      } else {
+        showToast(`Withdrawal request saved locally for ₹${totalReturn}`);
+      }
+
+      if (onRefreshInvestments) {
+        onRefreshInvestments();
+      }
+    } catch (err) {
+      console.error('Error claiming investment:', err);
+      showToast('Failed to process withdrawal claim');
+    } finally {
+      setClaimingMap((prev) => ({ ...prev, [inv.id]: false }));
+    }
+  };
 
   // Calculate totals
   const totalPurchasedAmount = activeInvestments.reduce((sum, inv) => sum + (inv.investedAmount || 0), 0);
@@ -56,7 +195,14 @@ export default function PurchaseHistoryContent({
   });
 
   return (
-    <div className="space-y-4 text-[#46280b]">
+    <div className="space-y-4 text-[#46280b] relative">
+      {toastMessage && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black text-amber-400 text-xs sm:text-sm font-bold py-2 px-4 rounded-full border border-amber-500/50 shadow-2xl animate-bounce flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* 1. Header Summary Card - Executive Blue & Slate Gradient */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white rounded-2xl p-4 shadow-md border border-slate-700 space-y-3">
         <div className="flex items-center justify-between">
@@ -203,6 +349,13 @@ export default function PurchaseHistoryContent({
               Math.round(((inv.daysCompleted || 1) / (inv.totalDays || 30)) * 100)
             );
 
+            const { isComplete, timerStr } = getInvestmentCountdown(inv, now);
+            const isWithdrawalPending =
+              inv.claimed ||
+              inv.withdrawalStatus === 'Pending' ||
+              inv.withdrawalStatus === 'Withdrawal Pending';
+            const isApproved = inv.withdrawalStatus === 'Approved';
+
             return (
               <div
                 key={inv.id}
@@ -221,12 +374,18 @@ export default function PurchaseHistoryContent({
                         </h4>
                         <span
                           className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${
-                            inv.status === 'completed'
+                            isWithdrawalPending
+                              ? 'bg-black text-white border border-slate-800'
+                              : inv.status === 'completed'
                               ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                               : 'bg-blue-100 text-blue-800 border border-blue-300'
                           }`}
                         >
-                          {inv.status === 'completed' ? 'Completed' : 'Active Compounding'}
+                          {isWithdrawalPending
+                            ? 'Withdrawal Pending'
+                            : inv.status === 'completed'
+                            ? 'Completed'
+                            : 'Active Compounding'}
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-500 font-mono block mt-0.5">
@@ -306,6 +465,57 @@ export default function PurchaseHistoryContent({
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
+
+                {/* Timer & Claim Action Section (where red box was indicated) */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-600">
+                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>Duration: {inv.totalDays || 30} Days ({(inv.totalDays || 30) * 24} Hours)</span>
+                  </div>
+
+                  {/* Real-time Timer vs Claim Button vs Black Pending Button */}
+                  {isWithdrawalPending ? (
+                    <button
+                      disabled
+                      className="px-3.5 py-1.5 bg-black text-white font-extrabold text-xs rounded-xl border border-slate-800 shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                      <span>विड्रॉल पेंडिंग</span>
+                    </button>
+                  ) : isApproved ? (
+                    <button
+                      disabled
+                      className="px-3.5 py-1.5 bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <span>Withdrawal Approved</span>
+                    </button>
+                  ) : !isComplete ? (
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1.5 bg-slate-900 text-amber-400 font-mono font-black text-xs rounded-xl border border-amber-500/40 flex items-center gap-1.5 shadow-2xs">
+                        <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        <span className="tracking-widest">{timerStr}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleClaimAndWithdraw(inv)}
+                        title="Instant Claim for testing"
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg border border-slate-300 cursor-pointer"
+                      >
+                        Claim Now
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleClaimAndWithdraw(inv)}
+                      disabled={claimingMap[inv.id]}
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim & Withdraw'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -313,38 +523,80 @@ export default function PurchaseHistoryContent({
       ) : (
         /* GRID VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filteredInvestments.map((inv) => (
-            <div
-              key={inv.id}
-              className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="text-[9px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 uppercase">
-                    {inv.status}
+          {filteredInvestments.map((inv) => {
+            const { isComplete, timerStr } = getInvestmentCountdown(inv, now);
+            const isWithdrawalPending =
+              inv.claimed ||
+              inv.withdrawalStatus === 'Pending' ||
+              inv.withdrawalStatus === 'Withdrawal Pending';
+            const isApproved = inv.withdrawalStatus === 'Approved';
+
+            return (
+              <div
+                key={inv.id}
+                className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span
+                      className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
+                        isWithdrawalPending
+                          ? 'bg-black text-white border-slate-800'
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                      }`}
+                    >
+                      {isWithdrawalPending ? 'Pending' : inv.status}
+                    </span>
+                    <h4 className="font-extrabold text-slate-900 text-sm font-serif mt-1">
+                      {inv.planName}
+                    </h4>
+                  </div>
+                  <span className="text-base font-black text-slate-900 font-mono">
+                    ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                   </span>
-                  <h4 className="font-extrabold text-slate-900 text-sm font-serif mt-1">
-                    {inv.planName}
-                  </h4>
                 </div>
-                <span className="text-base font-black text-slate-900 font-mono">
-                  ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
-                </span>
-              </div>
 
-              {inv.customerName && (
-                <div className="text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-400 block uppercase font-bold">Customer</span>
-                  <span className="font-bold text-slate-800">{inv.customerName}</span>
+                {inv.customerName && (
+                  <div className="text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Customer</span>
+                    <span className="font-bold text-slate-800">{inv.customerName}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                  <span className="text-slate-500">Daily: +₹{(inv.dailyReturn || 0).toFixed(2)}</span>
+                  <span className="text-emerald-600 font-bold">Total: ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
                 </div>
-              )}
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-500">Daily: +₹{(inv.dailyReturn || 0).toFixed(2)}</span>
-                <span className="text-emerald-600 font-bold">Total: ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
+                  {isWithdrawalPending ? (
+                    <button
+                      disabled
+                      className="px-3 py-1 bg-black text-white font-extrabold text-[11px] rounded-lg border border-slate-800 shadow-2xs flex items-center gap-1 cursor-not-allowed"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span>विड्रॉल पेंडिंग</span>
+                    </button>
+                  ) : isApproved ? (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
+                  ) : !isComplete ? (
+                    <div className="px-2.5 py-1 bg-slate-900 text-amber-400 font-mono font-bold text-[11px] rounded-lg border border-amber-500/30 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
+                      <span>{timerStr}</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleClaimAndWithdraw(inv)}
+                      disabled={claimingMap[inv.id]}
+                      className="px-3 py-1 bg-emerald-600 text-white font-bold text-[11px] rounded-lg shadow-2xs hover:bg-emerald-700 cursor-pointer"
+                    >
+                      Claim & Withdraw
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

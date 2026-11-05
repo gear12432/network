@@ -2353,13 +2353,38 @@ export default function AdminPanel() {
                       {withdrawals.map((wd) => (
                         <tr key={wd.id} className="hover:bg-slate-50 transition-all">
                           <td className="py-3 px-3">
-                            <span className="font-bold text-slate-900 block">{wd.userName || wd.loginUid}</span>
-                            <span className="text-[10px] text-slate-400">{wd.mobile}</span>
+                            <span className="font-bold text-slate-900 block">
+                              {wd.customerName || wd.userName || wd.loginUid}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono block">
+                              ID: {wd.customerId || wd.loginUid} • {wd.mobile || wd.customerMobile || ''}
+                            </span>
+                            {wd.planName && (
+                              <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5 inline-block font-semibold">
+                                {wd.planName}
+                              </span>
+                            )}
                           </td>
-                          <td className="py-3 px-3 font-mono font-bold text-amber-700 text-sm">
-                            ₹{(wd.amount || 0).toLocaleString('en-IN')}
+                          <td className="py-3 px-3 font-mono font-bold text-emerald-700 text-sm">
+                            ₹{(wd.totalReturn || wd.amount || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="py-3 px-3 font-mono text-slate-800">{wd.bankDetails}</td>
+                          <td className="py-3 px-3 font-mono text-slate-800">
+                            {wd.bankName ? (
+                              <div className="space-y-0.5 text-xs">
+                                <div className="font-extrabold text-blue-900 flex items-center gap-1">
+                                  <span>🏦 {wd.bankName}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-700 font-mono">
+                                  A/C: <span className="font-bold text-slate-900">{wd.accountNumber}</span>
+                                </div>
+                                <div className="text-[10px] text-slate-500 font-mono">
+                                  IFSC: <span className="font-bold">{wd.ifscCode}</span> • {wd.bankHolderName || wd.customerName}
+                                </div>
+                              </div>
+                            ) : (
+                              <span>{wd.bankDetails || 'Bank Details Linked'}</span>
+                            )}
+                          </td>
                           <td className="py-3 px-3 text-[11px] text-slate-600">{wd.dateTime}</td>
                           <td className="py-3 px-3">
                             <span

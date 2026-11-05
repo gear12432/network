@@ -53,6 +53,9 @@ export interface ActiveInvestment {
   bankHolderName?: string;
   loginUid?: string;
   purchasedAt?: string;
+  claimed?: boolean;
+  withdrawalStatus?: 'Pending' | 'Approved' | 'Rejected' | string;
+  withdrawalId?: string;
 }
 
 export type TransactionType = 'deposit' | 'withdrawal' | 'investment' | 'roi_credit' | 'referral_bonus';

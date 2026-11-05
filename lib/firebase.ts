@@ -485,9 +485,14 @@ export interface WithdrawalRecord {
   userName?: string;
   mobile?: string;
   amount: number;
-  bankDetails: string; // UPI ID or Account Details
+  bankDetails?: string; // UPI ID or Account Details
+  bankName?: string;
+  bankHolderName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  totalReturn?: number;
   dateTime: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Pending' | 'Approved' | 'Rejected' | string;
   createdAt: string;
   customerId?: string;
   customerName?: string;

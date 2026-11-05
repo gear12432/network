@@ -980,10 +980,12 @@ export default function InvestmentApp() {
       >
         <PurchaseHistoryContent
           activeInvestments={activeInvestments}
+          currentUser={currentUser}
           onOpenPlans={() => {
             setActiveModal('none');
             setActiveTab('home');
           }}
+          onRefreshInvestments={loadDataFromFirestore}
         />
       </SlideFullScreenModal>
 

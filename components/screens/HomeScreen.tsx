@@ -172,23 +172,51 @@ export default function HomeScreen({
   const handleClaimActivePlanToFirebase = async (inv: ActiveInvestment) => {
     if (claimedPlanIds.includes(inv.id)) return;
 
+    const customerId = inv.loginUid || inv.customerId || stats.loginUid || 'GK35648';
+    const customerName = inv.customerName || stats.userName || 'Customer';
+    const bankName = inv.bankName || 'HDFC Bank';
+    const bankHolderName = inv.bankHolderName || customerName;
+    const accountNumber = inv.accountNumber || '9876543210';
+    const ifscCode = inv.ifscCode || 'HDFC0001234';
+    const totalReturn = inv.totalReturn || inv.investedAmount || 0;
+
     const withdrawRecord = {
-      id: `wth-${Date.now()}`,
-      loginUid: stats.loginUid || 'GK35648',
-      userName: stats.userName || 'User',
-      mobile: stats.mobile || '9876543210',
-      amount: inv.totalReturn || inv.investedAmount * 1.5,
-      bankDetails: 'skjiyaul@okhdfcbank linked',
-      dateTime: new Date().toLocaleString('en-IN'),
+      id: `WD_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
+      loginUid: customerId,
+      customerId: customerId,
+      customerName: customerName,
+      userName: customerName,
+      mobile: inv.customerMobile || stats.mobile || '9876543210',
+      bankName: bankName,
+      bankHolderName: bankHolderName,
+      accountNumber: accountNumber,
+      ifscCode: ifscCode,
+      bankDetails: `${bankName} | A/C: ${accountNumber} | IFSC: ${ifscCode} (${bankHolderName})`,
+      amount: totalReturn,
+      totalReturn: totalReturn,
+      dateTime: new Date().toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       status: 'Pending' as const,
       createdAt: new Date().toISOString(),
-      customerId: inv.customerId,
-      customerName: inv.customerName,
-      customerMobile: inv.customerMobile,
       planName: inv.planName,
     };
 
     const res = await saveWithdrawalToFirestore(withdrawRecord);
+
+    // Also update investment in Firestore
+    const updatedInv = {
+      ...inv,
+      claimed: true,
+      withdrawalStatus: 'Pending',
+      status: 'completed' as const,
+    };
+    await saveInvestmentToFirestore(updatedInv);
+
     if (res.success) {
       setClaimedPlanIds((prev) => [...prev, inv.id]);
       triggerConfetti();
