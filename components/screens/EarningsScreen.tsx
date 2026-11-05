@@ -232,7 +232,7 @@ export default function EarningsScreen({
                   }`}
                 />
                 <span className="text-[8.5px] font-bold text-slate-500 mt-2 truncate text-center">
-                  {item.day.split(' ')[0]}
+                  {(item?.day || 'Day').split(' ')[0]}
                 </span>
               </div>
             );
@@ -323,7 +323,7 @@ export default function EarningsScreen({
                   }`}
                 />
                 <span className="text-[8.5px] font-bold text-slate-500 mt-2 truncate text-center">
-                  {item.day.split(' ')[0]}
+                  {(item?.day || 'Day').split(' ')[0]}
                 </span>
               </div>
             );
@@ -414,7 +414,7 @@ export default function EarningsScreen({
                   }`}
                 />
                 <span className="text-[8.5px] font-bold text-slate-500 mt-2 truncate text-center">
-                  {item.day.split(' ')[0]}
+                  {(item?.day || 'Day').split(' ')[0]}
                 </span>
               </div>
             );
@@ -505,7 +505,7 @@ export default function EarningsScreen({
                   }`}
                 />
                 <span className="text-[8.5px] font-bold text-slate-500 mt-2 truncate text-center">
-                  {item.day.split(' ')[0]}
+                  {(item?.day || 'Day').split(' ')[0]}
                 </span>
               </div>
             );

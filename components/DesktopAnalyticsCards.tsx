@@ -250,7 +250,7 @@ export default function DesktopAnalyticsCards({
                       style={{ height: `${val}%` }}
                     />
                     <span className="text-[8px] font-medium text-[#8a5b28] mt-2 truncate max-w-full text-center">
-                      {item.day.split(' ')[0]}
+                      {(item?.day || 'Day').split(' ')[0]}
                     </span>
                   </div>
                 );

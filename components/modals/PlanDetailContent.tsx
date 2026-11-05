@@ -261,11 +261,11 @@ export default function PlanDetailContent({
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-blue-50 border-2 border-blue-400 flex items-center justify-center font-bold text-blue-900 text-sm shadow-xs font-serif">
-                    {matchedCustomer.name
+                    {(matchedCustomer.name || 'C')
                       .split(' ')
-                      .map((n) => n[0])
+                      .map((n) => n[0] || '')
                       .join('')
-                      .slice(0, 2)}
+                      .slice(0, 2) || 'C'}
                   </div>
                 )}
                 <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-0.5 rounded-full border-2 border-white shadow-xs">

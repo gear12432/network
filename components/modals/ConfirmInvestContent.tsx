@@ -137,11 +137,11 @@ export default function ConfirmInvestContent({
               />
             ) : (
               <div className="w-14 h-14 rounded-full bg-blue-600 text-white font-black text-lg flex items-center justify-center border-2 border-white shadow-xs uppercase font-sans">
-                {customer.name
+                {(customer.name || 'C')
                   .split(' ')
-                  .map((n) => n[0])
+                  .map((n) => n[0] || '')
                   .join('')
-                  .slice(0, 2)}
+                  .slice(0, 2) || 'C'}
               </div>
             )}
             <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-0.5 rounded-full border-2 border-white shadow-xs">

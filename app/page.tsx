@@ -61,6 +61,14 @@ function getWindowWidthServerSnapshot() {
   return 1024;
 }
 
+function getInitials(name?: string): string {
+  if (!name || typeof name !== 'string') return 'GK';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'GK';
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase() || 'GK';
+}
+
 export default function InvestmentApp() {
   // Prevent SSR Hydration Mismatch
   const [hasMounted, setHasMounted] = useState(false);
@@ -138,13 +146,7 @@ export default function InvestmentApp() {
           // Immediately set initial logged-in user state & skip onboarding for logged-in user
           setCurrentUser(u);
           setShowOnboarding(false);
-          const initials =
-            u.fullName
-              ?.split(' ')
-              .map((n: string) => n[0])
-              .join('')
-              .substring(0, 2)
-              .toUpperCase() || 'GK';
+          const initials = getInitials(u.fullName);
 
           setUserStats((prev) => ({
             ...prev,
@@ -166,13 +168,7 @@ export default function InvestmentApp() {
                 } catch {
                   // ignore
                 }
-                const freshInitials =
-                  validUser.fullName
-                    ?.split(' ')
-                    .map((n: string) => n[0])
-                    .join('')
-                    .substring(0, 2)
-                    .toUpperCase() || 'GK';
+                const freshInitials = getInitials(validUser.fullName);
 
                 setUserStats((prev) => ({
                   ...prev,
@@ -202,13 +198,7 @@ export default function InvestmentApp() {
               } catch {
                 // ignore
               }
-              const freshInitials =
-                deviceUser.fullName
-                  ?.split(' ')
-                  .map((n: string) => n[0])
-                  .join('')
-                  .substring(0, 2)
-                  .toUpperCase() || 'GK';
+              const freshInitials = getInitials(deviceUser.fullName);
 
               setUserStats((prev) => ({
                 ...prev,
@@ -372,13 +362,7 @@ export default function InvestmentApp() {
             if (typeof window !== 'undefined') {
               localStorage.setItem('network_join_pro_user', JSON.stringify(u));
             }
-            const initials =
-              u.fullName
-                ?.split(' ')
-                .map((n) => n[0])
-                .join('')
-                .substring(0, 2)
-                .toUpperCase() || 'GK';
+            const initials = getInitials(u.fullName);
 
             setUserStats((prev) => ({
               ...prev,
@@ -494,13 +478,7 @@ export default function InvestmentApp() {
       localStorage.setItem('network_join_pro_user', JSON.stringify(user));
     }
 
-    const initials =
-      user.fullName
-        ?.split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase() || 'GK';
+    const initials = getInitials(user.fullName);
 
     setUserStats((prev) => ({
       ...prev,
