@@ -1284,9 +1284,9 @@ export default function AdminPanel() {
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' ? 'p-1.5 sm:p-3 md:p-6 space-y-3 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
           {/* Sub-Header / Breadcrumb Bar */}
-          <div className="bg-white rounded-xl p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
             <div>
               <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
                 <span>
@@ -3226,10 +3226,10 @@ export default function AdminPanel() {
             9. VIP LEVEL & SYSTEM SETTINGS TAB
             ========================================================================= */}
         {activeTab === 'settings' && (
-          <div className="space-y-6 max-w-5xl">
+          <div className="space-y-4 w-full">
             {/* Toast Notification Banner on Save */}
             {levelSaveMsg && (
-              <div className="p-4 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in border border-emerald-400">
+              <div className="p-3.5 sm:p-4 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in border border-emerald-400 w-full">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-xl">
                     <Crown className="w-6 h-6 text-yellow-300" />
@@ -3247,7 +3247,7 @@ export default function AdminPanel() {
             )}
 
             {/* VIP Level Configuration Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-5 w-full">
               <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
                 <div className="p-3 bg-amber-500/10 text-amber-600 rounded-2xl">
                   <Crown className="w-6 h-6" />
@@ -3353,7 +3353,7 @@ export default function AdminPanel() {
             </div>
 
             {/* Configured VIP Levels Summary Table (1 - 10) */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4 w-full">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                 <div>
                   <h4 className="text-sm font-black text-slate-900">Configured VIP Levels Summary (1 - 10)</h4>
@@ -3418,46 +3418,6 @@ export default function AdminPanel() {
                     })}
                   </tbody>
                 </table>
-              </div>
-            </div>
-
-            {/* System Status Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-700">
-                    <Settings className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900">Admin System Settings & Connection</h3>
-                    <p className="text-xs text-slate-500 font-medium">Firebase Cloud Firestore Connection Vitals</p>
-                  </div>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300">
-                  System Active 🟢
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <span className="font-extrabold text-slate-900 text-sm block">🔥 Firebase Cloud Firestore</span>
-                  <p className="text-slate-600 font-medium">
-                    Real-time synchronized database connection online and operational.
-                  </p>
-                  <span className="inline-block text-[10px] font-mono bg-slate-800 text-cyan-300 px-2.5 py-1 rounded-md">
-                    DB: ai-studio-networkjoinproin
-                  </span>
-                </div>
-
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <span className="font-extrabold text-slate-900 text-sm block">🛡️ Security & Role Controls</span>
-                  <p className="text-slate-600 font-medium">
-                    Superadmin permissions active with full data access and control.
-                  </p>
-                  <span className="inline-block text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-200">
-                    Superuser Verified ✓
-                  </span>
-                </div>
               </div>
             </div>
           </div>
