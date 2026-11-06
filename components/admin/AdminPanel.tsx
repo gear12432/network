@@ -535,6 +535,15 @@ export default function AdminPanel() {
   const [sendingReply, setSendingReply] = useState<boolean>(false);
   const adminChatEndRef = useRef<HTMLDivElement>(null);
 
+  // Copy mobile feedback & Admin chat multi-select states
+  const [copiedMobile, setCopiedMobile] = useState<boolean>(false);
+  const [adminSelectedMsgIds, setAdminSelectedMsgIds] = useState<string[]>([]);
+  const [isDeletingAdminSelected, setIsDeletingAdminSelected] = useState<boolean>(false);
+  const adminLongPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const adminLongPressFiredAt = useRef<number>(0);
+  const adminTouchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const adminIsTouchDevice = useRef<boolean>(false);
+
   // Real-time Firestore Listener for Support Chat Messages
   useEffect(() => {
     try {
@@ -710,16 +719,114 @@ export default function AdminPanel() {
     reader.readAsDataURL(file);
   };
 
-  // Delete User Chat Message (Only user messages can be deleted by admin per requirement)
-  const handleDeleteUserChatMessage = async (msg: SupportChatMessage) => {
-    if (msg.sender === 'admin') {
-      alert('Admin messages cannot be deleted.');
+  // Copy User Mobile Handler
+  const handleCopyUserMobile = (mobile: string) => {
+    if (!mobile) {
+      alert('User mobile number not available');
       return;
     }
-    if (confirm('Are you sure you want to delete this user message?')) {
-      setChatMessages((prev) => prev.filter((m) => m.id !== msg.id));
-      await deleteChatMessageFromFirestore(msg.id);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(mobile);
+      setCopiedMobile(true);
+      setTimeout(() => setCopiedMobile(false), 2000);
     }
+  };
+
+  // --- ADMIN CHAT LONG PRESS & MULTI-SELECT HANDLERS ---
+  const handleAdminTouchStart = (msgId: string, isAdminMsg: boolean, e: React.TouchEvent) => {
+    if (!isAdminMsg) return;
+    adminIsTouchDevice.current = true;
+    const touch = e.touches[0];
+    adminTouchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
+    if (adminLongPressTimerRef.current) clearTimeout(adminLongPressTimerRef.current);
+
+    adminLongPressTimerRef.current = setTimeout(() => {
+      adminLongPressFiredAt.current = Date.now();
+      setAdminSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
+
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          navigator.vibrate(60);
+        } catch {}
+      }
+    }, 350);
+  };
+
+  const handleAdminTouchMove = (e: React.TouchEvent) => {
+    if (!adminTouchStartPos.current || !adminLongPressTimerRef.current) return;
+    const touch = e.touches[0];
+    const distance = Math.hypot(
+      touch.clientX - adminTouchStartPos.current.x,
+      touch.clientY - adminTouchStartPos.current.y
+    );
+    if (distance > 14) {
+      clearTimeout(adminLongPressTimerRef.current);
+      adminLongPressTimerRef.current = null;
+    }
+  };
+
+  const handleAdminTouchEnd = () => {
+    if (adminLongPressTimerRef.current) {
+      clearTimeout(adminLongPressTimerRef.current);
+      adminLongPressTimerRef.current = null;
+    }
+    adminTouchStartPos.current = null;
+  };
+
+  const handleAdminMouseDown = (msgId: string, isAdminMsg: boolean) => {
+    if (!isAdminMsg || adminIsTouchDevice.current) return;
+    if (adminLongPressTimerRef.current) clearTimeout(adminLongPressTimerRef.current);
+
+    adminLongPressTimerRef.current = setTimeout(() => {
+      adminLongPressFiredAt.current = Date.now();
+      setAdminSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
+    }, 380);
+  };
+
+  const handleAdminMouseUp = () => {
+    if (adminLongPressTimerRef.current) {
+      clearTimeout(adminLongPressTimerRef.current);
+      adminLongPressTimerRef.current = null;
+    }
+  };
+
+  const handleAdminMsgClick = (msgId: string, isAdminMsg: boolean, e: React.MouseEvent) => {
+    if (!isAdminMsg) return;
+    if (Date.now() - adminLongPressFiredAt.current < 800) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    if (adminSelectedMsgIds.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      setAdminSelectedMsgIds((prev) =>
+        prev.includes(msgId) ? prev.filter((id) => id !== msgId) : [...prev, msgId]
+      );
+    }
+  };
+
+  const handleDeleteAdminSelectedMessages = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (adminSelectedMsgIds.length === 0) return;
+
+    setIsDeletingAdminSelected(true);
+    const idsToDelete = [...adminSelectedMsgIds];
+
+    setChatMessages((prev) => prev.filter((m) => !idsToDelete.includes(m.id)));
+    setAdminSelectedMsgIds([]);
+
+    try {
+      await Promise.all(idsToDelete.map((id) => deleteChatMessageFromFirestore(id)));
+    } catch (err) {
+      console.warn('Error deleting admin messages from Firestore:', err);
+    }
+    setIsDeletingAdminSelected(false);
   };
 
 
@@ -3623,19 +3730,42 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  {/* Right Side: Menu Icon Button & Floating Box */}
-                  <div className="relative shrink-0 ml-2">
+                  {/* Right Side: Copy Mobile Icon & Menu Icon Button & Floating Box */}
+                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    {/* Copy Mobile Number Icon Button */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setChatMenuOpen(!chatMenuOpen);
+                        handleCopyUserMobile(userMobile);
                       }}
-                      className="p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center shadow-xs"
-                      title="Menu Options"
+                      className={`p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center shadow-xs active:scale-95 ${
+                        copiedMobile
+                          ? 'bg-emerald-500 text-white font-bold'
+                          : 'bg-white/10 hover:bg-white/20 text-white'
+                      }`}
+                      title={copiedMobile ? 'Mobile Number Copied!' : 'Copy Mobile Number'}
                     >
-                      <MoreVertical className="w-5 h-5 stroke-[2.3]" />
+                      {copiedMobile ? (
+                        <Check className="w-5 h-5 stroke-[2.8]" />
+                      ) : (
+                        <Copy className="w-5 h-5 stroke-[2.3]" />
+                      )}
                     </button>
+
+                    {/* Menu Options Button */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setChatMenuOpen(!chatMenuOpen);
+                        }}
+                        className="p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center shadow-xs"
+                        title="Menu Options"
+                      >
+                        <MoreVertical className="w-5 h-5 stroke-[2.3]" />
+                      </button>
 
                     {/* Floating Dropdown Box Open next to Menu Icon */}
                     {chatMenuOpen && (
@@ -3725,15 +3855,17 @@ export default function AdminPanel() {
                     )}
                   </div>
                 </div>
+              </div>
 
                 {/* 2. Messages Viewport (Scrollable Full Height) */}
                 <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 space-y-3.5 bg-[#f0f4f8]">
                   {activeChatGroup.messages.map((msg) => {
                     const isAdmin = msg.sender === 'admin';
+                    const isSelected = adminSelectedMsgIds.includes(msg.id);
                     return (
                       <div
                         key={msg.id}
-                        className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} group`}
+                        className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} group select-none`}
                       >
                         {/* Header Label: Name & Time */}
                         <span className="text-[10px] font-bold text-slate-400 mb-1 px-1">
@@ -3745,8 +3877,41 @@ export default function AdminPanel() {
                             })}
                         </span>
 
-                        {/* Message Box */}
-                        <div className="relative max-w-[85%] sm:max-w-[70%] flex items-center gap-1.5">
+                        {/* Message Box with Long-Press & Multi-Select Support for Admin Messages */}
+                        <div
+                          onTouchStart={(e) => handleAdminTouchStart(msg.id, isAdmin, e)}
+                          onTouchEnd={handleAdminTouchEnd}
+                          onTouchMove={handleAdminTouchMove}
+                          onMouseDown={() => handleAdminMouseDown(msg.id, isAdmin)}
+                          onMouseUp={handleAdminMouseUp}
+                          onMouseLeave={handleAdminMouseUp}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (isAdmin) {
+                              setAdminSelectedMsgIds((prev) =>
+                                prev.includes(msg.id) ? prev : [...prev, msg.id]
+                              );
+                            }
+                          }}
+                          onClick={(e) => handleAdminMsgClick(msg.id, isAdmin, e)}
+                          style={{
+                            WebkitTouchCallout: 'none',
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none',
+                          }}
+                          className={`relative max-w-[85%] sm:max-w-[70%] flex items-center gap-1.5 transition-transform duration-150 ${
+                            isAdmin ? 'cursor-pointer active:scale-[0.99]' : ''
+                          }`}
+                          title={isAdmin ? 'Long press to select & delete' : ''}
+                        >
+                          {/* Selection Checkmark Badge on Admin Message */}
+                          {isAdmin && isSelected && (
+                            <div className="absolute -top-2.5 -left-2.5 z-30 bg-rose-600 text-white rounded-full p-1 shadow-lg border-2 border-white animate-in zoom-in-75 duration-150">
+                              <Check className="w-3.5 h-3.5 stroke-[3.5]" />
+                            </div>
+                          )}
+
                           {/* Delete Button for User Messages Only */}
                           {!isAdmin && (
                             <button
@@ -3760,7 +3925,9 @@ export default function AdminPanel() {
                           )}
 
                           <div
-                            className={`p-3.5 rounded-2xl shadow-xs text-xs sm:text-sm leading-relaxed space-y-2 ${
+                            className={`p-3.5 rounded-2xl shadow-xs text-xs sm:text-sm leading-relaxed space-y-2 transition-all ${
+                              isSelected ? 'ring-4 ring-rose-500 shadow-xl' : ''
+                            } ${
                               isAdmin
                                 ? 'bg-slate-900 text-white rounded-tr-none border border-slate-800'
                                 : 'bg-white text-slate-900 rounded-tl-none border border-slate-200 shadow-2xs'
@@ -3770,7 +3937,12 @@ export default function AdminPanel() {
                             {msg.imageUrl && (
                               <div
                                 className="rounded-xl overflow-hidden border border-black/10 cursor-pointer"
-                                onClick={() => setPreviewImage(msg.imageUrl!)}
+                                onClick={(e) => {
+                                  if (adminSelectedMsgIds.length === 0) {
+                                    e.stopPropagation();
+                                    setPreviewImage(msg.imageUrl!);
+                                  }
+                                }}
                               >
                                 <img
                                   src={msg.imageUrl}
@@ -3804,6 +3976,44 @@ export default function AdminPanel() {
                   })}
                   <div ref={adminChatEndRef} />
                 </div>
+
+                {/* Floating Multi-Select Action Box (Appears on Long-Press / Multi-Select of Admin Replies) */}
+                {adminSelectedMsgIds.length > 0 && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-60 bg-slate-900/98 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    <div className="flex items-center gap-1.5 pr-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                      <span className="text-xs sm:text-sm font-black text-slate-100">
+                        {adminSelectedMsgIds.length} Selected
+                      </span>
+                    </div>
+
+                    {/* Delete Icon Button */}
+                    <button
+                      type="button"
+                      onClick={handleDeleteAdminSelectedMessages}
+                      disabled={isDeletingAdminSelected}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 disabled:opacity-50 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                      title="Delete selected admin messages"
+                    >
+                      <Trash2 className="w-4 h-4 stroke-[2.3]" />
+                      <span>Delete</span>
+                    </button>
+
+                    {/* Cancel Icon Button */}
+                    <button
+                      type="button"
+                      onClick={() => setAdminSelectedMsgIds([])}
+                      className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
+                      title="Cancel selection"
+                    >
+                      <X className="w-4 h-4 stroke-[2.3]" />
+                    </button>
+                  </div>
+                )}
 
                 {/* 3. Image Attachment Preview Bar */}
                 {adminReplyImagePreview && (
