@@ -17,13 +17,17 @@ import {
   ShoppingBag,
   CheckCircle2,
   UserCheck,
+  X,
+  Megaphone,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
 import PlanCard from '@/components/PlanCard';
-import { getCustomSlidersFromFirestore, saveWithdrawalToFirestore, db } from '@/lib/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { getCustomSlidersFromFirestore, saveWithdrawalToFirestore, getHomePopupFromFirestore, HomePopupSettings, db } from '@/lib/firebase';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { Joins3DIcon, Earned3DIcon, Payout3DIcon, Active3DIcon } from '@/components/ui/Stat3DIcons';
 import { triggerConfetti } from '@/lib/confetti';
+
 
 interface HomeScreenProps {
   stats: UserStats;
@@ -87,6 +91,47 @@ export default function HomeScreen({
   // Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
   const [customSlides, setCustomSlides] = useState<any[]>([]);
+
+  // Home Screen Notice / Promotion Popup State
+  const [homePopup, setHomePopup] = useState<HomePopupSettings | null>(null);
+  const [showPopupModal, setShowPopupModal] = useState<boolean>(false);
+
+  // Load and listen to Home Screen Popup settings in real-time
+  useEffect(() => {
+    getHomePopupFromFirestore().then((popup) => {
+      if (popup) {
+        setHomePopup(popup);
+        if (popup.active) {
+          setShowPopupModal(true);
+        }
+      }
+    });
+
+    try {
+      const docRef = doc(db, 'system_settings', 'home_popup');
+      const unsub = onSnapshot(
+        docRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data() as HomePopupSettings;
+            setHomePopup(data);
+            if (data.active) {
+              setShowPopupModal(true);
+            } else {
+              setShowPopupModal(false);
+            }
+          }
+        },
+        (err) => {
+          console.warn('Realtime home_popup listener notice:', err);
+        }
+      );
+      return () => unsub();
+    } catch (e) {
+      console.warn('Error setting up home_popup listener:', e);
+    }
+  }, []);
+
 
   // Real-time Firestore listener for custom sliders
   useEffect(() => {
@@ -619,6 +664,100 @@ export default function HomeScreen({
           </div>
         )}
       </div>
+
+      {/* =========================================================================
+          HOME SCREEN PROMOTIONAL / NOTICE POPUP MODAL (User App Launch Popup)
+          ========================================================================= */}
+      <AnimatePresence>
+        {showPopupModal && homePopup && homePopup.active && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/75 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 15 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border border-white/20 text-center"
+            >
+              {/* Close Button ("X") */}
+              <button
+                type="button"
+                onClick={() => setShowPopupModal(false)}
+                className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-md active:scale-95"
+                aria-label="Close Notice"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Popup Header Banner Image */}
+              {homePopup.imageUrl ? (
+                <div className="w-full h-44 sm:h-52 bg-slate-900 relative overflow-hidden">
+                  <img
+                    src={homePopup.imageUrl}
+                    alt={homePopup.title || 'Special Announcement'}
+                    className="w-full h-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                </div>
+              ) : (
+                <div className="w-full h-32 bg-gradient-to-tr from-[#00a8cc] to-[#007b99] flex items-center justify-center text-white relative">
+                  <Megaphone className="w-12 h-12 opacity-80" />
+                </div>
+              )}
+
+              {/* Modal Body */}
+              <div className="p-4 sm:p-5 space-y-3">
+                {/* Amount Highlight Badge */}
+                {homePopup.amount && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-black text-xs border border-amber-300 shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>{homePopup.amount}</span>
+                  </div>
+                )}
+
+                {/* Title */}
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-snug">
+                  {homePopup.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-h-36 overflow-y-auto px-1">
+                  {homePopup.description}
+                </p>
+
+                {/* Direction Date / Validity */}
+                {homePopup.directionDate && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+                    <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span>{homePopup.directionDate}</span>
+                  </div>
+                )}
+
+                {/* Action CTA Buttons */}
+                <div className="pt-2 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPopupModal(false);
+                      triggerConfetti();
+                    }}
+                    className="w-full py-3 bg-gradient-to-r from-[#00a8cc] to-[#007b99] hover:from-[#0092b3] hover:to-[#006982] text-white font-black rounded-xl text-xs sm:text-sm shadow-md active:scale-98 transition-all cursor-pointer"
+                  >
+                    Explore & Claim Offer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPopupModal(false)}
+                    className="text-xs text-slate-400 hover:text-slate-600 font-bold transition-colors cursor-pointer"
+                  >
+                    Close Notice (বন্ধ করুন)
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

@@ -1087,6 +1087,71 @@ export async function getAllVipLevelsFromFirestore(): Promise<VipLevelRecord[]> 
   return [];
 }
 
+// 12. Home Announcement Popup Settings
+export interface HomePopupSettings {
+  active: boolean;
+  title: string;
+  description: string;
+  amount: string;
+  directionDate: string;
+  imageUrl: string;
+  updatedAt?: string;
+}
+
+export const DEFAULT_HOME_POPUP: HomePopupSettings = {
+  active: true,
+  title: 'Special Welcome Bonus Offer',
+  description: 'Join NetworkJoin Pro today and get high yield rewards on every deposit. Limited period special offer!',
+  amount: '₹500 Extra Bonus',
+  directionDate: 'Valid till 31 Dec 2026',
+  imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+};
+
+export async function getHomePopupFromFirestore(): Promise<HomePopupSettings> {
+  try {
+    const docRef = doc(db, 'system_settings', 'home_popup');
+    const snap = await withTimeout(getDoc(docRef), 3000);
+    if (snap.exists()) {
+      const data = snap.data() as HomePopupSettings;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_home_popup', JSON.stringify(data));
+      }
+      return data;
+    }
+  } catch (err) {
+    console.warn('Error reading home popup from Firestore:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_home_popup');
+      if (local) return JSON.parse(local);
+    } catch {}
+  }
+
+  return DEFAULT_HOME_POPUP;
+}
+
+export async function saveHomePopupToFirestore(popup: HomePopupSettings): Promise<{ success: boolean; error?: string }> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('network_join_pro_home_popup', JSON.stringify(popup));
+    } catch (e) {
+      console.warn('LocalStorage save popup error:', e);
+    }
+  }
+
+  try {
+    const docRef = doc(db, 'system_settings', 'home_popup');
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(popup)), 4000);
+    return { success: true };
+  } catch (err) {
+    console.warn('Error saving home popup to Firestore:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Saved locally only' };
+  }
+}
+
+
 
 
 
