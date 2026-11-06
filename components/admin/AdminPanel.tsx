@@ -3754,6 +3754,12 @@ export default function AdminPanel() {
                     type="text"
                     value={adminReplyText}
                     onChange={(e) => setAdminReplyText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAdminSendReply();
+                      }
+                    }}
                     placeholder={`Type reply message to ${activeChatGroup.userName}...`}
                     className="flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
                   />
