@@ -117,6 +117,10 @@ export default function AdminPanel() {
   // Search Query for Users tab
   const [userSearch, setUserSearch] = useState('');
 
+  // Search & Status Filter Query for Withdrawals tab
+  const [withdrawalStatusFilter, setWithdrawalStatusFilter] = useState<'all' | 'Pending' | 'Approved' | 'Rejected'>('all');
+  const [withdrawalSearchQuery, setWithdrawalSearchQuery] = useState('');
+
   // VIP Level Settings State & Preset Configuration
   const DEFAULT_VIP_LEVELS: VipLevelRecord[] = [
     { id: 'level_1', levelNumber: 1, levelName: 'VIP 1 (Silver/Basic)', minAmount: 500, dailyPercentage: 2.5, commissionAmount: 12.50, icon: '🥈', updatedAt: new Date().toISOString() },
@@ -1495,8 +1499,8 @@ export default function AdminPanel() {
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
         <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
-          {/* Sub-Header / Breadcrumb Bar (Hidden on Contact tab per user instruction) */}
-          {activeTab !== 'contact' && (
+          {/* Sub-Header / Breadcrumb Bar (Hidden on Contact & Withdrawals tab per user instruction) */}
+          {activeTab !== 'contact' && activeTab !== 'withdrawals' && (
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
               <div>
                 <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
@@ -2555,117 +2559,214 @@ export default function AdminPanel() {
               </div>
             )}
 
-            {/* Main Withdrawal Requests Full-Width Box */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-5 shadow-2xs w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-100">
-                <div>
-                  <h3 className="text-sm sm:text-base font-black text-slate-900">
-                    Withdrawal Requests (Total: {withdrawals.length})
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Review customer payouts, copy bank account and IFSC details, and control approval status.
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                  <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-bold">
-                    Pending: {withdrawals.filter((w) => w.status === 'Pending').length}
-                  </span>
-                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-[10px] font-bold">
-                    Approved: {withdrawals.filter((w) => w.status === 'Approved').length}
-                  </span>
-                  <span className="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-lg text-[10px] font-bold">
-                    Rejected: {withdrawals.filter((w) => w.status === 'Rejected').length}
-                  </span>
-                </div>
+            {/* Status Filter Tab Buttons (Dark Green When Selected, All Selected By Default) */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar w-full">
+              <button
+                type="button"
+                onClick={() => setWithdrawalStatusFilter('all')}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs active:scale-95 ${
+                  withdrawalStatusFilter === 'all'
+                    ? 'bg-emerald-900 text-white shadow-md ring-2 ring-emerald-700'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200'
+                }`}
+              >
+                All ({withdrawals.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithdrawalStatusFilter('Pending')}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs active:scale-95 ${
+                  withdrawalStatusFilter === 'Pending'
+                    ? 'bg-emerald-900 text-white shadow-md ring-2 ring-emerald-700'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200'
+                }`}
+              >
+                Pending ({withdrawals.filter((w) => w.status === 'Pending').length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithdrawalStatusFilter('Approved')}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs active:scale-95 ${
+                  withdrawalStatusFilter === 'Approved'
+                    ? 'bg-emerald-900 text-white shadow-md ring-2 ring-emerald-700'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200'
+                }`}
+              >
+                Successful ({withdrawals.filter((w) => w.status === 'Approved' || w.status === 'Successful').length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithdrawalStatusFilter('Rejected')}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs active:scale-95 ${
+                  withdrawalStatusFilter === 'Rejected'
+                    ? 'bg-emerald-900 text-white shadow-md ring-2 ring-emerald-700'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200'
+                }`}
+              >
+                Rejected ({withdrawals.filter((w) => w.status === 'Rejected').length})
+              </button>
+            </div>
+
+            {/* Search Bar for Mobile Number or Customer Name */}
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search className="w-4 h-4 text-slate-400" />
               </div>
-
-              {withdrawals.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 text-xs">
-                  No withdrawal requests found.
-                </div>
-              ) : (
-                <div className="overflow-x-auto w-full">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600 uppercase tracking-wider font-extrabold text-[10px]">
-                        <th className="py-3 px-3">Customer Name</th>
-                        <th className="py-3 px-3">Amount</th>
-                        <th className="py-3 px-3">Date & Time</th>
-                        <th className="py-3 px-3">Status</th>
-                        <th className="py-3 px-3 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
-                      {withdrawals.map((wd) => {
-                        const custName = wd.customerName || wd.userName || wd.loginUid || 'Customer';
-                        const custId = wd.customerId || wd.loginUid || '';
-                        const mobile = wd.mobile || wd.customerMobile || '';
-                        const amt = wd.totalReturn || wd.amount || 0;
-
-                        return (
-                          <tr key={wd.id} className="hover:bg-slate-50/80 transition-all">
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-slate-900 text-amber-400 font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                  {custName[0] || 'C'}
-                                </div>
-                                <div>
-                                  <span className="font-extrabold text-slate-900 text-xs sm:text-sm block leading-tight">
-                                    {custName}
-                                  </span>
-                                  <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
-                                    {custId ? `ID: ${custId}` : ''} {mobile ? `• 📞 ${mobile}` : ''}
-                                  </span>
-                                  {wd.planName && (
-                                    <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 mt-1 inline-block font-semibold">
-                                      {wd.planName}
-                                    </span>
-                                  )}
-                                  {wd.bankName && (
-                                    <span className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 mt-1 ml-1 inline-block font-medium">
-                                      🏦 {wd.bankName}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 font-mono font-black text-emerald-600 text-sm sm:text-base whitespace-nowrap">
-                              ₹{amt.toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-3 px-3 text-[11px] text-slate-600 whitespace-nowrap">
-                              {wd.dateTime || wd.createdAt}
-                            </td>
-                            <td className="py-3 px-3 whitespace-nowrap">
-                              <span
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
-                                  wd.status === 'Approved'
-                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                    : wd.status === 'Rejected'
-                                    ? 'bg-rose-100 text-rose-800 border-rose-300'
-                                    : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
-                                }`}
-                              >
-                                {wd.status === 'Pending' ? 'Pending ⏳' : wd.status === 'Approved' ? 'Approved 🟢' : 'Rejected 🔴'}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-right whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => setSelectedWithdrawal(wd)}
-                                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-lg font-black text-xs inline-flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5 text-amber-400" />
-                                <span>View Details</span>
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              <input
+                type="text"
+                value={withdrawalSearchQuery}
+                onChange={(e) => setWithdrawalSearchQuery(e.target.value)}
+                placeholder="Search by customer mobile number or name..."
+                className="w-full pl-10 pr-9 py-2.5 sm:py-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 shadow-2xs transition-all"
+              />
+              {withdrawalSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setWithdrawalSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               )}
             </div>
+
+            {/* List View (One Single Line per item: Profile Picture, Name, Withdrawal Amount, Status, View Icon) */}
+            {(() => {
+              const filteredList = withdrawals.filter((wd) => {
+                if (withdrawalStatusFilter !== 'all') {
+                  if (withdrawalStatusFilter === 'Approved') {
+                    if (wd.status !== 'Approved' && wd.status !== 'Successful') return false;
+                  } else if (wd.status !== withdrawalStatusFilter) {
+                    return false;
+                  }
+                }
+
+                if (withdrawalSearchQuery.trim()) {
+                  const q = withdrawalSearchQuery.trim().toLowerCase();
+                  const qDigits = q.replace(/[^0-9]/g, '');
+
+                  const matchedUser = users.find(
+                    (u) =>
+                      u.loginUid === wd.customerId ||
+                      u.uid === wd.customerId ||
+                      u.loginUid === wd.loginUid ||
+                      u.uid === wd.loginUid
+                  );
+
+                  const mobile = (wd.mobile || wd.customerMobile || matchedUser?.mobile || '').toLowerCase();
+                  const mobileDigits = mobile.replace(/[^0-9]/g, '');
+                  const name = (wd.customerName || wd.userName || matchedUser?.name || '').toLowerCase();
+                  const uid = (wd.customerId || wd.loginUid || '').toLowerCase();
+
+                  const matchesMobile = (qDigits.length > 0 && mobileDigits.includes(qDigits)) || mobile.includes(q);
+                  const matchesName = name.includes(q);
+                  const matchesUid = uid.includes(q);
+
+                  return matchesMobile || matchesName || matchesUid;
+                }
+
+                return true;
+              });
+
+              if (filteredList.length === 0) {
+                return (
+                  <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+                    {withdrawalSearchQuery.trim()
+                      ? `No withdrawal requests found matching "${withdrawalSearchQuery}".`
+                      : 'No withdrawal requests found in this category.'}
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-2 w-full">
+                  {filteredList.map((wd) => {
+                    const matchedUser = users.find(
+                      (u) =>
+                        (wd.customerId && (u.loginUid === wd.customerId || u.uid === wd.customerId)) ||
+                        (wd.loginUid && (u.loginUid === wd.loginUid || u.uid === wd.loginUid)) ||
+                        ((wd.mobile || wd.customerMobile) && (u.mobile === wd.mobile || u.mobile === wd.customerMobile))
+                    );
+                    const userPhoto = matchedUser?.photoUrl || null;
+                    const custName = wd.customerName || wd.userName || matchedUser?.name || wd.loginUid || 'Customer';
+                    const amt = wd.totalReturn || wd.amount || 0;
+
+                    return (
+                      <div
+                        key={wd.id}
+                        className="bg-white hover:bg-slate-50/90 border border-slate-200/90 rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 sm:gap-4 shadow-2xs transition-all w-full"
+                      >
+                        {/* Profile Picture & Customer Name (Single Line) */}
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                          {userPhoto ? (
+                            <img
+                              src={userPhoto}
+                              alt={custName}
+                              className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500 shrink-0 shadow-2xs"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-slate-900 text-amber-400 font-black text-sm flex items-center justify-center shrink-0 shadow-2xs border border-slate-700">
+                              {(custName[0] || 'C').toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">
+                            {custName}
+                          </span>
+                        </div>
+
+                        {/* Withdrawal Amount (Single Line) */}
+                        <div className="font-mono font-black text-emerald-700 text-sm sm:text-base whitespace-nowrap shrink-0">
+                          ₹{amt.toLocaleString('en-IN')}
+                        </div>
+
+                        {/* Status (Single Line) */}
+                        <div className="shrink-0">
+                          <span
+                            className={`px-2.5 sm:px-3 py-1 rounded-full text-[10.5px] font-black border flex items-center gap-1 ${
+                              wd.status === 'Approved' || wd.status === 'Successful'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : wd.status === 'Rejected'
+                                ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
+                            }`}
+                          >
+                            {wd.status === 'Approved' || wd.status === 'Successful' ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                                <span>Approved</span>
+                              </>
+                            ) : wd.status === 'Rejected' ? (
+                              <>
+                                <XCircle className="w-3.5 h-3.5 text-rose-700" />
+                                <span>Rejected</span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-3.5 h-3.5 text-amber-700" />
+                                <span>Pending</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* View Details Icon Button (Single Line) */}
+                        <div className="shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedWithdrawal(wd)}
+                            className="p-2 sm:px-3 sm:py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-xl font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4 text-amber-400" />
+                            <span className="hidden sm:inline">View</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* WITHDRAWAL CONTROL DETAILS SCREEN (Smooth Right-to-Left Slide Animation) */}
             <AnimatePresence>
