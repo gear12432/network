@@ -45,6 +45,8 @@ import {
   Crown,
   Check,
   MessageCircle,
+  MoreVertical,
+  Menu,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -526,6 +528,7 @@ export default function AdminPanel() {
   // -------------------------------------------------------------------------
   const [chatMessages, setChatMessages] = useState<SupportChatMessage[]>([]);
   const [selectedChatUserUid, setSelectedChatUserUid] = useState<string | null>(null);
+  const [chatMenuOpen, setChatMenuOpen] = useState<boolean>(false);
   const [chatSearchQuery, setChatSearchQuery] = useState<string>('');
   const [adminReplyText, setAdminReplyText] = useState<string>('');
   const [adminReplyImagePreview, setAdminReplyImagePreview] = useState<string>('');
@@ -3559,76 +3562,162 @@ export default function AdminPanel() {
             </div>
 
             {/* Dedicated Full-Screen Chat View for Selected Conversation */}
-            {selectedChatUserUid && activeChatGroup && (
-              <div className="fixed inset-0 z-50 w-full h-full min-h-screen bg-[#edf1f5] flex flex-col overflow-hidden animate-in fade-in duration-200">
-                {/* 1. Full Screen Chat Header */}
-                <div className="w-full px-4 py-3 sm:py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-md border-b border-slate-800">
-                  <div className="flex items-center gap-3">
+            {selectedChatUserUid && activeChatGroup && (() => {
+              const matchedUser = users.find(
+                (u) =>
+                  u.loginUid === activeChatGroup.userUid ||
+                  u.uid === activeChatGroup.userUid ||
+                  (activeChatGroup.userMobile && u.mobile === activeChatGroup.userMobile)
+              );
+              const userProfilePic = matchedUser?.photoUrl || null;
+              const userMobile = activeChatGroup.userMobile || matchedUser?.mobile || '';
+              const userEmail = activeChatGroup.userEmail || matchedUser?.email || '';
+              const userUid = activeChatGroup.userUid;
+              const userName = activeChatGroup.userName || matchedUser?.name || 'User';
+
+              return (
+              <div
+                onClick={() => {
+                  if (chatMenuOpen) setChatMenuOpen(false);
+                }}
+                className="fixed inset-0 z-50 w-full h-full min-h-screen bg-[#edf1f5] flex flex-col overflow-hidden animate-in fade-in duration-200"
+              >
+                {/* 1. Full Screen Chat Header (With Profile Picture, Name, Online, UID, Mobile, Gmail & Right Menu Icon) */}
+                <div className="w-full px-3.5 sm:px-6 py-2.5 sm:py-3 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-md border-b border-slate-800 relative">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                    {/* Back Button */}
                     <button
                       type="button"
-                      onClick={() => setSelectedChatUserUid(null)}
-                      className="p-2 -ml-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      onClick={() => {
+                        setChatMenuOpen(false);
+                        setSelectedChatUserUid(null);
+                      }}
+                      className="p-2 -ml-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center shrink-0"
                       title="Back to Conversations List"
                     >
                       <ArrowLeft className="w-5 h-5" />
-                      <span className="hidden sm:inline">Back</span>
                     </button>
 
-                    <div className="w-10 h-10 rounded-2xl bg-cyan-600 text-white font-black flex items-center justify-center text-sm shadow-xs border border-cyan-400/30">
-                      {activeChatGroup.userName.slice(0, 2).toUpperCase()}
-                    </div>
+                    {/* User Profile Picture */}
+                    {userProfilePic ? (
+                      <img
+                        src={userProfilePic}
+                        alt={userName}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-cyan-400 shrink-0 shadow-xs"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-cyan-600 text-white font-black flex items-center justify-center text-sm shadow-xs border border-cyan-400/30 shrink-0">
+                        {userName.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
 
-                    <div>
+                    {/* User Name & Status Online */}
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm sm:text-base font-black text-white leading-tight">
-                          {activeChatGroup.userName}
+                        <h4 className="text-sm sm:text-base font-black text-white leading-tight truncate">
+                          {userName}
                         </h4>
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30">
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30 shrink-0">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                           Online
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-300 font-mono mt-0.5 flex flex-wrap items-center gap-2">
+
+                      {/* UID, Mobile Number, Gmail */}
+                      <p className="text-[10.5px] text-slate-300 font-mono mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                         <span className="bg-slate-800 px-1.5 py-0.5 rounded text-cyan-300 font-bold">
-                          UID: {activeChatGroup.userUid}
+                          UID: {userUid}
                         </span>
-                        {activeChatGroup.userMobile && (
-                          <span>• Mobile: {activeChatGroup.userMobile}</span>
+                        {userMobile && <span>• 📞 {userMobile}</span>}
+                        {userEmail && (
+                          <span className="truncate max-w-[160px] sm:max-w-none">
+                            • ✉️ {userEmail}
+                          </span>
                         )}
-                        {activeChatGroup.userEmail && <span>• {activeChatGroup.userEmail}</span>}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {activeChatGroup.userMobile && (
-                      <>
-                        <a
-                          href={`tel:${activeChatGroup.userMobile}`}
-                          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
-                          title="Call User"
-                        >
-                          <Phone className="w-4 h-4" />
-                        </a>
-                        <a
-                          href={`https://wa.me/${activeChatGroup.userMobile.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 transition-all"
-                          title="WhatsApp"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                        </a>
-                      </>
-                    )}
+                  {/* Right Side: Menu Icon Button & Floating Box */}
+                  <div className="relative shrink-0 ml-2">
                     <button
                       type="button"
-                      onClick={() => setSelectedChatUserUid(null)}
-                      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
-                      title="Close Chat Screen"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setChatMenuOpen(!chatMenuOpen);
+                      }}
+                      className="p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center shadow-xs"
+                      title="Menu Options"
                     >
-                      <X className="w-5 h-5" />
+                      <MoreVertical className="w-5 h-5 stroke-[2.3]" />
                     </button>
+
+                    {/* Floating Dropdown Box Open next to Menu Icon */}
+                    {chatMenuOpen && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-12 z-50 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 p-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+                      >
+                        <div className="flex flex-col gap-1">
+                          {/* WhatsApp Option */}
+                          {userMobile ? (
+                            <a
+                              href={`https://wa.me/${userMobile.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => setChatMenuOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-all"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                <MessageCircle className="w-4 h-4 text-emerald-400" />
+                              </div>
+                              <span>WhatsApp</span>
+                            </a>
+                          ) : null}
+
+                          {/* Call Option */}
+                          {userMobile ? (
+                            <a
+                              href={`tel:${userMobile}`}
+                              onClick={() => setChatMenuOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold transition-all"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
+                                <Phone className="w-4 h-4 text-cyan-400" />
+                              </div>
+                              <span>Call</span>
+                            </a>
+                          ) : null}
+
+                          {/* Exit Chat Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChatMenuOpen(false);
+                              setSelectedChatUserUid(null);
+                            }}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-slate-300 text-xs font-bold transition-all cursor-pointer text-left w-full"
+                          >
+                            <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                              <ArrowLeft className="w-4 h-4 text-slate-300" />
+                            </div>
+                            <span>Exit Chat</span>
+                          </button>
+
+                          <div className="border-t border-slate-800 my-1" />
+
+                          {/* Cancel Option */}
+                          <button
+                            type="button"
+                            onClick={() => setChatMenuOpen(false)}
+                            className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all cursor-pointer w-full"
+                          >
+                            <X className="w-4 h-4" />
+                            <span>Cancel</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -3774,7 +3863,8 @@ export default function AdminPanel() {
                   </button>
                 </form>
               </div>
-            )}
+              );
+            })()}
           </div>
         )}
 
