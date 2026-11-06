@@ -48,7 +48,7 @@ export default function HelpdeskChatModal({
   const textInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Robust Long-Press Tracking (prevents immediate synthetic-click unselection)
+  // Robust Long-Press Tracking (prevents immediate synthetic-click / contextmenu auto-unselection)
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const longPressFiredAt = useRef<number>(0);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -202,7 +202,7 @@ export default function HelpdeskChatModal({
 
     longPressTimerRef.current = setTimeout(() => {
       longPressFiredAt.current = Date.now();
-      // Always ADD on long press (never remove immediately)
+      // Always ADD on long press (never unselect)
       setSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
 
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -212,7 +212,7 @@ export default function HelpdeskChatModal({
           // ignore
         }
       }
-    }, 380);
+    }, 350);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -222,7 +222,7 @@ export default function HelpdeskChatModal({
       touch.clientX - touchStartPos.current.x,
       touch.clientY - touchStartPos.current.y
     );
-    // If user actually scrolled (> 14px), cancel the long-press timer
+    // If user actually scrolled (> 14px), cancel the pending long-press timer
     if (distance > 14) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
@@ -246,7 +246,7 @@ export default function HelpdeskChatModal({
     longPressTimerRef.current = setTimeout(() => {
       longPressFiredAt.current = Date.now();
       setSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
-    }, 400);
+    }, 380);
   };
 
   const handleMouseUp = () => {
@@ -257,14 +257,18 @@ export default function HelpdeskChatModal({
   };
 
   // Click handler (protected against synthetic click right after long press)
-  const handleMessageClick = (msgId: string, isUser: boolean) => {
-    // CRITICAL: If long press triggered within last 800ms, IGNORE the subsequent click!
+  const handleMessageClick = (msgId: string, isUser: boolean, e: React.MouseEvent) => {
+    // CRITICAL: If long press triggered within last 800ms, IGNORE the subsequent synthetic click!
     if (Date.now() - longPressFiredAt.current < 800) {
+      e.preventDefault();
+      e.stopPropagation();
       return;
     }
 
     // In selection mode, click toggles message in/out of selection
     if (isSelectionMode && isUser) {
+      e.preventDefault();
+      e.stopPropagation();
       setSelectedMsgIds((prev) =>
         prev.includes(msgId) ? prev.filter((id) => id !== msgId) : [...prev, msgId]
       );
@@ -272,27 +276,26 @@ export default function HelpdeskChatModal({
   };
 
   // Delete All Selected Messages Handler
-  const handleDeleteSelectedMessages = async () => {
+  const handleDeleteSelectedMessages = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (selectedMsgIds.length === 0) return;
-
-    const count = selectedMsgIds.length;
-    const confirmText =
-      count === 1
-        ? 'Delete this selected message?'
-        : `Delete ${count} selected messages?`;
-
-    if (!confirm(confirmText)) return;
 
     setIsDeletingSelected(true);
     const idsToDelete = [...selectedMsgIds];
 
-    // Optimistically remove from state
+    // Instantly remove from local messages state
     setMessages((prev) => prev.filter((m) => !idsToDelete.includes(m.id)));
+    // Clear selected IDs so the floating box closes cleanly
     setSelectedMsgIds([]);
 
     // Delete each from Firestore
-    for (const id of idsToDelete) {
-      await deleteChatMessageFromFirestore(id);
+    try {
+      await Promise.all(idsToDelete.map((id) => deleteChatMessageFromFirestore(id)));
+    } catch (err) {
+      console.warn('Error deleting messages from Firestore:', err);
     }
     setIsDeletingSelected(false);
   };
@@ -379,16 +382,21 @@ export default function HelpdeskChatModal({
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
                   onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (isUser) {
-                      e.preventDefault();
+                      // NEVER toggle off in onContextMenu! Only add to selection!
                       setSelectedMsgIds((prev) =>
-                        prev.includes(msg.id)
-                          ? prev.filter((id) => id !== msg.id)
-                          : [...prev, msg.id]
+                        prev.includes(msg.id) ? prev : [...prev, msg.id]
                       );
                     }
                   }}
-                  onClick={() => handleMessageClick(msg.id, isUser)}
+                  onClick={(e) => handleMessageClick(msg.id, isUser, e)}
+                  style={{
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                  }}
                   className={`relative max-w-[88%] sm:max-w-[70%] transition-transform duration-150 ${
                     isUser ? 'cursor-pointer active:scale-[0.99]' : ''
                   }`}
@@ -471,7 +479,8 @@ export default function HelpdeskChatModal({
       {selectedMsgIds.length > 0 && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-50 bg-slate-900/98 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
+          onTouchStart={(e) => e.stopPropagation()}
+          className="fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-60 bg-slate-900/98 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
         >
           <div className="flex items-center gap-1.5 pr-1">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
