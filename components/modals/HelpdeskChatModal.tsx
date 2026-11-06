@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   CheckCheck,
   Sparkles,
-  CheckCircle2,
+  Check,
 } from 'lucide-react';
 import { UserStats } from '@/types/investment';
 import {
@@ -47,8 +47,12 @@ export default function HelpdeskChatModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Robust Long-Press Tracking (prevents immediate synthetic-click unselection)
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isLongPressTriggered = useRef(false);
+  const longPressFiredAt = useRef<number>(0);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const isTouchDevice = useRef(false);
 
   const myUid = userStats.loginUid || 'GK35648';
   const isSelectionMode = selectedMsgIds.length > 0;
@@ -148,7 +152,6 @@ export default function HelpdeskChatModal({
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
-        // Reset file input value so same file can be reselected if needed
         if (fileInputRef.current) fileInputRef.current.value = '';
       };
       reader.readAsDataURL(file);
@@ -188,47 +191,84 @@ export default function HelpdeskChatModal({
     await saveChatMessageToFirestore(newMsg);
   };
 
-  // Long Press & Touch Selection Handlers for Mobile & Web
-  const startLongPress = (msgId: string, isUser: boolean) => {
+  // --- ROBUST LONG PRESS & TOUCH SELECTION LOGIC ---
+  const handleTouchStart = (msgId: string, isUser: boolean, e: React.TouchEvent) => {
     if (!isUser) return;
-    isLongPressTriggered.current = false;
+    isTouchDevice.current = true;
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+
     longPressTimerRef.current = setTimeout(() => {
-      isLongPressTriggered.current = true;
-      toggleSelectMessage(msgId);
+      longPressFiredAt.current = Date.now();
+      // Always ADD on long press (never remove immediately)
+      setSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
+
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try {
-          navigator.vibrate(50);
+          navigator.vibrate(60);
         } catch {
           // ignore
         }
       }
+    }, 380);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos.current || !longPressTimerRef.current) return;
+    const touch = e.touches[0];
+    const distance = Math.hypot(
+      touch.clientX - touchStartPos.current.x,
+      touch.clientY - touchStartPos.current.y
+    );
+    // If user actually scrolled (> 14px), cancel the long-press timer
+    if (distance > 14) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    touchStartPos.current = null;
+  };
+
+  // Mouse handlers for desktop Web View
+  const handleMouseDown = (msgId: string, isUser: boolean) => {
+    if (!isUser || isTouchDevice.current) return;
+
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+
+    longPressTimerRef.current = setTimeout(() => {
+      longPressFiredAt.current = Date.now();
+      setSelectedMsgIds((prev) => (prev.includes(msgId) ? prev : [...prev, msgId]));
     }, 400);
   };
 
-  const cancelLongPress = () => {
+  const handleMouseUp = () => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
   };
 
+  // Click handler (protected against synthetic click right after long press)
   const handleMessageClick = (msgId: string, isUser: boolean) => {
-    // If long press just fired, don't trigger regular click
-    if (isLongPressTriggered.current) {
-      isLongPressTriggered.current = false;
+    // CRITICAL: If long press triggered within last 800ms, IGNORE the subsequent click!
+    if (Date.now() - longPressFiredAt.current < 800) {
       return;
     }
 
-    // In selection mode, click toggles selection
+    // In selection mode, click toggles message in/out of selection
     if (isSelectionMode && isUser) {
-      toggleSelectMessage(msgId);
+      setSelectedMsgIds((prev) =>
+        prev.includes(msgId) ? prev.filter((id) => id !== msgId) : [...prev, msgId]
+      );
     }
-  };
-
-  const toggleSelectMessage = (msgId: string) => {
-    setSelectedMsgIds((prev) =>
-      prev.includes(msgId) ? prev.filter((id) => id !== msgId) : [...prev, msgId]
-    );
   };
 
   // Delete All Selected Messages Handler
@@ -314,8 +354,8 @@ export default function HelpdeskChatModal({
       </div>
 
       {/* 3. Messages Viewport (Responsive for Mobile & Desktop Web View) */}
-      <div className="flex-1 w-full overflow-y-auto px-3.5 sm:px-6 py-4 space-y-3.5 bg-[#f4f7f9] dark:bg-slate-950 flex flex-col items-center">
-        <div className="w-full max-w-4xl space-y-3.5">
+      <div className="flex-1 w-full overflow-y-auto px-3.5 sm:px-6 py-4 space-y-4 bg-[#f4f7f9] dark:bg-slate-950 flex flex-col items-center">
+        <div className="w-full max-w-4xl space-y-4">
           {messages.map((msg) => {
             const isUser = msg.sender === 'user';
             const isSelected = selectedMsgIds.includes(msg.id);
@@ -330,18 +370,22 @@ export default function HelpdeskChatModal({
                   {msg.senderName} • {msg.timestamp}
                 </span>
 
-                {/* Message Bubble Container with Long-Press & Tap Handlers */}
+                {/* Message Bubble Container with Touch and Mouse Handlers */}
                 <div
-                  onTouchStart={() => startLongPress(msg.id, isUser)}
-                  onTouchEnd={cancelLongPress}
-                  onTouchMove={cancelLongPress}
-                  onMouseDown={() => startLongPress(msg.id, isUser)}
-                  onMouseUp={cancelLongPress}
-                  onMouseLeave={cancelLongPress}
+                  onTouchStart={(e) => handleTouchStart(msg.id, isUser, e)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchMove}
+                  onMouseDown={() => handleMouseDown(msg.id, isUser)}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
                   onContextMenu={(e) => {
                     if (isUser) {
                       e.preventDefault();
-                      toggleSelectMessage(msg.id);
+                      setSelectedMsgIds((prev) =>
+                        prev.includes(msg.id)
+                          ? prev.filter((id) => id !== msg.id)
+                          : [...prev, msg.id]
+                      );
                     }
                   }}
                   onClick={() => handleMessageClick(msg.id, isUser)}
@@ -352,22 +396,22 @@ export default function HelpdeskChatModal({
                 >
                   {/* Selection Checkmark Badge */}
                   {isSelected && (
-                    <div className="absolute -top-2 -left-2 z-20 bg-rose-600 text-white rounded-full p-0.5 shadow-md">
-                      <CheckCircle2 className="w-5 h-5 fill-rose-600 text-white" />
+                    <div className="absolute -top-2.5 -left-2.5 z-30 bg-rose-600 text-white rounded-full p-1 shadow-lg border-2 border-white animate-in zoom-in-75 duration-150">
+                      <Check className="w-3.5 h-3.5 stroke-[3.5]" />
                     </div>
                   )}
 
-                  {/* Message Bubble */}
+                  {/* Message Bubble Body */}
                   <div
                     className={`rounded-2xl overflow-hidden shadow-sm transition-all ${
-                      isSelected ? 'ring-3 ring-rose-500 shadow-md' : ''
+                      isSelected ? 'ring-4 ring-rose-500 shadow-xl' : ''
                     } ${
                       isUser
                         ? 'bg-amber-600 dark:bg-amber-600 rounded-tr-none'
                         : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-tl-none shadow-xs'
                     }`}
                   >
-                    {/* Attached Image (No outer padding squishing the image) */}
+                    {/* Attached Image (Edge-to-Edge inside bubble, zero outer padding) */}
                     {msg.imageUrl && (
                       <div
                         className="cursor-pointer overflow-hidden bg-black/5"
@@ -386,13 +430,13 @@ export default function HelpdeskChatModal({
                       </div>
                     )}
 
-                    {/* Text Message: Bright White Font, Clear, Prominent, and Crisp */}
+                    {/* Text Message: Bright Pure White Font, Big, Bold, and Clear */}
                     {msg.text && (
-                      <div className="px-3.5 py-2">
+                      <div className={msg.imageUrl ? 'px-3.5 pt-2 pb-1.5' : 'px-4 py-2.5'}>
                         <p
                           className={`whitespace-pre-wrap break-words leading-relaxed ${
                             isUser
-                              ? 'text-white font-semibold text-sm sm:text-base tracking-wide drop-shadow-xs'
+                              ? 'text-white font-extrabold text-sm sm:text-base tracking-wide drop-shadow-sm'
                               : 'text-slate-900 dark:text-slate-100 font-medium text-xs sm:text-sm'
                           }`}
                         >
@@ -404,7 +448,7 @@ export default function HelpdeskChatModal({
                     {/* Footer Info: Timestamp & Checkmarks */}
                     <div
                       className={`px-3 py-1 flex items-center justify-end gap-1.5 font-mono text-[10.5px] ${
-                        isUser ? 'text-white/90 font-bold' : 'text-slate-400'
+                        isUser ? 'text-white/95 font-bold' : 'text-slate-400'
                       }`}
                     >
                       <span>{msg.timestamp}</span>
@@ -423,22 +467,28 @@ export default function HelpdeskChatModal({
         </div>
       </div>
 
-      {/* 4. Small Floating Action Box (Appears on Long-Press / Multi-Select) */}
+      {/* 4. Small Floating Action Box (Appears on Long-Press / Multi-Select and STAYS OPEN until user taps Delete or Cancel) */}
       {selectedMsgIds.length > 0 && (
-        <div className="fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-white/20 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <span className="text-xs sm:text-sm font-bold text-slate-100 pr-1">
-            {selectedMsgIds.length} {selectedMsgIds.length === 1 ? 'selected' : 'selected'}
-          </span>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-50 bg-slate-900/98 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
+        >
+          <div className="flex items-center gap-1.5 pr-1">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="text-xs sm:text-sm font-black text-slate-100">
+              {selectedMsgIds.length} Selected
+            </span>
+          </div>
 
           {/* Delete Icon Button */}
           <button
             type="button"
             onClick={handleDeleteSelectedMessages}
             disabled={isDeletingSelected}
-            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
-            title="Delete selected"
+            className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 disabled:opacity-50 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+            title="Delete selected messages"
           >
-            <Trash2 className="w-4 h-4 stroke-[2.2]" />
+            <Trash2 className="w-4 h-4 stroke-[2.3]" />
             <span>Delete</span>
           </button>
 
@@ -446,10 +496,10 @@ export default function HelpdeskChatModal({
           <button
             type="button"
             onClick={() => setSelectedMsgIds([])}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
+            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white transition-all cursor-pointer"
             title="Cancel selection"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-[2.3]" />
           </button>
         </div>
       )}
