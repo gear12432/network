@@ -3611,30 +3611,15 @@ export default function AdminPanel() {
                       </div>
                     )}
 
-                    {/* User Name & Status Online */}
+                    {/* User Name & Status Online Underneath Name */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm sm:text-base font-black text-white leading-tight truncate">
-                          {userName}
-                        </h4>
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30 shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                          Online
-                        </span>
+                      <h4 className="text-sm sm:text-base font-black text-white leading-tight truncate">
+                        {userName}
+                      </h4>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                        <span className="text-xs text-emerald-400 font-bold leading-none">Online</span>
                       </div>
-
-                      {/* UID, Mobile Number, Gmail */}
-                      <p className="text-[10.5px] text-slate-300 font-mono mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span className="bg-slate-800 px-1.5 py-0.5 rounded text-cyan-300 font-bold">
-                          UID: {userUid}
-                        </span>
-                        {userMobile && <span>• 📞 {userMobile}</span>}
-                        {userEmail && (
-                          <span className="truncate max-w-[160px] sm:max-w-none">
-                            • ✉️ {userEmail}
-                          </span>
-                        )}
-                      </p>
                     </div>
                   </div>
 
@@ -3656,8 +3641,28 @@ export default function AdminPanel() {
                     {chatMenuOpen && (
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute right-0 top-12 z-50 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 p-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+                        className="absolute right-0 top-12 z-50 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 p-2.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150"
                       >
+                        {/* User Details card inside Menu (UID, Mobile, Gmail) */}
+                        <div className="px-2.5 py-2 mb-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60 text-[11px] font-mono space-y-1">
+                          <div className="flex items-center justify-between text-cyan-300 font-bold">
+                            <span>UID:</span>
+                            <span>{userUid}</span>
+                          </div>
+                          {userMobile && (
+                            <div className="flex items-center justify-between text-slate-300">
+                              <span>Mobile:</span>
+                              <span>{userMobile}</span>
+                            </div>
+                          )}
+                          {userEmail && (
+                            <div className="flex items-center justify-between text-slate-300">
+                              <span>Email:</span>
+                              <span className="truncate max-w-[110px]">{userEmail}</span>
+                            </div>
+                          )}
+                        </div>
+
                         <div className="flex flex-col gap-1">
                           {/* WhatsApp Option */}
                           {userMobile ? (
@@ -3712,7 +3717,7 @@ export default function AdminPanel() {
                             onClick={() => setChatMenuOpen(false)}
                             className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all cursor-pointer w-full"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-4 h-4 stroke-[2.5]" />
                             <span>Cancel</span>
                           </button>
                         </div>
@@ -3853,13 +3858,14 @@ export default function AdminPanel() {
                     className="flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
                   />
 
+                  {/* Send Button: Icon Only (Text Deleted as Requested) */}
                   <button
                     type="submit"
                     disabled={sendingReply || (!adminReplyText.trim() && !adminReplyImagePreview)}
-                    className="p-3 px-5 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-black text-xs rounded-2xl flex items-center gap-2 transition-all shadow-md cursor-pointer active:scale-95 shrink-0"
+                    className="w-11 h-11 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white rounded-2xl flex items-center justify-center transition-all shadow-md cursor-pointer active:scale-95 shrink-0"
+                    title="Send Reply"
                   >
-                    <Send className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
-                    <span>Send Reply</span>
+                    <Send className="w-5 h-5 text-cyan-400 stroke-[2.5]" />
                   </button>
                 </form>
               </div>
