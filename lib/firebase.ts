@@ -938,6 +938,10 @@ export interface SupportChatMessage {
   sender: 'user' | 'admin';
   senderName: string;
   senderUid?: string;
+  userUid?: string;
+  userName?: string;
+  userMobile?: string;
+  userEmail?: string;
   text?: string;
   imageUrl?: string;
   timestamp: string;

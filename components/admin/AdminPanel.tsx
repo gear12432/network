@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -526,9 +526,11 @@ export default function AdminPanel() {
   // -------------------------------------------------------------------------
   const [chatMessages, setChatMessages] = useState<SupportChatMessage[]>([]);
   const [selectedChatUserUid, setSelectedChatUserUid] = useState<string | null>(null);
+  const [chatSearchQuery, setChatSearchQuery] = useState<string>('');
   const [adminReplyText, setAdminReplyText] = useState<string>('');
   const [adminReplyImagePreview, setAdminReplyImagePreview] = useState<string>('');
   const [sendingReply, setSendingReply] = useState<boolean>(false);
+  const adminChatEndRef = useRef<HTMLDivElement>(null);
 
   // Real-time Firestore Listener for Support Chat Messages
   useEffect(() => {
@@ -554,7 +556,7 @@ export default function AdminPanel() {
     }
   }, []);
 
-  // Group chat messages by User UID
+  // Group chat messages by User UID (supports userUid, senderUid, matches with users collection)
   const chatUsersMap = React.useMemo(() => {
     const map: Record<
       string,
@@ -565,34 +567,82 @@ export default function AdminPanel() {
         userMobile: string;
         messages: SupportChatMessage[];
         lastMsg: SupportChatMessage;
+        totalCount: number;
+        userMessagesCount: number;
       }
     > = {};
 
     chatMessages.forEach((msg) => {
-      const uid = msg.userUid;
+      // Find the user UID associated with this chat
+      const uid =
+        msg.userUid ||
+        (msg.sender === 'user' ? msg.senderUid : '') ||
+        (msg.senderUid && msg.senderUid !== 'admin' ? msg.senderUid : '');
+      if (!uid || uid === 'admin' || uid === 'undefined') return;
+
       if (!map[uid]) {
+        const matchedUser = users.find(
+          (u) => u.loginUid === uid || u.uid === uid || (msg.userMobile && u.mobile === msg.userMobile)
+        );
         map[uid] = {
           userUid: uid,
-          userName: msg.userName || 'User ' + uid,
-          userEmail: msg.userEmail || '',
-          userMobile: msg.userMobile || '',
+          userName:
+            msg.userName ||
+            (msg.sender === 'user' ? msg.senderName : '') ||
+            matchedUser?.name ||
+            'VIP User ' + uid,
+          userEmail: msg.userEmail || matchedUser?.email || '',
+          userMobile: msg.userMobile || matchedUser?.mobile || '',
           messages: [],
           lastMsg: msg,
+          totalCount: 0,
+          userMessagesCount: 0,
         };
       }
       map[uid].messages.push(msg);
+      map[uid].totalCount += 1;
+      if (msg.sender === 'user') {
+        map[uid].userMessagesCount += 1;
+      }
       if (msg.createdAt >= map[uid].lastMsg.createdAt) {
         map[uid].lastMsg = msg;
       }
+      if (!map[uid].userMobile && msg.userMobile) {
+        map[uid].userMobile = msg.userMobile;
+      }
+      if (msg.sender === 'user' && (!map[uid].userName || map[uid].userName.startsWith('VIP User '))) {
+        if (msg.userName) map[uid].userName = msg.userName;
+        else if (msg.senderName) map[uid].userName = msg.senderName;
+      }
     });
 
-    return Object.values(map).sort((a, b) => b.lastMsg.createdAt - a.lastMsg.createdAt);
-  }, [chatMessages]);
+    const list = Object.values(map).sort((a, b) => b.lastMsg.createdAt - a.lastMsg.createdAt);
+
+    if (!chatSearchQuery.trim()) return list;
+
+    const q = chatSearchQuery.toLowerCase().trim();
+    return list.filter(
+      (item) =>
+        item.userUid.toLowerCase().includes(q) ||
+        item.userName.toLowerCase().includes(q) ||
+        item.userMobile.toLowerCase().includes(q) ||
+        (item.lastMsg.text && item.lastMsg.text.toLowerCase().includes(q))
+    );
+  }, [chatMessages, users, chatSearchQuery]);
 
   const activeChatGroup = React.useMemo(() => {
     if (!selectedChatUserUid) return null;
     return chatUsersMap.find((g) => g.userUid === selectedChatUserUid) || null;
   }, [chatUsersMap, selectedChatUserUid]);
+
+  // Auto scroll to bottom when opening chat or receiving new messages
+  useEffect(() => {
+    if (selectedChatUserUid) {
+      setTimeout(() => {
+        adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [selectedChatUserUid, activeChatGroup?.messages.length]);
 
   // Handle Admin Sending Reply
   const handleAdminSendReply = async (e?: React.FormEvent) => {
@@ -602,14 +652,17 @@ export default function AdminPanel() {
 
     const group = activeChatGroup;
     const msgObj: SupportChatMessage = {
-      id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       userUid: selectedChatUserUid,
       userName: group?.userName || 'User ' + selectedChatUserUid,
       userEmail: group?.userEmail || '',
       userMobile: group?.userMobile || '',
       sender: 'admin',
-      text: adminReplyText.trim(),
+      senderName: 'VIP Admin Support',
+      senderUid: 'admin',
+      text: adminReplyText.trim() || undefined,
       imageUrl: adminReplyImagePreview || undefined,
+      timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
       createdAt: Date.now(),
     };
 
@@ -3406,212 +3459,383 @@ export default function AdminPanel() {
         )}
 
         {/* =========================================================================
-            8. CONTACT US (SUPPORT CHATS MANAGER) TAB
+            8. CONTACT US (SUPPORT CHATS MANAGER) TAB - FULL WIDTH LIST & FULL SCREEN CHAT
             ========================================================================= */}
         {activeTab === 'contact' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-140px)] min-h-[500px]">
-            {/* Left: User Chat Conversations List (4 Cols) */}
-            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden shadow-2xs">
-              <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-cyan-400" />
-                  <h3 className="font-extrabold text-sm">User Conversations ({chatUsersMap.length})</h3>
-                </div>
-                <span className="text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 rounded-full">
-                  Realtime Sync 🟢
-                </span>
-              </div>
-
-              <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-                {chatUsersMap.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-xs space-y-2">
-                    <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="font-semibold">No support chats received yet.</p>
-                    <p className="text-[11px] text-slate-400">When users message 24/7 support, their real-time chats will appear here.</p>
+          <div className="w-full space-y-4">
+            {/* Top Header Card */}
+            <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-900 text-cyan-400 flex items-center justify-center shrink-0 shadow-xs">
+                    <MessageSquare className="w-5 h-5 stroke-[2.3]" />
                   </div>
-                ) : (
-                  chatUsersMap.map((userGroup) => {
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
+                        Support Chats (Contact Us)
+                      </h3>
+                      <span className="text-[10px] font-bold bg-cyan-500/15 text-cyan-700 border border-cyan-400/30 px-2.5 py-0.5 rounded-full">
+                        Realtime Sync 🟢
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Direct real-time conversations from user 24/7 VIP Helpdesk
+                    </p>
+                  </div>
+                </div>
+
+                {/* Search Bar & Total Counter */}
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-64">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={chatSearchQuery}
+                      onChange={(e) => setChatSearchQuery(e.target.value)}
+                      placeholder="Search by UID, name, mobile..."
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
+                    />
+                    {chatSearchQuery && (
+                      <button
+                        onClick={() => setChatSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-xs font-black bg-slate-900 text-white px-3 py-2 rounded-xl shrink-0">
+                    Total: {chatUsersMap.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Full-Width Conversations List View */}
+            <div className="w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+              {chatUsersMap.length === 0 ? (
+                <div className="p-12 text-center text-slate-400 space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100 mx-auto flex items-center justify-center text-slate-400">
+                    <MessageSquare className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-sm text-slate-700">No support chats found</p>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+                      {chatSearchQuery
+                        ? 'No user conversations matched your search query.'
+                        : 'When users send messages or images through 24/7 VIP Helpdesk, they will show up here in real time.'}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {chatUsersMap.map((userGroup) => {
                     const isSelected = selectedChatUserUid === userGroup.userUid;
+                    const isLastMsgAdmin = userGroup.lastMsg.sender === 'admin';
                     return (
                       <div
                         key={userGroup.userUid}
                         onClick={() => setSelectedChatUserUid(userGroup.userUid)}
-                        className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'bg-cyan-50/80 border-l-4 border-cyan-500'
-                            : 'hover:bg-slate-50'
+                        className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-all hover:bg-slate-50 ${
+                          isSelected ? 'bg-cyan-50/70' : ''
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-full bg-slate-800 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                          {userGroup.userName.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <div className="flex items-center justify-between gap-1">
-                            <h4 className="text-xs font-black text-slate-900 truncate">{userGroup.userName}</h4>
-                            <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                              {new Date(userGroup.lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                        {/* User Avatar + Details */}
+                        <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white font-black flex items-center justify-center text-sm shrink-0 shadow-xs border border-slate-700">
+                            {userGroup.userName.slice(0, 2).toUpperCase()}
                           </div>
-                          <p className="text-[11px] text-slate-500 font-medium truncate">
-                            {userGroup.lastMsg.sender === 'admin' ? 'You: ' : ''}
-                            {userGroup.lastMsg.text || '🖼️ Image attachment'}
-                          </p>
-                          <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400">
-                            <span>UID: {userGroup.userUid}</span>
-                            {userGroup.userMobile && <span className="font-mono">{userGroup.userMobile}</span>}
+
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="text-sm font-black text-slate-900 truncate">
+                                {userGroup.userName}
+                              </h4>
+                              <span className="text-[11px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
+                                UID: {userGroup.userUid}
+                              </span>
+                              {userGroup.userMobile && (
+                                <span className="text-[11px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                  <Phone className="w-3 h-3 text-slate-400" />
+                                  {userGroup.userMobile}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Last Message Snippet */}
+                            <p className="text-xs text-slate-600 font-medium truncate flex items-center gap-1.5">
+                              {isLastMsgAdmin ? (
+                                <span className="font-bold text-cyan-700">You:</span>
+                              ) : (
+                                <span className="font-bold text-amber-700">{userGroup.userName}:</span>
+                              )}
+                              <span>
+                                {userGroup.lastMsg.text || '🖼️ [Image attachment]'}
+                              </span>
+                            </p>
+
+                            <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {new Date(userGroup.lastMsg.createdAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                                {' • '}
+                                {new Date(userGroup.lastMsg.createdAt).toLocaleDateString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                              <span>•</span>
+                              <span>{userGroup.totalCount} messages</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Action Buttons */}
+                        <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                          {userGroup.userMobile && (
+                            <a
+                              href={`https://wa.me/${userGroup.userMobile.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl transition-all"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedChatUserUid(userGroup.userUid)}
+                            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Open Chat</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Dedicated Full-Screen Chat View for Selected Conversation */}
+            {selectedChatUserUid && activeChatGroup && (
+              <div className="fixed inset-0 z-50 w-full h-full min-h-screen bg-[#edf1f5] flex flex-col overflow-hidden animate-in fade-in duration-200">
+                {/* 1. Full Screen Chat Header */}
+                <div className="w-full px-4 py-3 sm:py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-md border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedChatUserUid(null)}
+                      className="p-2 -ml-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      title="Back to Conversations List"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                      <span className="hidden sm:inline">Back</span>
+                    </button>
+
+                    <div className="w-10 h-10 rounded-2xl bg-cyan-600 text-white font-black flex items-center justify-center text-sm shadow-xs border border-cyan-400/30">
+                      {activeChatGroup.userName.slice(0, 2).toUpperCase()}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm sm:text-base font-black text-white leading-tight">
+                          {activeChatGroup.userName}
+                        </h4>
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                          Online
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 font-mono mt-0.5 flex flex-wrap items-center gap-2">
+                        <span className="bg-slate-800 px-1.5 py-0.5 rounded text-cyan-300 font-bold">
+                          UID: {activeChatGroup.userUid}
+                        </span>
+                        {activeChatGroup.userMobile && (
+                          <span>• Mobile: {activeChatGroup.userMobile}</span>
+                        )}
+                        {activeChatGroup.userEmail && <span>• {activeChatGroup.userEmail}</span>}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {activeChatGroup.userMobile && (
+                      <>
+                        <a
+                          href={`tel:${activeChatGroup.userMobile}`}
+                          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+                          title="Call User"
+                        >
+                          <Phone className="w-4 h-4" />
+                        </a>
+                        <a
+                          href={`https://wa.me/${activeChatGroup.userMobile.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 transition-all"
+                          title="WhatsApp"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </a>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedChatUserUid(null)}
+                      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                      title="Close Chat Screen"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Messages Viewport (Scrollable Full Height) */}
+                <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 space-y-3.5 bg-[#f0f4f8]">
+                  {activeChatGroup.messages.map((msg) => {
+                    const isAdmin = msg.sender === 'admin';
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} group`}
+                      >
+                        {/* Header Label: Name & Time */}
+                        <span className="text-[10px] font-bold text-slate-400 mb-1 px-1">
+                          {isAdmin ? 'Admin Support 🛡️' : msg.userName || activeChatGroup.userName} •{' '}
+                          {msg.timestamp ||
+                            new Date(msg.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                        </span>
+
+                        {/* Message Box */}
+                        <div className="relative max-w-[85%] sm:max-w-[70%] flex items-center gap-1.5">
+                          {/* Delete Button for User Messages Only */}
+                          {!isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUserChatMessage(msg)}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full transition-opacity cursor-pointer shrink-0"
+                              title="Delete user message"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          <div
+                            className={`p-3.5 rounded-2xl shadow-xs text-xs sm:text-sm leading-relaxed space-y-2 ${
+                              isAdmin
+                                ? 'bg-slate-900 text-white rounded-tr-none border border-slate-800'
+                                : 'bg-white text-slate-900 rounded-tl-none border border-slate-200 shadow-2xs'
+                            }`}
+                          >
+                            {/* Attached Image if any */}
+                            {msg.imageUrl && (
+                              <div
+                                className="rounded-xl overflow-hidden border border-black/10 cursor-pointer"
+                                onClick={() => setPreviewImage(msg.imageUrl!)}
+                              >
+                                <img
+                                  src={msg.imageUrl}
+                                  alt="Chat Attachment"
+                                  className="max-h-72 w-full object-cover hover:opacity-95 transition-opacity"
+                                />
+                              </div>
+                            )}
+
+                            {/* Text Message */}
+                            {msg.text && (
+                              <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                            )}
+
+                            {/* Timestamp & Info */}
+                            <div
+                              className={`text-[9.5px] font-mono text-right ${
+                                isAdmin ? 'text-cyan-300' : 'text-slate-400'
+                              }`}
+                            >
+                              {msg.timestamp ||
+                                new Date(msg.createdAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                            </div>
                           </div>
                         </div>
                       </div>
                     );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Right: Active Chat Conversation Screen (8 Cols) */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden shadow-2xs">
-              {activeChatGroup ? (
-                <>
-                  {/* Chat Top Bar */}
-                  <div className="p-3.5 bg-slate-800 text-white flex items-center justify-between border-b border-slate-700">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-cyan-600 text-white font-extrabold flex items-center justify-center text-xs shadow-xs">
-                        {activeChatGroup.userName.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-white">{activeChatGroup.userName}</h4>
-                        <p className="text-[10px] text-slate-300 font-mono flex items-center gap-2">
-                          <span>UID: {activeChatGroup.userUid}</span>
-                          {activeChatGroup.userEmail && <span>• {activeChatGroup.userEmail}</span>}
-                          {activeChatGroup.userMobile && <span>• {activeChatGroup.userMobile}</span>}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Messages Viewport */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
-                    {activeChatGroup.messages.map((msg) => {
-                      const isAdmin = msg.sender === 'admin';
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex items-start gap-2 ${isAdmin ? 'justify-end' : 'justify-start'}`}
-                        >
-                          {!isAdmin && (
-                            <div className="w-7 h-7 rounded-full bg-slate-700 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-1">
-                              U
-                            </div>
-                          )}
-
-                          <div
-                            className={`max-w-[75%] rounded-2xl p-3 shadow-2xs space-y-1.5 relative group ${
-                              isAdmin
-                                ? 'bg-cyan-600 text-white rounded-tr-none'
-                                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2 text-[10px] opacity-80 border-b border-white/10 pb-1">
-                              <span className="font-extrabold">
-                                {isAdmin ? 'Admin Support 🛡️' : msg.userName || 'User'}
-                              </span>
-                              <span className="font-mono">
-                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-
-                            {msg.imageUrl && (
-                              <div className="rounded-xl overflow-hidden border border-black/10 cursor-pointer" onClick={() => setPreviewImage(msg.imageUrl!)}>
-                                <img src={msg.imageUrl} alt="Chat Attachment" className="max-h-60 w-full object-cover" />
-                              </div>
-                            )}
-
-                            {msg.text && <p className="text-xs font-medium leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
-
-                            {/* Delete Button for User Messages Only */}
-                            {!isAdmin && (
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteUserChatMessage(msg)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-2 -right-2 p-1 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 cursor-pointer"
-                                title="Delete user message"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            )}
-                          </div>
-
-                          {isAdmin && (
-                            <div className="w-7 h-7 rounded-full bg-cyan-700 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-1">
-                              AD
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Image Attachment Preview in Reply Bar */}
-                  {adminReplyImagePreview && (
-                    <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <img src={adminReplyImagePreview} alt="Reply Attachment" className="w-12 h-12 object-cover rounded-lg border border-slate-300" />
-                        <span className="text-xs font-bold text-slate-700">Image attached</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setAdminReplyImagePreview('')}
-                        className="p-1 text-rose-600 hover:bg-rose-100 rounded-full"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Admin Reply Bar */}
-                  <form onSubmit={handleAdminSendReply} className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
-                    <label className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl cursor-pointer transition-all shrink-0">
-                      <ImageIcon className="w-5 h-5" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAdminChatImageSelect}
-                        className="hidden"
-                      />
-                    </label>
-
-                    <input
-                      type="text"
-                      value={adminReplyText}
-                      onChange={(e) => setAdminReplyText(e.target.value)}
-                      placeholder="Type admin reply message..."
-                      className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-slate-800"
-                    />
-
-                    <button
-                      type="submit"
-                      disabled={sendingReply || (!adminReplyText.trim() && !adminReplyImagePreview)}
-                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 shrink-0"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>Send</span>
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <MessageSquare className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-slate-700">Select a User Conversation</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mt-1">
-                      Choose a user from the left sidebar to view their messages, images, and send real-time admin replies.
-                    </p>
-                  </div>
+                  })}
+                  <div ref={adminChatEndRef} />
                 </div>
-              )}
-            </div>
+
+                {/* 3. Image Attachment Preview Bar */}
+                {adminReplyImagePreview && (
+                  <div className="w-full px-4 py-2.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={adminReplyImagePreview}
+                        alt="Reply Attachment"
+                        className="w-12 h-12 object-cover rounded-xl border-2 border-cyan-500 shadow-xs"
+                      />
+                      <div>
+                        <p className="text-xs text-slate-900 font-bold">Image attachment ready</p>
+                        <p className="text-[10px] text-slate-500">Will be sent to user in real time</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAdminReplyImagePreview('')}
+                      className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-full transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* 4. Full-Width Footer Admin Reply Bar */}
+                <form
+                  onSubmit={handleAdminSendReply}
+                  className="w-full p-3 sm:p-4 bg-white border-t border-slate-200 flex items-center gap-2.5 shrink-0 shadow-lg"
+                >
+                  <label className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:scale-95 rounded-2xl cursor-pointer transition-all shrink-0">
+                    <ImageIcon className="w-5 h-5 stroke-[2.2]" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAdminChatImageSelect}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <input
+                    type="text"
+                    value={adminReplyText}
+                    onChange={(e) => setAdminReplyText(e.target.value)}
+                    placeholder={`Type reply message to ${activeChatGroup.userName}...`}
+                    className="flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={sendingReply || (!adminReplyText.trim() && !adminReplyImagePreview)}
+                    className="p-3 px-5 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-black text-xs rounded-2xl flex items-center gap-2 transition-all shadow-md cursor-pointer active:scale-95 shrink-0"
+                  >
+                    <Send className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
+                    <span>Send Reply</span>
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         )}
 
