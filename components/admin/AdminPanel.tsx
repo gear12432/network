@@ -557,7 +557,7 @@ export default function AdminPanel() {
   }, []);
 
   // Group chat messages by User UID (supports userUid, senderUid, matches with users collection)
-  const chatUsersMap = React.useMemo(() => {
+  const allChatUsersList = React.useMemo(() => {
     const map: Record<
       string,
       {
@@ -610,30 +610,44 @@ export default function AdminPanel() {
       if (!map[uid].userMobile && msg.userMobile) {
         map[uid].userMobile = msg.userMobile;
       }
+      if (!map[uid].userMobile) {
+        const matchedUser = users.find((u) => u.loginUid === uid || u.uid === uid);
+        if (matchedUser?.mobile) {
+          map[uid].userMobile = matchedUser.mobile;
+        }
+      }
       if (msg.sender === 'user' && (!map[uid].userName || map[uid].userName.startsWith('VIP User '))) {
         if (msg.userName) map[uid].userName = msg.userName;
         else if (msg.senderName) map[uid].userName = msg.senderName;
       }
     });
 
-    const list = Object.values(map).sort((a, b) => b.lastMsg.createdAt - a.lastMsg.createdAt);
+    return Object.values(map).sort((a, b) => b.lastMsg.createdAt - a.lastMsg.createdAt);
+  }, [chatMessages, users]);
 
-    if (!chatSearchQuery.trim()) return list;
+  // Filtered list by Search Query (matches user name or mobile number)
+  const chatUsersMap = React.useMemo(() => {
+    if (!chatSearchQuery.trim()) return allChatUsersList;
 
     const q = chatSearchQuery.toLowerCase().trim();
-    return list.filter(
-      (item) =>
-        item.userUid.toLowerCase().includes(q) ||
-        item.userName.toLowerCase().includes(q) ||
+    const qDigits = q.replace(/[^0-9]/g, '');
+
+    return allChatUsersList.filter((item) => {
+      const matchName = item.userName.toLowerCase().includes(q);
+      const matchMobile =
         item.userMobile.toLowerCase().includes(q) ||
-        (item.lastMsg.text && item.lastMsg.text.toLowerCase().includes(q))
-    );
-  }, [chatMessages, users, chatSearchQuery]);
+        (qDigits.length > 0 && item.userMobile.replace(/[^0-9]/g, '').includes(qDigits));
+      const matchUid = item.userUid.toLowerCase().includes(q);
+      const matchText = item.lastMsg.text ? item.lastMsg.text.toLowerCase().includes(q) : false;
+
+      return matchName || matchMobile || matchUid || matchText;
+    });
+  }, [allChatUsersList, chatSearchQuery]);
 
   const activeChatGroup = React.useMemo(() => {
     if (!selectedChatUserUid) return null;
-    return chatUsersMap.find((g) => g.userUid === selectedChatUserUid) || null;
-  }, [chatUsersMap, selectedChatUserUid]);
+    return allChatUsersList.find((g) => g.userUid === selectedChatUserUid) || null;
+  }, [allChatUsersList, selectedChatUserUid]);
 
   // Auto scroll to bottom when opening chat or receiving new messages
   useEffect(() => {
@@ -1370,33 +1384,34 @@ export default function AdminPanel() {
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' ? 'p-1.5 sm:p-3 md:p-6 space-y-3 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
-          {/* Sub-Header / Breadcrumb Bar */}
-          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
-            <div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
-                <span>
-                  {activeTab === 'dashboard' && 'Dashboard'}
-                  {activeTab === 'users' && 'Users Directory'}
-                  {activeTab === 'deposits' && 'Add Money / Deposit Requests'}
-                  {activeTab === 'withdrawals' && 'Withdrawal Requests'}
-                  {activeTab === 'plans' && 'Yield Plans Manager'}
-                  {activeTab === 'sliders' && 'Home Screen Sliders'}
-                  {activeTab === 'contact' && 'Support Chats (Contact Us)'}
-                  {activeTab === 'settings' && 'System Settings'}
-                  {activeTab === 'gateway' && 'Payment Gateway Settings'}
-                </span>
-                <span className="text-xs font-normal text-slate-400">Control panel</span>
-              </h2>
-            </div>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
+          {/* Sub-Header / Breadcrumb Bar (Hidden on Contact tab per user instruction) */}
+          {activeTab !== 'contact' && (
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
+              <div>
+                <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
+                  <span>
+                    {activeTab === 'dashboard' && 'Dashboard'}
+                    {activeTab === 'users' && 'Users Directory'}
+                    {activeTab === 'deposits' && 'Add Money / Deposit Requests'}
+                    {activeTab === 'withdrawals' && 'Withdrawal Requests'}
+                    {activeTab === 'plans' && 'Yield Plans Manager'}
+                    {activeTab === 'sliders' && 'Home Screen Sliders'}
+                    {activeTab === 'settings' && 'System Settings'}
+                    {activeTab === 'gateway' && 'Payment Gateway Settings'}
+                  </span>
+                  <span className="text-xs font-normal text-slate-400">Control panel</span>
+                </h2>
+              </div>
 
-            {/* Breadcrumb Path */}
-            <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 self-start sm:self-auto">
-              <span>🏠 Home</span>
-              <span>›</span>
-              <span className="text-cyan-600 font-bold capitalize">{activeTab}</span>
+              {/* Breadcrumb Path */}
+              <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 self-start sm:self-auto">
+                <span>🏠 Home</span>
+                <span>›</span>
+                <span className="text-cyan-600 font-bold capitalize">{activeTab}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* =========================================================================
               TAB CONTENT 1: DASHBOARD OVERVIEW
@@ -3462,58 +3477,31 @@ export default function AdminPanel() {
             8. CONTACT US (SUPPORT CHATS MANAGER) TAB - FULL WIDTH LIST & FULL SCREEN CHAT
             ========================================================================= */}
         {activeTab === 'contact' && (
-          <div className="w-full space-y-4">
-            {/* Top Header Card */}
-            <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-slate-900 text-cyan-400 flex items-center justify-center shrink-0 shadow-xs">
-                    <MessageSquare className="w-5 h-5 stroke-[2.3]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-black text-base sm:text-lg text-slate-900 leading-tight">
-                        Support Chats (Contact Us)
-                      </h3>
-                      <span className="text-[10px] font-bold bg-cyan-500/15 text-cyan-700 border border-cyan-400/30 px-2.5 py-0.5 rounded-full">
-                        Realtime Sync 🟢
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Direct real-time conversations from user 24/7 VIP Helpdesk
-                    </p>
-                  </div>
-                </div>
-
-                {/* Search Bar & Total Counter */}
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:w-64">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={chatSearchQuery}
-                      onChange={(e) => setChatSearchQuery(e.target.value)}
-                      placeholder="Search by UID, name, mobile..."
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
-                    />
-                    {chatSearchQuery && (
-                      <button
-                        onClick={() => setChatSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-xs font-black bg-slate-900 text-white px-3 py-2 rounded-xl shrink-0">
-                    Total: {chatUsersMap.length}
-                  </span>
-                </div>
+          <div className="w-full space-y-2.5 sm:space-y-3">
+            {/* 1. Top Search Bar (Search user by name or mobile number) */}
+            <div className="w-full bg-white border-y sm:border border-slate-200/90 rounded-none sm:rounded-2xl p-2.5 sm:p-3 shadow-2xs">
+              <div className="relative w-full">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={chatSearchQuery}
+                  onChange={(e) => setChatSearchQuery(e.target.value)}
+                  placeholder="Search user name or mobile number..."
+                  className="w-full pl-10 pr-10 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 transition-all"
+                />
+                {chatSearchQuery && (
+                  <button
+                    onClick={() => setChatSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Full-Width Conversations List View */}
-            <div className="w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+            {/* 2. Full-Width Clean Conversations List View (No Left & Right Gap) */}
+            <div className="w-full bg-white border-y sm:border border-slate-200/90 rounded-none sm:rounded-2xl overflow-hidden shadow-2xs">
               {chatUsersMap.length === 0 ? (
                 <div className="p-12 text-center text-slate-400 space-y-3">
                   <div className="w-14 h-14 rounded-2xl bg-slate-100 mx-auto flex items-center justify-center text-slate-400">
@@ -3523,8 +3511,8 @@ export default function AdminPanel() {
                     <p className="font-extrabold text-sm text-slate-700">No support chats found</p>
                     <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
                       {chatSearchQuery
-                        ? 'No user conversations matched your search query.'
-                        : 'When users send messages or images through 24/7 VIP Helpdesk, they will show up here in real time.'}
+                        ? 'No user conversations matched your search name or mobile.'
+                        : 'When users send messages through 24/7 VIP Helpdesk, their chat will appear here.'}
                     </p>
                   </div>
                 </div>
@@ -3532,92 +3520,37 @@ export default function AdminPanel() {
                 <div className="divide-y divide-slate-100">
                   {chatUsersMap.map((userGroup) => {
                     const isSelected = selectedChatUserUid === userGroup.userUid;
-                    const isLastMsgAdmin = userGroup.lastMsg.sender === 'admin';
                     return (
                       <div
                         key={userGroup.userUid}
                         onClick={() => setSelectedChatUserUid(userGroup.userUid)}
-                        className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-all hover:bg-slate-50 ${
+                        className={`w-full px-4 py-3.5 sm:px-5 sm:py-4 hover:bg-slate-50 active:bg-slate-100 cursor-pointer transition-colors ${
                           isSelected ? 'bg-cyan-50/70' : ''
                         }`}
                       >
-                        {/* User Avatar + Details */}
-                        <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white font-black flex items-center justify-center text-sm shrink-0 shadow-xs border border-slate-700">
-                            {userGroup.userName.slice(0, 2).toUpperCase()}
-                          </div>
+                        {/* 1. User Ka Naam */}
+                        <h4 className="text-sm font-black text-slate-900 leading-tight">
+                          {userGroup.userName}
+                        </h4>
 
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="text-sm font-black text-slate-900 truncate">
-                                {userGroup.userName}
-                              </h4>
-                              <span className="text-[11px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
-                                UID: {userGroup.userUid}
-                              </span>
-                              {userGroup.userMobile && (
-                                <span className="text-[11px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
-                                  <Phone className="w-3 h-3 text-slate-400" />
-                                  {userGroup.userMobile}
-                                </span>
-                              )}
-                            </div>
+                        {/* 2. Uska Niche Text (Message text) */}
+                        <p className="text-xs text-slate-600 font-medium mt-1 truncate">
+                          {userGroup.lastMsg.text || (userGroup.lastMsg.imageUrl ? '🖼️ [Image attachment]' : '')}
+                        </p>
 
-                            {/* Last Message Snippet */}
-                            <p className="text-xs text-slate-600 font-medium truncate flex items-center gap-1.5">
-                              {isLastMsgAdmin ? (
-                                <span className="font-bold text-cyan-700">You:</span>
-                              ) : (
-                                <span className="font-bold text-amber-700">{userGroup.userName}:</span>
-                              )}
-                              <span>
-                                {userGroup.lastMsg.text || '🖼️ [Image attachment]'}
-                              </span>
-                            </p>
-
-                            <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium">
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {new Date(userGroup.lastMsg.createdAt).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                                {' • '}
-                                {new Date(userGroup.lastMsg.createdAt).toLocaleDateString([], {
-                                  month: 'short',
-                                  day: 'numeric',
-                                })}
-                              </span>
-                              <span>•</span>
-                              <span>{userGroup.totalCount} messages</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Right: Action Buttons */}
-                        <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                          {userGroup.userMobile && (
-                            <a
-                              href={`https://wa.me/${userGroup.userMobile.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl transition-all"
-                              title="Chat on WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedChatUserUid(userGroup.userUid)}
-                            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>Open Chat</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {/* 3. Text Ke Niche Update Message Date Time */}
+                        <p className="text-[11px] text-slate-400 font-medium mt-1">
+                          {new Date(userGroup.lastMsg.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                          {' • '}
+                          {new Date(userGroup.lastMsg.createdAt).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </p>
                       </div>
                     );
                   })}
