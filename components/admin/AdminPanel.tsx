@@ -548,6 +548,10 @@ export default function AdminPanel() {
   const adminTouchStartPos = useRef<{ x: number; y: number } | null>(null);
   const adminIsTouchDevice = useRef<boolean>(false);
 
+  // Quick Chat User Deposit & Withdrawal Slide-In Screens
+  const [chatUserDepositsModalOpen, setChatUserDepositsModalOpen] = useState<boolean>(false);
+  const [chatUserWithdrawalsModalOpen, setChatUserWithdrawalsModalOpen] = useState<boolean>(false);
+
   // Real-time Firestore Listener for Support Chat Messages
   useEffect(() => {
     try {
@@ -3783,6 +3787,19 @@ export default function AdminPanel() {
               const userUid = activeChatGroup.userUid;
               const userName = activeChatGroup.userName || matchedUser?.name || 'User';
 
+              const userDeposits = deposits.filter(
+                (d) =>
+                  (userUid && (d.customerId === userUid || d.loginUid === userUid)) ||
+                  (userMobile && (d.mobile === userMobile || d.customerMobile === userMobile))
+              );
+              const userWithdrawals = withdrawals.filter(
+                (w) =>
+                  (userUid && (w.customerId === userUid || w.loginUid === userUid)) ||
+                  (userMobile && (w.mobile === userMobile || w.customerMobile === userMobile))
+              );
+              const pendingUserDepCount = userDeposits.filter((d) => d.status === 'Pending').length;
+              const pendingUserWdCount = userWithdrawals.filter((w) => w.status === 'Pending').length;
+
               return (
               <div
                 onClick={() => {
@@ -3831,8 +3848,44 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  {/* Right Side: Copy Mobile Icon & Menu Icon Button & Floating Box */}
+                  {/* Right Side: Withdrawal Icon, Deposit Icon, Copy Mobile Icon & Menu Icon */}
                   <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    {/* Withdrawal Requests Icon Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setChatUserWithdrawalsModalOpen(true);
+                      }}
+                      className="p-2 sm:p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 transition-all cursor-pointer flex items-center justify-center shadow-xs active:scale-95 relative"
+                      title="Withdrawal Requests for this User"
+                    >
+                      <ArrowUpRight className="w-5 h-5 stroke-[2.3]" />
+                      {pendingUserWdCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center border border-slate-900 shadow-xs animate-pulse">
+                          {pendingUserWdCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Deposit Requests Icon Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setChatUserDepositsModalOpen(true);
+                      }}
+                      className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 transition-all cursor-pointer flex items-center justify-center shadow-xs active:scale-95 relative"
+                      title="Deposit Records for this User"
+                    >
+                      <ArrowDownLeft className="w-5 h-5 stroke-[2.3]" />
+                      {pendingUserDepCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center border border-slate-900 shadow-xs animate-pulse">
+                          {pendingUserDepCount}
+                        </span>
+                      )}
+                    </button>
+
                     {/* Copy Mobile Number Icon Button */}
                     <button
                       type="button"
@@ -4179,6 +4232,417 @@ export default function AdminPanel() {
                     <Send className="w-5 h-5 text-cyan-400 stroke-[2.5]" />
                   </button>
                 </form>
+
+                {/* 5. SLIDE-IN USER DEPOSITS SCREEN (Smooth Right-to-Left Slide Animation) */}
+                <AnimatePresence>
+                  {chatUserDepositsModalOpen && (
+                    <motion.div
+                      initial={{ x: '100%' }}
+                      animate={{ x: 0 }}
+                      exit={{ x: '100%' }}
+                      transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+                      className="fixed inset-0 z-60 bg-[#edf1f5] w-full h-full min-h-screen overflow-y-auto flex flex-col"
+                    >
+                      {/* Top Bar */}
+                      <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white px-4 py-3.5 shadow-md sticky top-0 z-20 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setChatUserDepositsModalOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer border border-white/25"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                            <span>Back to Chat</span>
+                          </button>
+                          <div className="flex items-center gap-2 border-l border-white/25 pl-3">
+                            <span className="text-sm font-extrabold text-white">
+                              {userName}&apos;s Deposits
+                            </span>
+                            <span className="text-xs text-emerald-300 font-mono">
+                              (UID: {userUid})
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setChatUserDepositsModalOpen(false)}
+                          className="p-1.5 bg-white/15 hover:bg-white/25 text-white rounded-full cursor-pointer transition-all"
+                          title="Close"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </header>
+
+                      {/* Content */}
+                      <main className="flex-1 max-w-4xl w-full mx-auto p-3.5 sm:p-6 space-y-4">
+                        {/* Summary Bar */}
+                        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                              Total User Deposits
+                            </span>
+                            <h3 className="text-xl font-black text-slate-900 font-mono">
+                              ₹{userDeposits.reduce((acc, d) => acc + (d.amount || 0), 0).toLocaleString('en-IN')}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold">
+                              Pending: {pendingUserDepCount}
+                            </span>
+                            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold">
+                              Approved: {userDeposits.filter((d) => d.status === 'Approved').length}
+                            </span>
+                            <span className="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-lg text-xs font-bold">
+                              Rejected: {userDeposits.filter((d) => d.status === 'Rejected').length}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Deposits List */}
+                        {userDeposits.length === 0 ? (
+                          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                              <ArrowDownLeft className="w-6 h-6" />
+                            </div>
+                            <h4 className="text-sm font-black text-slate-800">No deposits found for {userName}</h4>
+                            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                              When this user submits a deposit slip or UTR through Add Money, it will appear here.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {userDeposits.map((dep) => (
+                              <div
+                                key={dep.id}
+                                className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-xs">
+                                      ₹
+                                    </div>
+                                    <div>
+                                      <h4 className="text-base font-black text-slate-900 font-mono">
+                                        ₹{(dep.amount || 0).toLocaleString('en-IN')}
+                                      </h4>
+                                      <span className="text-[11px] text-slate-500">
+                                        {dep.dateTime || dep.createdAt} • {dep.method || 'UPI Transfer'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-black border flex items-center gap-1.5 ${
+                                      dep.status === 'Approved'
+                                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                        : dep.status === 'Rejected'
+                                        ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                        : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
+                                    }`}
+                                  >
+                                    {dep.status === 'Approved' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />}
+                                    {dep.status === 'Rejected' && <XCircle className="w-3.5 h-3.5 text-rose-700" />}
+                                    {dep.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-amber-700" />}
+                                    <span>{dep.status}</span>
+                                  </span>
+                                </div>
+
+                                {/* UTR / Transaction ID */}
+                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                                  <div>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                                      UTR / Reference ID
+                                    </span>
+                                    <span className="font-mono font-black text-slate-900 mt-0.5 block select-all">
+                                      {dep.utrNumber || dep.utr || 'N/A'}
+                                    </span>
+                                  </div>
+                                  {(dep.utrNumber || dep.utr) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (navigator.clipboard) {
+                                          navigator.clipboard.writeText(dep.utrNumber || dep.utr);
+                                          alert('UTR copied to clipboard!');
+                                        }
+                                      }}
+                                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Copy className="w-3.5 h-3.5" />
+                                      <span>Copy UTR</span>
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Screenshot Thumbnail if available */}
+                                {dep.screenshotUrl && (
+                                  <div
+                                    onClick={() => setPreviewImage(dep.screenshotUrl)}
+                                    className="p-2 bg-slate-100 rounded-xl border border-slate-200 flex items-center gap-3 cursor-pointer hover:bg-slate-200 transition-colors"
+                                  >
+                                    <img
+                                      src={dep.screenshotUrl}
+                                      alt="Deposit Screenshot"
+                                      className="w-12 h-12 object-cover rounded-lg border border-slate-300"
+                                    />
+                                    <div>
+                                      <span className="text-xs font-bold text-slate-900 block">Payment Screenshot Attached</span>
+                                      <span className="text-[10px] text-cyan-700 font-semibold">Click to preview full size</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDepositAction(dep, 'Approved')}
+                                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                      dep.status === 'Approved'
+                                        ? 'bg-emerald-700 text-white opacity-80 cursor-default'
+                                        : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-sm'
+                                    }`}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    <span>{dep.status === 'Approved' ? 'Approved ✓' : 'Approve Deposit'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDepositAction(dep, 'Rejected')}
+                                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                      dep.status === 'Rejected'
+                                        ? 'bg-rose-700 text-white opacity-80 cursor-default'
+                                        : 'bg-rose-600 hover:bg-rose-700 active:scale-95 text-white shadow-sm'
+                                    }`}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                    <span>{dep.status === 'Rejected' ? 'Rejected ✕' : 'Reject Deposit'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </main>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* 6. SLIDE-IN USER WITHDRAWALS SCREEN (Smooth Right-to-Left Slide Animation) */}
+                <AnimatePresence>
+                  {chatUserWithdrawalsModalOpen && (
+                    <motion.div
+                      initial={{ x: '100%' }}
+                      animate={{ x: 0 }}
+                      exit={{ x: '100%' }}
+                      transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+                      className="fixed inset-0 z-60 bg-[#edf1f5] w-full h-full min-h-screen overflow-y-auto flex flex-col"
+                    >
+                      {/* Top Bar */}
+                      <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white px-4 py-3.5 shadow-md sticky top-0 z-20 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setChatUserWithdrawalsModalOpen(false)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer border border-white/25"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                            <span>Back to Chat</span>
+                          </button>
+                          <div className="flex items-center gap-2 border-l border-white/25 pl-3">
+                            <span className="text-sm font-extrabold text-white">
+                              {userName}&apos;s Withdrawals
+                            </span>
+                            <span className="text-xs text-amber-300 font-mono">
+                              (UID: {userUid})
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setChatUserWithdrawalsModalOpen(false)}
+                          className="p-1.5 bg-white/15 hover:bg-white/25 text-white rounded-full cursor-pointer transition-all"
+                          title="Close"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </header>
+
+                      {/* Content */}
+                      <main className="flex-1 max-w-4xl w-full mx-auto p-3.5 sm:p-6 space-y-4">
+                        {/* Summary Bar */}
+                        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                              Total User Withdrawals
+                            </span>
+                            <h3 className="text-xl font-black text-slate-900 font-mono">
+                              ₹{userWithdrawals.reduce((acc, w) => acc + (w.totalReturn || w.amount || 0), 0).toLocaleString('en-IN')}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold">
+                              Pending: {pendingUserWdCount}
+                            </span>
+                            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold">
+                              Approved: {userWithdrawals.filter((w) => w.status === 'Approved').length}
+                            </span>
+                            <span className="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-lg text-xs font-bold">
+                              Rejected: {userWithdrawals.filter((w) => w.status === 'Rejected').length}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Withdrawals List */}
+                        {userWithdrawals.length === 0 ? (
+                          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                              <ArrowUpRight className="w-6 h-6" />
+                            </div>
+                            <h4 className="text-sm font-black text-slate-800">No withdrawal requests found for {userName}</h4>
+                            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                              When this user submits a withdrawal payout request, it will appear here.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {userWithdrawals.map((wd) => (
+                              <div
+                                key={wd.id}
+                                className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-black flex items-center justify-center text-sm shadow-xs">
+                                      ₹
+                                    </div>
+                                    <div>
+                                      <h4 className="text-base font-black text-slate-900 font-mono">
+                                        ₹{(wd.totalReturn || wd.amount || 0).toLocaleString('en-IN')}
+                                      </h4>
+                                      <span className="text-[11px] text-slate-500">
+                                        {wd.dateTime || wd.createdAt}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-black border flex items-center gap-1.5 ${
+                                      wd.status === 'Approved'
+                                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                        : wd.status === 'Rejected'
+                                        ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                        : 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse'
+                                    }`}
+                                  >
+                                    {wd.status === 'Approved' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />}
+                                    {wd.status === 'Rejected' && <XCircle className="w-3.5 h-3.5 text-rose-700" />}
+                                    {wd.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-amber-700" />}
+                                    <span>{wd.status}</span>
+                                  </span>
+                                </div>
+
+                                {/* Bank Account & IFSC details */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                                      Bank & Holder
+                                    </span>
+                                    <span className="font-extrabold text-slate-900 mt-0.5 block truncate">
+                                      {wd.bankName || 'State Bank of India'} • {wd.bankHolderName || wd.customerName || 'Holder'}
+                                    </span>
+                                  </div>
+
+                                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                                    <div className="min-w-0 flex-1">
+                                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                                        Account Number
+                                      </span>
+                                      <span className="font-mono font-black text-slate-900 mt-0.5 block select-all truncate">
+                                        {wd.accountNumber || wd.bankDetails || 'N/A'}
+                                      </span>
+                                    </div>
+                                    {(wd.accountNumber || wd.bankDetails) && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (navigator.clipboard) {
+                                            navigator.clipboard.writeText(wd.accountNumber || wd.bankDetails);
+                                            alert('Account number copied!');
+                                          }
+                                        }}
+                                        className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg cursor-pointer shrink-0 ml-2"
+                                        title="Copy Account Number"
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between sm:col-span-2">
+                                    <div>
+                                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                                        IFSC Code
+                                      </span>
+                                      <span className="font-mono font-black text-slate-900 mt-0.5 block select-all">
+                                        {wd.ifscCode || 'N/A'}
+                                      </span>
+                                    </div>
+                                    {wd.ifscCode && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (navigator.clipboard) {
+                                            navigator.clipboard.writeText(wd.ifscCode);
+                                            alert('IFSC Code copied!');
+                                          }
+                                        }}
+                                        className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-bold text-xs flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                        <span>Copy IFSC</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleWithdrawalAction(wd, 'Approved')}
+                                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                      wd.status === 'Approved'
+                                        ? 'bg-emerald-700 text-white opacity-80 cursor-default'
+                                        : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-sm'
+                                    }`}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    <span>{wd.status === 'Approved' ? 'Approved ✓' : 'Approve Withdrawal'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleWithdrawalAction(wd, 'Rejected')}
+                                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                      wd.status === 'Rejected'
+                                        ? 'bg-rose-700 text-white opacity-80 cursor-default'
+                                        : 'bg-rose-600 hover:bg-rose-700 active:scale-95 text-white shadow-sm'
+                                    }`}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                    <span>{wd.status === 'Rejected' ? 'Rejected ✕' : 'Reject Withdrawal'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </main>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               );
             })()}
