@@ -84,30 +84,30 @@ function FloatingInput({
       <div
         className={`relative flex items-center w-full min-h-[52px] h-[52px] sm:min-h-[56px] sm:h-14 bg-white rounded-xl transition-all duration-200 border-2 ${
           isFocused
-            ? 'border-[#d0872e] ring-2 ring-[#d0872e]/20 shadow-md shadow-[#d0872e]/10'
-            : 'border-[#dfbe7e] hover:border-[#c59c55]'
+            ? 'border-[#002E6E] ring-2 ring-[#00B9F1]/20 shadow-md shadow-[#002E6E]/10'
+            : 'border-[#172B75] hover:border-[#002E6E]'
         }`}
       >
         {/* Left Icon */}
         {icon && (
-          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#8a5416]">
+          <div className="absolute left-3.5 z-10 flex items-center justify-center pointer-events-none text-[#002E6E]">
             {icon}
           </div>
         )}
 
         {/* Optional Prefix (e.g. +91) shown only when floating/focused */}
         {prefix && isFloating && (
-          <span className="absolute left-10 text-xs sm:text-sm font-mono text-[#8a5416] font-bold pointer-events-none">
+          <span className="absolute left-10 text-xs sm:text-sm font-mono text-[#002E6E] font-bold pointer-events-none">
             {prefix}
           </span>
         )}
 
-        {/* Smooth Floating Label Animation - Outlined on Top Border as marked by user */}
+        {/* Smooth Floating Label Animation - Outlined on Top Border */}
         <label
           className={`absolute pointer-events-none transition-all duration-200 ease-out origin-left select-none z-10 ${
             isFloating
-              ? '-top-2.5 left-3 px-1.5 py-0 bg-[#faf6ee] text-xs font-bold text-[#8a5416] tracking-wide rounded border border-[#dfbe7e] shadow-xs'
-              : `top-1/2 -translate-y-1/2 text-sm sm:text-base text-[#7a5328]/80 font-medium ${
+              ? '-top-2.5 left-3 px-1.5 py-0 bg-white text-xs font-bold text-[#002E6E] tracking-wide rounded border border-[#172B75] shadow-xs'
+              : `top-1/2 -translate-y-1/2 text-sm sm:text-base text-[#172B75]/80 font-medium ${
                   icon ? 'left-10' : 'left-3.5'
                 }`
           }`}
@@ -115,7 +115,7 @@ function FloatingInput({
           {label}
         </label>
 
-        {/* Native Input - Dark Espresso Text */}
+        {/* Native Input - Dark Navy Text */}
         <input
           type={type}
           value={value}
@@ -124,7 +124,7 @@ function FloatingInput({
           onBlur={() => setIsFocused(false)}
           required={required}
           autoComplete={autoComplete}
-          className={`w-full bg-transparent text-[#46280b] font-medium text-sm sm:text-base focus:outline-none transition-all [color-scheme:light] ${
+          className={`w-full bg-transparent text-[#172B75] font-medium text-sm sm:text-base focus:outline-none transition-all [color-scheme:light] ${
             icon
               ? prefix && isFloating
                 ? 'pl-18'

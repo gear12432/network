@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Coins, Sparkles } from 'lucide-react';
 import {
   INITIAL_USER_STATS,
@@ -104,9 +105,69 @@ class SafeErrorBoundary extends React.Component<
   }
 }
 
+function OnboardingSplashScreen({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onComplete();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-[#F2F8FC] flex flex-col items-center justify-center p-6 select-none animate-in fade-in duration-300">
+      <div className="text-center space-y-6 max-w-sm w-full">
+        <div className="w-20 h-20 mx-auto rounded-3xl bg-[#002E6E] flex items-center justify-center shadow-xl shadow-[#002E6E]/30 border-2 border-[#00B9F1]">
+          <Coins className="w-10 h-10 text-[#00B9F1]" />
+        </div>
+        <div>
+          <h2 className="font-serif font-black text-2xl text-[#172B75] tracking-tight">
+            NetworkJoin Pro
+          </h2>
+          <p className="text-xs font-medium text-[#172B75]/80 mt-1">
+            Secure Investment & Wealth Management Platform
+          </p>
+        </div>
+
+        {/* 6 Zooming Dots (3 in #002E6E and 3 in #00B9F1) */}
+        <div className="flex items-center justify-center gap-3 py-6">
+          {['#002E6E', '#00B9F1', '#002E6E', '#00B9F1', '#002E6E', '#00B9F1'].map((dotColor, idx) => (
+            <motion.div
+              key={idx}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 1.2,
+                repeat: Infinity,
+                delay: idx * 0.2,
+                ease: 'easeInOut',
+              }}
+              style={{ backgroundColor: dotColor }}
+              className="w-4 h-4 rounded-full shadow-md"
+            />
+          ))}
+        </div>
+
+        <p className="text-[11px] font-mono text-[#172B75]/60">
+          Initializing secure session...
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function InvestmentAppMain() {
   // Prevent SSR Hydration Mismatch
   const [hasMounted, setHasMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Route & User States
   const [isAdminRoute, setIsAdminRoute] = useState(false);
@@ -804,6 +865,11 @@ function InvestmentAppMain() {
   // Prevent SSR Hydration Mismatch
   if (!hasMounted) {
     return <div className="min-h-screen bg-[#F2F8FC]" />;
+  }
+
+  // 0. Onboarding Progress Splash Screen (3 seconds)
+  if (showSplash) {
+    return <OnboardingSplashScreen onComplete={() => setShowSplash(false)} />;
   }
 
   // 1. If admin route detected, render Admin Panel directly
