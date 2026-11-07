@@ -603,11 +603,11 @@ export default function HomeScreen({
               <button
                 key={cat}
                 onClick={() => onSelectCategory(cat)}
-                style={isSelected ? { backgroundColor: '#1A7595', borderColor: '#1A7595' } : {}}
+                style={isSelected ? { backgroundColor: '#002E6E', borderColor: '#002E6E' } : {}}
                 className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all shadow-2xs cursor-pointer ${
                   isSelected
                     ? 'text-white border shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                    : 'bg-white text-[#172B75] hover:bg-[#F2F8FC] border border-[#D0E4F5]'
                 }`}
               >
                 {cat}
@@ -620,10 +620,10 @@ export default function HomeScreen({
       {/* 4. Available Plans */}
       <div className="space-y-2.5 pt-0.5">
         {filteredPlans.length === 0 ? (
-          <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-6 text-center border border-[#dfbe7e]">
-            <Layers className="w-9 h-9 text-[#caa050] mx-auto mb-2" />
-            <h5 className="text-xs sm:text-sm font-bold text-[#46280b]">No Plans Available</h5>
-            <p className="text-[11px] text-[#8a5b28] mt-0.5">
+          <div className="bg-[#FFFFFF] rounded-2xl p-6 text-center border border-[#D0E4F5]">
+            <Layers className="w-9 h-9 text-[#002E6E] mx-auto mb-2" />
+            <h5 className="text-xs sm:text-sm font-bold text-[#002E6E]">No Plans Available</h5>
+            <p className="text-[11px] text-[#172B75]/70 mt-0.5">
               Plans added by the admin will appear here.
             </p>
             {(searchQuery || selectedCategory !== 'All Plans') && (
@@ -632,7 +632,7 @@ export default function HomeScreen({
                   onSearchChange?.('');
                   onSelectCategory('All Plans');
                 }}
-                className="mt-2 text-xs text-[#8a5416] hover:text-[#46280b] font-bold underline cursor-pointer"
+                className="mt-2 text-xs text-[#00B9F1] hover:text-[#002E6E] font-bold underline cursor-pointer"
               >
                 Reset Filters
               </button>

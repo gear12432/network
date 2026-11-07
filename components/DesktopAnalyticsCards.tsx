@@ -100,62 +100,62 @@ export default function DesktopAnalyticsCards({
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 mb-6 w-full text-[#46280b]">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 mb-6 w-full text-[#172B75]">
       {/* =========================================================================
           COLUMN 1 (LEFT): Finance Summary + Activity 12-Bar Chart
           ========================================================================= */}
       <div className="xl:col-span-4 flex flex-col gap-5">
         {/* 1. Finance Summary Card (Matches Screenshot 1 Left Top Card) */}
-        <div className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-3xl p-5 border border-[#dfbe7e] shadow-xs flex flex-col justify-between">
+        <div className="bg-[#FFFFFF] rounded-3xl p-5 border border-[#D0E4F5] shadow-xs flex flex-col justify-between">
           <div>
             {/* Card Header & Icon */}
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="font-extrabold text-[#46280b] text-base">Finance Summary</h3>
-                <p className="text-xs text-[#8a5b28]">Check out each column for more details</p>
+                <h3 className="font-extrabold text-[#002E6E] text-base">Finance Summary</h3>
+                <p className="text-xs text-[#172B75]/70">Check out each column for more details</p>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#f5e4bd] to-[#edd199] border border-[#dfbe7e] text-[#5c3710] flex items-center justify-center shadow-2xs">
-                <FileSpreadsheet className="w-4 h-4 text-[#7d511f]" />
+              <div className="w-8 h-8 rounded-xl bg-[#E5F3FC] border border-[#00B9F1]/40 text-[#002E6E] flex items-center justify-center shadow-2xs">
+                <FileSpreadsheet className="w-4 h-4 text-[#002E6E]" />
               </div>
             </div>
 
             {/* 2x2 Financial Metrics Grid */}
-            <div className="grid grid-cols-2 gap-4 py-2 border-y border-[#ebd5ad]">
+            <div className="grid grid-cols-2 gap-4 py-2 border-y border-[#D0E4F5]">
               <div>
-                <span className="text-[11px] font-medium text-[#8a5b28] block mb-0.5">
+                <span className="text-[11px] font-medium text-[#172B75]/70 block mb-0.5">
                   Annual Companies Taxes
                 </span>
-                <span className="text-base font-extrabold text-[#46280b] tracking-tight font-mono">
+                <span className="text-base font-extrabold text-[#002E6E] tracking-tight font-mono">
                   $500,580
                 </span>
               </div>
 
               <div>
-                <span className="text-[11px] font-medium text-[#8a5b28] block mb-0.5">
+                <span className="text-[11px] font-medium text-[#172B75]/70 block mb-0.5">
                   Next Tax Review Date
                 </span>
-                <span className="text-sm font-bold text-[#55361e]">
+                <span className="text-sm font-bold text-[#172B75]">
                   April 26, 2025
                 </span>
               </div>
 
               <div>
-                <span className="text-[11px] font-medium text-[#8a5b28] block mb-0.5">
+                <span className="text-[11px] font-medium text-[#172B75]/70 block mb-0.5">
                   Average Product Price
                 </span>
-                <span className="text-sm font-bold text-[#55361e] font-mono">
+                <span className="text-sm font-bold text-[#172B75] font-mono">
                   $65.54
                 </span>
               </div>
 
               <div>
-                <div className="flex items-center justify-between text-[11px] font-medium text-[#8a5b28] mb-1">
+                <div className="flex items-center justify-between text-[11px] font-medium text-[#172B75]/70 mb-1">
                   <span>Satisfaction Rate</span>
-                  <span className="font-bold text-[#46280b]">68%</span>
+                  <span className="font-bold text-[#002E6E]">68%</span>
                 </div>
-                <div className="w-full bg-[#ecd7b0] h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-[#E5F3FC] h-1.5 rounded-full overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-[#d9a54c] to-[#be8832] h-full rounded-full transition-all duration-500"
+                    className="bg-[#00B9F1] h-full rounded-full transition-all duration-500"
                     style={{ width: '68%' }}
                   />
                 </div>
@@ -167,11 +167,11 @@ export default function DesktopAnalyticsCards({
           <div className="mt-4 pt-3 flex items-center justify-between">
             <div className="flex items-center -space-x-1.5">
               {[
-                { name: 'AI', bg: 'bg-[#ffdca0] text-[#7d511f] border-[#dfbe7e]' },
-                { name: 'LS', bg: 'bg-[#ebd3f7] text-[#6b21a8] border-[#d8b4e2]' },
-                { name: 'DJ', bg: 'bg-[#fed7e2] text-[#9d174d] border-[#fbcfe8]' },
-                { name: 'RI', bg: 'bg-[#cffafe] text-[#155e75] border-[#a5f3fc]' },
-                { name: 'SA', bg: 'bg-[#dcfce7] text-[#166534] border-[#bbf7d0]' },
+                { name: 'AI', bg: 'bg-[#E5F3FC] text-[#002E6E] border-[#00B9F1]/40' },
+                { name: 'LS', bg: 'bg-[#E5F3FC] text-[#002E6E] border-[#00B9F1]/40' },
+                { name: 'DJ', bg: 'bg-[#E5F3FC] text-[#002E6E] border-[#00B9F1]/40' },
+                { name: 'RI', bg: 'bg-[#E5F3FC] text-[#002E6E] border-[#00B9F1]/40' },
+                { name: 'SA', bg: 'bg-[#E5F3FC] text-[#002E6E] border-[#00B9F1]/40' },
               ].map((chip, idx) => (
                 <div
                   key={idx}
@@ -184,7 +184,7 @@ export default function DesktopAnalyticsCards({
 
             <button
               onClick={onViewTaxDetails}
-              className="text-[11px] font-bold text-[#8a5b28] hover:text-[#46280b] tracking-wider uppercase transition-colors cursor-pointer"
+              className="text-[11px] font-bold text-[#002E6E] hover:text-[#00B9F1] tracking-wider uppercase transition-colors cursor-pointer"
             >
               SEE MORE +
             </button>

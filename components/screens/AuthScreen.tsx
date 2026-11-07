@@ -622,11 +622,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-[#faf6ee] text-[#46280b] flex flex-col justify-between overflow-y-auto selection:bg-[#d0872e] selection:text-white">
-      {/* Background Ambience with warm gold / bronze glows */}
+    <div className="fixed inset-0 z-40 bg-[#F2F8FC] text-[#172B75] flex flex-col justify-between overflow-y-auto selection:bg-[#00B9F1] selection:text-white">
+      {/* Background Ambience with Paytm blue glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#dfbe7e]/20 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#d0872e]/10 rounded-full blur-[100px]" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#00B9F1]/10 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#002E6E]/10 rounded-full blur-[100px]" />
       </div>
 
       {/* Main Full-Screen Content (Clean layout without top box/tabs) */}
@@ -642,11 +642,11 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
             className="flex-1 flex flex-col justify-center py-4"
           >
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#46280b]">
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#002E6E]">
                 Sign In to Your Account
               </h2>
-              <p className="text-xs sm:text-sm text-[#7a5328] mt-1.5">
-                Enter your <strong className="text-[#46280b]">Login UID</strong> (e.g. <code className="bg-[#faecd4] text-[#8a5416] px-1.5 py-0.5 rounded border border-[#dfbe7e] font-mono">GK37643</code>) and password to access your dashboard.
+              <p className="text-xs sm:text-sm text-[#172B75]/70 mt-1.5">
+                Enter your <strong className="text-[#002E6E]">Login UID</strong> (e.g. <code className="bg-[#E5F3FC] text-[#002E6E] px-1.5 py-0.5 rounded border border-[#00B9F1]/40 font-mono">GK37643</code>) and password to access your dashboard.
               </p>
             </div>
 

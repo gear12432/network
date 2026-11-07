@@ -110,22 +110,18 @@ export default function EarningsScreen({
   const [customerTab, setCustomerTab] = useState<'Active' | 'Growth'>('Active');
 
   return (
-    <div className="space-y-4 pb-20 sm:pb-8 bg-slate-50 min-h-screen">
+    <div className="space-y-4 pb-20 sm:pb-8 bg-[#F2F8FC] min-h-screen text-[#172B75]">
       {/* =========================================================================
-          1. TOP UNCLAIMED ROI BALANCE CARD (CLEANED UP WITH SMALL COMPACT RIGHT CLAIM BUTTON)
+          1. TOP UNCLAIMED ROI BALANCE CARD
           ========================================================================= */}
-      <div className="bg-gradient-to-r from-[#3b200b] via-[#593315] to-[#7c481d] text-white rounded-3xl p-4 sm:p-5 shadow-md relative overflow-hidden border-2 border-[#dfbe7e]">
-        {/* Ornate Gold Filigree Corner Accents */}
-        <div className="absolute top-1.5 left-2 text-[#e5ab48] text-xs select-none">✦</div>
-        <div className="absolute top-1.5 right-2 text-[#e5ab48] text-xs select-none">✦</div>
-
+      <div className="bg-[#002E6E] text-white rounded-3xl p-4 sm:p-5 shadow-md relative overflow-hidden border border-[#00B9F1]/40">
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-serif font-bold text-[#fed788] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#ffd786]" />
+            <span className="text-xs font-serif font-bold text-[#00B9F1] flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#00B9F1]" />
               <span>Daily ROI Yield Accumulator</span>
             </span>
-            <span className="text-[10px] bg-[#fff0cc]/20 text-[#ffe2a2] border border-[#d6a54d]/50 font-bold px-2 py-0.5 rounded-full">
+            <span className="text-[10px] bg-white/10 text-[#00B9F1] border border-[#00B9F1]/40 font-bold px-2 py-0.5 rounded-full">
               Auto-Compounding
             </span>
           </div>
@@ -133,12 +129,12 @@ export default function EarningsScreen({
           {/* Balance Row with Compact "Claim" Button on the Right */}
           <div className="my-2 flex items-center justify-between gap-3">
             <div>
-              <span className="text-xs text-[#fed788]/80 block mb-0.5">Unclaimed Daily Earnings</span>
+              <span className="text-xs text-white/70 block mb-0.5">Unclaimed Daily Earnings</span>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-serif font-black text-white font-mono tracking-tight drop-shadow-xs">
                   ₹{stats.unclaimedRoi.toFixed(2)}
                 </span>
-                <span className="text-xs text-[#ffd786] font-bold">+₹158.62/day</span>
+                <span className="text-xs text-[#00B9F1] font-bold">+₹158.62/day</span>
               </div>
             </div>
 
@@ -148,7 +144,7 @@ export default function EarningsScreen({
               disabled={stats.unclaimedRoi <= 0}
               className={`px-3.5 py-2 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer shrink-0 ${
                 stats.unclaimedRoi > 0
-                  ? 'bg-gradient-to-r from-[#ffd786] via-[#e5ab48] to-[#be8832] text-[#3d2008] hover:brightness-110 shadow-amber-500/30'
+                  ? 'bg-[#00B9F1] hover:bg-[#009bc7] text-white shadow-cyan-500/30'
                   : 'bg-white/10 text-white/40 cursor-not-allowed border border-white/10'
               }`}
             >

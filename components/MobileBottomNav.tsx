@@ -57,7 +57,7 @@ export default function MobileBottomNav({
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-2 py-1.5 max-w-md mx-auto sm:max-w-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-t border-[#D0E4F5] shadow-lg px-2 py-1.5 max-w-md mx-auto sm:max-w-none">
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -74,25 +74,25 @@ export default function MobileBottomNav({
                 {isActive ? (
                   <motion.div
                     layoutId="activeTabPill"
-                    className="w-12 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-xs border border-blue-500/50"
+                    className="w-12 h-8 rounded-full bg-[#002E6E] flex items-center justify-center shadow-xs border border-[#00B9F1]/50"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   >
                     <Icon className="w-5.5 h-5.5 text-white stroke-[2.2]" />
                   </motion.div>
                 ) : (
-                  <div className="w-12 h-8 flex items-center justify-center text-slate-500 group-hover:text-blue-600 transition-colors">
+                  <div className="w-12 h-8 flex items-center justify-center text-[#172B75]/60 group-hover:text-[#00B9F1] transition-colors">
                     <Icon className="w-5.5 h-5.5 stroke-[2]" />
                   </div>
                 )}
 
                 {tab.badge && !isActive && (
-                  <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                  <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full bg-[#00B9F1] animate-pulse" />
                 )}
               </div>
 
               <span
                 className={`text-[10px] mt-0.5 transition-colors ${
-                  isActive ? 'font-serif font-black text-blue-700' : 'font-medium text-slate-500 group-hover:text-slate-900'
+                  isActive ? 'font-black text-[#002E6E]' : 'font-semibold text-[#172B75]/70 group-hover:text-[#172B75]'
                 }`}
               >
                 {tab.label}
@@ -102,5 +102,6 @@ export default function MobileBottomNav({
         })}
       </div>
     </nav>
+
   );
 }

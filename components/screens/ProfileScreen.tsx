@@ -194,7 +194,7 @@ export default function ProfileScreen({
   return (
     <div
       className={`space-y-4 pb-20 sm:pb-8 transition-colors duration-300 ${
-        isDark ? 'bg-slate-950 text-slate-100 min-h-screen p-1' : 'bg-slate-50 text-slate-900 min-h-screen'
+        isDark ? 'bg-slate-950 text-slate-100 min-h-screen p-1' : 'bg-[#F2F8FC] text-[#172B75] min-h-screen'
       }`}
     >
       {/* Hidden File Input for Image Upload */}
@@ -209,7 +209,7 @@ export default function ProfileScreen({
       {/* Top User Profile Header */}
       <div
         className={`p-4 sm:p-5 rounded-3xl transition-colors ${
-          isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200/80 shadow-xs'
+          isDark ? 'bg-slate-900 border border-slate-800' : 'bg-[#FFFFFF] border border-[#D0E4F5] shadow-xs'
         }`}
       >
         <div className="flex items-center justify-between gap-3">
@@ -224,10 +224,10 @@ export default function ProfileScreen({
                 <img
                   src={profilePhoto}
                   alt={stats.userName}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md border-2 border-amber-500"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md border-2 border-[#002E6E]"
                 />
               ) : (
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 text-white flex items-center justify-center font-serif font-black text-xl shadow-md uppercase">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#002E6E] text-white flex items-center justify-center font-serif font-black text-xl shadow-md uppercase border-2 border-[#00B9F1]">
                   {stats.userInitials || 'SJ'}
                 </div>
               )}

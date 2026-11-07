@@ -803,7 +803,7 @@ function InvestmentAppMain() {
 
   // Prevent SSR Hydration Mismatch
   if (!hasMounted) {
-    return <div className="min-h-screen bg-[#faf6ee]" />;
+    return <div className="min-h-screen bg-[#F2F8FC]" />;
   }
 
   // 1. If admin route detected, render Admin Panel directly
@@ -890,18 +890,18 @@ function InvestmentAppMain() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans select-none antialiased">
+    <div className="min-h-screen bg-[#F2F8FC] text-[#172B75] flex flex-col font-sans select-none antialiased">
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1e2330] text-amber-400 text-xs sm:text-sm font-bold py-2.5 px-5 rounded-full border border-amber-500/40 shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
-          <span>✨</span>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#002E6E] text-white text-xs sm:text-sm font-bold py-2.5 px-5 rounded-full border border-[#00B9F1]/40 shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <span className="text-[#00B9F1]">✨</span>
           <span>{toastMessage}</span>
         </div>
       )}
 
       {isDesktop ? (
         /* Desktop Layout */
-        <div className="flex h-screen overflow-hidden bg-slate-100">
+        <div className="flex h-screen overflow-hidden bg-[#F2F8FC]">
           <DesktopSidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -928,14 +928,14 @@ function InvestmentAppMain() {
               onOpenCustomerList={() => setActiveModal('customer-list')}
               onOpenAdmin={() => setIsAdminRoute(true)}
             />
-            <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
+            <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F2F8FC]">
               {renderScreenContent(false)}
             </main>
           </div>
         </div>
       ) : (
-        /* Mobile Layout - Clean White Background */
-        <div className="flex-1 flex flex-col max-w-md mx-auto w-full bg-[#fcfbfa] min-h-screen relative pb-20 overflow-x-hidden shadow-2xl">
+        /* Mobile Layout - Paytm Background */
+        <div className="flex-1 flex flex-col max-w-md mx-auto w-full bg-[#F2F8FC] min-h-screen relative pb-20 overflow-x-hidden shadow-2xl">
           <MobileHeader
             stats={userStats}
             userStats={userStats}
@@ -956,11 +956,13 @@ function InvestmentAppMain() {
         </div>
       )}
 
+
       {/* Slide / Full Screen Modals */}
       <SlideFullScreenModal
         isOpen={activeModal === 'plan-detail'}
         onClose={() => setActiveModal('none')}
         title="Plan Details & Activate"
+        theme="navy"
       >
         {selectedPlanForDetail && (
           <PlanDetailContent
@@ -979,6 +981,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'confirm-invest'}
         onClose={() => setActiveModal('none')}
         title="Confirm Plan Activation"
+        theme="navy"
       >
         {selectedPlanForDetail && selectedCustomerForConfirm && (
           <ConfirmInvestContent
@@ -1001,6 +1004,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'deposit'}
         onClose={() => setActiveModal('none')}
         title="Recharge Wallet"
+        theme="navy"
       >
         <DepositContent
           currentBalance={userStats.walletBalance}
@@ -1017,6 +1021,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'withdraw'}
         onClose={() => setActiveModal('none')}
         title="Withdraw Payout"
+        theme="navy"
       >
         <WithdrawContent
           userStats={userStats}
@@ -1039,11 +1044,11 @@ function InvestmentAppMain() {
         />
       </SlideFullScreenModal>
 
-
       <SlideFullScreenModal
         isOpen={activeModal === 'tax-summary'}
         onClose={() => setActiveModal('none')}
         title="Tax & Earnings Summary"
+        theme="navy"
       >
         <TaxSummaryContent userStats={userStats} activeInvestments={activeInvestments} />
       </SlideFullScreenModal>
@@ -1052,6 +1057,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'notifications'}
         onClose={() => setActiveModal('none')}
         title="Notifications"
+        theme="navy"
       >
         <NotificationsContent />
       </SlideFullScreenModal>
@@ -1060,6 +1066,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'full-kyc'}
         onClose={() => setActiveModal('none')}
         title="Full KYC Verification"
+        theme="navy"
       >
         <FullKycContent
           userStats={userStats}
@@ -1074,6 +1081,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'add-customer'}
         onClose={() => setActiveModal('none')}
         title="Add Customer"
+        theme="navy"
       >
         <AddCustomerContent
           onSaveCustomer={(newCust) => {
@@ -1088,6 +1096,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'customer-list'}
         onClose={() => setActiveModal('none')}
         title="Customer Database"
+        theme="navy"
       >
         <CustomerListContent
           customers={customers}
@@ -1102,6 +1111,7 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'purchase-history'}
         onClose={() => setActiveModal('none')}
         title="Plan History"
+        theme="navy"
       >
         <PurchaseHistoryContent
           activeInvestments={activeInvestments}
@@ -1113,6 +1123,7 @@ function InvestmentAppMain() {
           onRefreshInvestments={() => {}}
         />
       </SlideFullScreenModal>
+
 
       {/* Official Government Investment Certificate Modal */}
       <InvestmentCertificateModal

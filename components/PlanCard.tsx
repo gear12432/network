@@ -139,7 +139,7 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
     return (
       <div
         onClick={() => onViewDetails?.(plan)}
-        className="bg-gradient-to-b from-[#fffefc] via-[#fffbf3] to-[#fbf2dd] rounded-2xl p-4 sm:p-5 border border-[#dfc38d] shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer group hover:border-[#caa050] hover:-translate-y-1 relative"
+        className="bg-[#FFFFFF] rounded-2xl p-4 sm:p-5 border border-[#D0E4F5] shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer group hover:border-[#00B9F1] hover:-translate-y-1 relative"
       >
         {/* Top Header: Icon & Category Badges */}
         <div className="flex items-start justify-between gap-2">
@@ -147,11 +147,11 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {plan.featured && (
-              <span className="text-[10px] bg-gradient-to-r from-[#d9a54c] to-[#be8832] text-[#2b1706] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+              <span className="text-[10px] bg-[#00B9F1] text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
                 HOT VIP
               </span>
             )}
-            <span className="text-[10px] bg-[#faecd4] text-[#965c19] border border-[#e8d2aa] font-bold px-2 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F2F8FC] text-[#002E6E] border border-[#D0E4F5] font-bold px-2 py-0.5 rounded-full">
               {plan.category}
             </span>
           </div>
@@ -159,40 +159,40 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
 
         {/* Plan Title & High ROI Highlight */}
         <div>
-          <h4 className="font-serif text-base font-black text-[#46280b] truncate tracking-tight group-hover:text-[#965c19] transition-colors mb-1">
+          <h4 className="font-serif text-base font-black text-[#172B75] truncate tracking-tight group-hover:text-[#002E6E] transition-colors mb-1">
             {plan.name}
           </h4>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-[#a16207] font-mono">
+            <span className="text-xl font-black text-[#002E6E] font-mono">
               {plan.roiPercentage}%
             </span>
-            <span className="text-[11px] font-semibold text-[#8a5b28]">Total Net Return</span>
+            <span className="text-[11px] font-semibold text-[#172B75]/70">Total Net Return</span>
           </div>
         </div>
 
         {/* 3 Metrics Mini Grid */}
-        <div className="grid grid-cols-3 gap-1.5 bg-[#f5e9d3]/70 p-2.5 rounded-xl border border-[#e4cc9f]/70 text-center">
+        <div className="grid grid-cols-3 gap-1.5 bg-[#F2F8FC] p-2.5 rounded-xl border border-[#D0E4F5] text-center">
           <div>
-            <span className="text-[9px] text-[#8a5b28] uppercase font-bold block">Days</span>
-            <span className="text-xs font-black text-[#46280b]">{plan.durationDays}d</span>
+            <span className="text-[9px] text-[#172B75]/70 uppercase font-bold block">Days</span>
+            <span className="text-xs font-black text-[#172B75]">{plan.durationDays}d</span>
           </div>
-          <div className="border-x border-[#dfbe7e]/60">
-            <span className="text-[9px] text-[#8a5b28] uppercase font-bold block">Daily</span>
-            <span className="text-xs font-black text-emerald-800">+₹{plan.dailyEarnings}</span>
+          <div className="border-x border-[#D0E4F5]">
+            <span className="text-[9px] text-[#172B75]/70 uppercase font-bold block">Daily</span>
+            <span className="text-xs font-black text-emerald-700">+₹{plan.dailyEarnings}</span>
           </div>
           <div>
-            <span className="text-[9px] text-[#8a5b28] uppercase font-bold block">Total</span>
-            <span className="text-xs font-black text-[#46280b]">₹{plan.totalReturn.toLocaleString('en-IN')}</span>
+            <span className="text-[9px] text-[#172B75]/70 uppercase font-bold block">Total</span>
+            <span className="text-xs font-black text-[#172B75]">₹{plan.totalReturn.toLocaleString('en-IN')}</span>
           </div>
         </div>
 
         {/* Bottom: Amount & Join Button */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#dfc38d]/60">
+        <div className="flex items-center justify-between pt-2 border-t border-[#D0E4F5]">
           <div>
-            <span className="text-[9px] text-[#8a5b28] font-bold block uppercase tracking-wider">
+            <span className="text-[9px] text-[#172B75]/70 font-bold block uppercase tracking-wider">
               Invest Amount
             </span>
-            <span className="text-base font-black text-[#46280b] font-mono">
+            <span className="text-base font-black text-[#002E6E] font-mono">
               ₹{plan.amount.toLocaleString('en-IN')}
             </span>
           </div>
@@ -202,10 +202,10 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
               e.stopPropagation();
               onJoin(plan);
             }}
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer group-hover:shadow-md"
+            className="bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer group-hover:shadow-md"
           >
             <span>Join</span>
-            <ArrowRight className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+            <ArrowRight className="w-3.5 h-3.5 text-[#00B9F1] stroke-[2.5]" />
           </button>
         </div>
       </div>

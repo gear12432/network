@@ -49,21 +49,21 @@ export default function DesktopSidebar({
 
   return (
     <aside
-      className={`sticky top-0 h-screen z-30 transition-all duration-300 ease-in-out flex flex-col justify-between shrink-0 bg-gradient-to-b from-[#2b1706] via-[#3a200a] to-[#200f04] text-[#ffeec9] border-r border-[#dfbe7e]/30 shadow-2xl overflow-y-auto overflow-x-hidden ${
+      className={`sticky top-0 h-screen z-30 transition-all duration-300 ease-in-out flex flex-col justify-between shrink-0 bg-gradient-to-b from-[#002E6E] via-[#00265c] to-[#001b44] text-white border-r border-[#00B9F1]/20 shadow-2xl overflow-y-auto overflow-x-hidden ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Top Branding & Hamburger Toggle */}
       <div>
-        <div className="flex items-center justify-between px-5 py-5 border-b border-[#dfbe7e]/30">
+        <div className="flex items-center justify-between px-5 py-5 border-b border-[#00B9F1]/20">
           {!collapsed && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#d9a54c] to-[#be8832] flex items-center justify-center font-serif font-black text-[#2b1706] text-base shadow-xs">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#00B9F1] to-[#008fc7] flex items-center justify-center font-black text-[#002E6E] text-base shadow-xs">
                 N
               </div>
               <div className="leading-tight">
-                <span className="font-serif font-black text-sm tracking-tight text-white block">NetworkJoin</span>
-                <span className="text-[10px] text-white/80 font-medium">VIP Palace Suite</span>
+                <span className="font-black text-sm tracking-tight text-white block">NetworkJoin</span>
+                <span className="text-[10px] text-[#00B9F1] font-medium">Pro Executive</span>
               </div>
             </div>
           )}
@@ -88,39 +88,39 @@ export default function DesktopSidebar({
             return (
               <div key={item.id} className="relative">
                 {isActive ? (
-                  /* Curved palace tab cutout matching main background bg-[#faf6ee] */
+                  /* Curved tab cutout matching main background bg-[#F2F8FC] */
                   <div
                     onClick={() => handleTabClick(item.id)}
-                    className="relative flex items-center gap-3.5 pl-6 py-3 bg-[#faf6ee] text-[#2b1706] font-serif font-black rounded-l-2xl shadow-xs cursor-pointer select-none"
+                    className="relative flex items-center gap-3.5 pl-6 py-3 bg-[#F2F8FC] text-[#002E6E] font-black rounded-l-2xl shadow-xs cursor-pointer select-none"
                   >
                     {/* Top corner reverse curve */}
                     <div className="absolute right-0 -top-4 w-4 h-4 overflow-hidden pointer-events-none">
-                      <div className="w-8 h-8 rounded-full bg-[#3a200a] absolute -top-4 -right-4 border-b border-r border-[#faf6ee]" />
+                      <div className="w-8 h-8 rounded-full bg-[#00265c] absolute -top-4 -right-4 border-b border-r border-[#F2F8FC]" />
                     </div>
 
-                    <div className="w-8 h-8 rounded-full bg-[#2b1706] flex items-center justify-center text-white shrink-0 border border-[#dfbe7e] shadow-xs">
+                    <div className="w-8 h-8 rounded-full bg-[#002E6E] flex items-center justify-center text-white shrink-0 border border-[#00B9F1]/40 shadow-xs">
                       <Icon className="w-4 h-4 stroke-[2.5] text-white" />
                     </div>
 
                     {!collapsed && (
-                      <span className="text-sm font-black text-[#2b1706] tracking-tight whitespace-nowrap">
+                      <span className="text-sm font-black text-[#002E6E] tracking-tight whitespace-nowrap">
                         {item.label}
                       </span>
                     )}
 
                     {/* Bottom corner reverse curve */}
                     <div className="absolute right-0 -bottom-4 w-4 h-4 overflow-hidden pointer-events-none">
-                      <div className="w-8 h-8 rounded-full bg-[#3a200a] absolute -bottom-4 -right-4 border-t border-r border-[#faf6ee]" />
+                      <div className="w-8 h-8 rounded-full bg-[#00265c] absolute -bottom-4 -right-4 border-t border-r border-[#F2F8FC]" />
                     </div>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleTabClick(item.id)}
-                    className={`w-full flex items-center gap-3.5 px-6 py-3 text-white hover:bg-white/10 transition-all rounded-l-xl group ${
+                    className={`w-full flex items-center gap-3.5 px-6 py-3 text-white/90 hover:text-white hover:bg-white/10 transition-all rounded-l-xl group ${
                       collapsed ? 'justify-center px-0' : ''
                     }`}
                   >
-                    <Icon className="w-5 h-5 shrink-0 text-white opacity-95 group-hover:opacity-100" />
+                    <Icon className="w-5 h-5 shrink-0 text-white/80 group-hover:text-[#00B9F1]" />
                     {!collapsed && (
                       <span className="text-sm font-semibold tracking-tight whitespace-nowrap text-white">
                         {item.label}
@@ -135,32 +135,33 @@ export default function DesktopSidebar({
       </div>
 
       {/* Bottom Promo & Logout */}
-      <div className="p-4 border-t border-[#dfbe7e]/30 space-y-3">
+      <div className="p-4 border-t border-[#00B9F1]/20 space-y-3">
         {!collapsed && (
-          <div className="bg-gradient-to-br from-[#4e2e0f] to-[#361c06] p-3 rounded-2xl border border-[#dfbe7e]/40 text-xs">
+          <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-[#00B9F1]/30 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-white mb-1">
-              <ShieldCheck className="w-4 h-4 text-[#ffd786]" />
+              <ShieldCheck className="w-4 h-4 text-[#00B9F1]" />
               <span>Instant VIP Payouts</span>
             </div>
-            <p className="text-[11px] text-[#fdebd0]/90 leading-relaxed mb-2.5">
+            <p className="text-[11px] text-white/85 leading-relaxed mb-2.5 font-medium">
               Zero platform fee on withdrawals to Bank / UPI accounts 24/7.
             </p>
             <div className="grid grid-cols-2 gap-1.5">
               <button
                 onClick={onOpenDeposit}
-                className="py-1 px-2 rounded-lg bg-gradient-to-r from-[#d9a54c] to-[#be8832] text-[#2b1706] font-black text-[11px] text-center hover:brightness-105 transition-colors shadow-xs"
+                className="py-1 px-2 rounded-lg bg-[#00B9F1] hover:bg-[#00a3d4] text-[#002E6E] font-black text-[11px] text-center transition-colors shadow-xs"
               >
                 Recharge
               </button>
               <button
                 onClick={onOpenWithdraw}
-                className="py-1 px-2 rounded-lg bg-[#2b1706] text-white border border-[#dfbe7e]/30 font-medium text-[11px] text-center hover:bg-[#200f04] transition-colors"
+                className="py-1 px-2 rounded-lg bg-[#002E6E] text-white border border-[#00B9F1]/40 font-bold text-[11px] text-center hover:bg-[#00204d] transition-colors"
               >
                 Withdraw
               </button>
             </div>
           </div>
         )}
+
 
         <button
           onClick={() => alert('Logged out safely. Welcome back anytime!')}

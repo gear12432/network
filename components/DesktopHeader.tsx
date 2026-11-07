@@ -35,40 +35,40 @@ export default function DesktopHeader({
   onOpenAddCustomer,
   onOpenCustomerList,
   onToggleMobileLayout,
-  onOpenAdmin,
+  onOpenAdmin: _onOpenAdmin,
 }: DesktopHeaderProps) {
   const currentStats = stats || userStats || INITIAL_USER_STATS;
 
   return (
-    <div className="sticky top-0 z-20 w-full bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] border-b border-[#dfbe7e] shadow-xs text-[#46280b]">
+    <div className="sticky top-0 z-20 w-full bg-[#FFFFFF] border-b border-[#D0E4F5] shadow-xs text-[#172B75]">
       {/* 1. Main Top Header Bar */}
       <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
         {/* Left: Section Title & Search Bar */}
         <div className="flex items-center gap-4 sm:gap-6 flex-1 max-w-2xl">
-          <div className="flex items-center gap-2 text-[#46280b] shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f5e4bd] to-[#edd199] border border-[#dfbe7e] text-[#5c3710] flex items-center justify-center shadow-2xs">
-              <LayoutGrid className="w-4 h-4 text-[#7d511f]" />
+          <div className="flex items-center gap-2 text-[#172B75] shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#E5F3FC] border border-[#00B9F1]/40 text-[#002E6E] flex items-center justify-center shadow-2xs">
+              <LayoutGrid className="w-4 h-4 text-[#002E6E]" />
             </div>
-            <span className="font-extrabold text-base tracking-tight text-[#46280b]">Dashboard</span>
+            <span className="font-extrabold text-base tracking-tight text-[#002E6E]">Dashboard</span>
           </div>
 
           {/* Divider */}
-          <div className="h-6 w-px bg-[#e4cc9f] hidden sm:block" />
+          <div className="h-6 w-px bg-[#D0E4F5] hidden sm:block" />
 
           {/* Search Bar */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#a68255] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#172B75]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder="Start typing to search plan, amount, or ROI..."
-              className="w-full pl-9 pr-4 py-2 bg-white/90 border border-[#dfbe7e] rounded-xl text-xs sm:text-sm text-[#46280b] placeholder-[#a68255] focus:outline-none focus:ring-2 focus:ring-[#d9a54c]/30 focus:border-[#d9a54c] transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-[#F2F8FC] border border-[#D0E4F5] rounded-xl text-xs sm:text-sm text-[#172B75] placeholder-[#172B75]/50 focus:outline-none focus:ring-2 focus:ring-[#00B9F1]/30 focus:border-[#00B9F1] transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => onSearchChange?.('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8a5b28] hover:text-[#46280b] font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#172B75]/60 hover:text-[#002E6E] font-bold"
               >
                 ✕
               </button>
@@ -82,28 +82,28 @@ export default function DesktopHeader({
           {onToggleMobileLayout && (
             <button
               onClick={onToggleMobileLayout}
-              className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#55361e] text-xs font-semibold transition-all border border-[#dfbe7e]"
+              className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F2F8FC] hover:bg-[#E5F3FC] active:scale-95 text-[#172B75] text-xs font-semibold transition-all border border-[#D0E4F5]"
               title="Switch to Mobile View"
             >
-              <Smartphone className="w-3.5 h-3.5 text-[#b87d23]" />
+              <Smartphone className="w-3.5 h-3.5 text-[#00B9F1]" />
               <span>Mobile View</span>
             </button>
           )}
 
-          {/* Buy Premium Gold Button */}
+          {/* Buy Premium Button */}
           <button
             onClick={onOpenProfile}
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d9a54c] via-[#e5b766] to-[#caa050] hover:brightness-105 active:scale-95 text-[#2b1706] text-xs font-black shadow-xs border border-[#caa050] transition-all cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white text-xs font-black shadow-xs border border-[#00B9F1]/40 transition-all cursor-pointer"
             title="Buy VIP Premium Upgrade"
           >
-            <Crown className="w-3.5 h-3.5 fill-[#2b1706]" />
+            <Crown className="w-3.5 h-3.5 text-[#00B9F1]" />
             <span>Buy Premium</span>
           </button>
 
           {/* Wallet Balance Chip */}
-          <div className="flex items-center gap-2 bg-[#fffcf5] border border-[#dfbe7e] rounded-xl px-3 py-1.5 shadow-2xs">
-            <span className="text-[10px] font-bold text-[#8a5b28] uppercase tracking-wider">Balance:</span>
-            <span className="text-xs sm:text-sm font-extrabold text-[#46280b] font-mono">
+          <div className="flex items-center gap-2 bg-[#F2F8FC] border border-[#D0E4F5] rounded-xl px-3 py-1.5 shadow-2xs">
+            <span className="text-[10px] font-bold text-[#172B75]/70 uppercase tracking-wider">Balance:</span>
+            <span className="text-xs sm:text-sm font-extrabold text-[#002E6E] font-mono">
               ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
             </span>
           </div>
@@ -117,29 +117,29 @@ export default function DesktopHeader({
                 document.exitFullscreen().catch(() => {});
               }
             }}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#f8eedb] hover:bg-[#ebd9bc] border border-[#dfbe7e] hidden sm:flex items-center justify-center text-[#55361e] transition-colors cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F2F8FC] hover:bg-[#E5F3FC] border border-[#D0E4F5] hidden sm:flex items-center justify-center text-[#172B75] transition-colors cursor-pointer"
             title="Toggle Fullscreen"
           >
-            <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7d511f]" />
+            <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#002E6E]" />
           </button>
 
           {/* Settings / Configuration */}
           <button
             onClick={onOpenProfile}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#f8eedb] hover:bg-[#ebd9bc] border border-[#dfbe7e] hidden sm:flex items-center justify-center text-[#55361e] transition-colors cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F2F8FC] hover:bg-[#E5F3FC] border border-[#D0E4F5] hidden sm:flex items-center justify-center text-[#172B75] transition-colors cursor-pointer"
             title="Settings & Profile"
           >
-            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7d511f]" />
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#002E6E]" />
           </button>
 
           {/* Notifications / History Bell */}
           <button
             onClick={onOpenHistory}
-            className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#f8eedb] hover:bg-[#ebd9bc] border border-[#dfbe7e] flex items-center justify-center text-[#55361e] transition-colors cursor-pointer"
+            className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F2F8FC] hover:bg-[#E5F3FC] border border-[#D0E4F5] flex items-center justify-center text-[#172B75] transition-colors cursor-pointer"
             title="Recent Transactions & Alerts"
           >
-            <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7d511f]" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#d9a54c]" />
+            <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#002E6E]" />
+            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#00B9F1]" />
           </button>
 
           {/* User Avatar */}
@@ -153,16 +153,16 @@ export default function DesktopHeader({
                 <img
                   src={currentStats.photoUrl}
                   alt="Profile"
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#d9a54c] shadow-2xs"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#002E6E] shadow-2xs"
                 />
               ) : (
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-[#ffe7b8] to-[#f4d188] border-2 border-[#d9a54c] flex items-center justify-center text-xs font-extrabold text-[#46280b] shadow-2xs">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#002E6E] border-2 border-[#00B9F1] flex items-center justify-center text-xs font-extrabold text-white shadow-2xs">
                   {currentStats?.userInitials || 'GK'}
                 </div>
               )}
               {currentStats?.isVip && (
-                <div className="absolute -bottom-1 -right-1 bg-[#d9a54c] text-[#2b1706] p-0.5 rounded-full shadow-xs">
-                  <Crown className="w-2.5 h-2.5 fill-[#2b1706]" />
+                <div className="absolute -bottom-1 -right-1 bg-[#00B9F1] text-white p-0.5 rounded-full shadow-xs">
+                  <Crown className="w-2.5 h-2.5 text-white" />
                 </div>
               )}
             </div>
@@ -171,17 +171,17 @@ export default function DesktopHeader({
       </div>
 
       {/* 2. Sub-Header Action Box: Customer, Customers Directory, Withdraw */}
-      <div className="bg-[#fbf5e7] border-t border-[#dfbe7e]/70 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+      <div className="bg-[#F2F8FC] border-t border-[#D0E4F5] px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
         {/* Action Buttons: Customer, Customers Directory, Withdraw */}
         <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           {/* + Customer Button */}
           {onOpenAddCustomer && (
             <button
               onClick={onOpenAddCustomer}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#4e2e0f] to-[#3a200a] hover:from-[#3a200a] hover:to-[#2b1706] active:scale-95 text-[#ffeec9] text-xs font-bold transition-all shadow-xs border border-[#d9a54c]/60 cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white text-xs font-bold transition-all shadow-xs border border-[#00B9F1]/40 cursor-pointer"
               title="Add New Customer"
             >
-              <UserPlus className="w-3.5 h-3.5 text-[#f5d082]" />
+              <UserPlus className="w-3.5 h-3.5 text-[#00B9F1]" />
               <span>+ Customer</span>
             </button>
           )}
@@ -190,10 +190,10 @@ export default function DesktopHeader({
           {onOpenCustomerList && (
             <button
               onClick={onOpenCustomerList}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#fffdfa] hover:bg-[#faecd4] active:scale-95 text-[#55361e] text-xs font-bold transition-all border border-[#dfbe7e] shadow-2xs cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#FFFFFF] hover:bg-[#E5F3FC] active:scale-95 text-[#002E6E] text-xs font-bold transition-all border border-[#D0E4F5] shadow-2xs cursor-pointer"
               title="View Customers Directory"
             >
-              <Users className="w-3.5 h-3.5 text-[#7d511f]" />
+              <Users className="w-3.5 h-3.5 text-[#00B9F1]" />
               <span>Customers Directory</span>
             </button>
           )}
@@ -202,7 +202,7 @@ export default function DesktopHeader({
           {onOpenWithdraw && (
             <button
               onClick={onOpenWithdraw}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d9a54c] to-[#be8832] hover:brightness-105 active:scale-95 text-[#2b1706] text-xs font-bold transition-all shadow-xs border border-[#caa050] cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#00B9F1] hover:bg-[#009bc7] active:scale-95 text-white text-xs font-bold transition-all shadow-xs border border-[#002E6E]/20 cursor-pointer"
               title="Withdraw Funds"
             >
               <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -212,9 +212,9 @@ export default function DesktopHeader({
         </div>
 
         {/* Right Info Badge */}
-        <div className="hidden sm:flex items-center gap-2 text-[11px] text-[#8a5b28] font-medium bg-[#f5e9d3]/80 px-3 py-1 rounded-lg border border-[#e4cc9f]">
+        <div className="hidden sm:flex items-center gap-2 text-[11px] text-[#172B75] font-medium bg-[#FFFFFF] px-3 py-1 rounded-lg border border-[#D0E4F5]">
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-          <span className="font-semibold text-[#55361e]">Direct Bank Settlement & Instant Payouts Active</span>
+          <span className="font-semibold text-[#002E6E]">Direct Bank Settlement & Instant Payouts Active</span>
         </div>
       </div>
     </div>

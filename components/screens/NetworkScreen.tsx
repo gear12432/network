@@ -500,8 +500,8 @@ export default function NetworkScreen({
       {/* =========================================================================
           5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
           ========================================================================= */}
-      <div className="bg-gradient-to-b from-[#fdfbf6] via-[#f8f1df] to-[#f4e8cb] rounded-3xl p-4 sm:p-5 shadow-xs">
-        <h3 className="text-center font-bold text-xs sm:text-sm text-[#4c2d15] uppercase tracking-wide mb-4">
+      <div className="bg-[#FFFFFF] rounded-3xl p-4 sm:p-5 shadow-xs border border-[#D0E4F5]">
+        <h3 className="text-center font-bold text-xs sm:text-sm text-[#002E6E] uppercase tracking-wide mb-4">
           TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
         </h3>
 

@@ -47,7 +47,7 @@ export default function MobileHeader({
   const avatarSrc = currentStats?.photoUrl || profilePhoto;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
+    <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#D0E4F5] px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-between shadow-xs">
       {/* Left: Avatar */}
       <div className="flex items-center gap-2">
         <div
@@ -60,10 +60,10 @@ export default function MobileHeader({
               <img
                 src={avatarSrc}
                 alt="Profile"
-                className="w-9 h-9 rounded-full object-cover border-2 border-blue-600 shadow-xs"
+                className="w-9 h-9 rounded-full object-cover border-2 border-[#002E6E] shadow-xs"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 via-blue-50 to-indigo-100 border-2 border-blue-600 flex items-center justify-center font-serif font-black text-blue-900 text-xs shadow-xs">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#E5F3FC] via-[#F2F8FC] to-[#D0E4F5] border-2 border-[#002E6E] flex items-center justify-center font-black text-[#002E6E] text-xs shadow-xs">
                 {currentStats?.userInitials || 'GK'}
               </div>
             )}
@@ -79,15 +79,14 @@ export default function MobileHeader({
       {/* Right: Wallet pill, + Customer button, History, Notification Bell */}
       <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Wallet pill */}
-        <div className="flex items-center bg-blue-50/80 border border-blue-200 rounded-full px-2.5 py-1 text-slate-800 shadow-2xs">
-          <Wallet className="w-4.5 h-4.5 text-[#020618] mr-1.5 shrink-0 stroke-[2.2]" />
-          <span className="text-xs sm:text-sm font-black text-slate-900 mr-1.5 font-mono">
+        <div className="flex items-center bg-[#F2F8FC] border border-[#D0E4F5] rounded-full px-2.5 py-1 text-[#172B75] shadow-2xs">
+          <Wallet className="w-4.5 h-4.5 text-[#002E6E] mr-1.5 shrink-0 stroke-[2.2]" />
+          <span className="text-xs sm:text-sm font-black text-[#172B75] mr-1.5 font-mono">
             ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
           </span>
           <button
             onClick={onOpenDeposit}
-            style={{ backgroundColor: '#008000' }}
-            className="w-5 h-5 rounded-full text-white flex items-center justify-center hover:brightness-110 transition-all shadow-xs active:scale-90 shrink-0 cursor-pointer"
+            className="w-5 h-5 rounded-full bg-[#002E6E] hover:bg-[#00204d] text-white flex items-center justify-center hover:brightness-110 transition-all shadow-xs active:scale-90 shrink-0 cursor-pointer border border-[#00B9F1]/40"
             title="Add Money"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
@@ -97,11 +96,10 @@ export default function MobileHeader({
         {/* + Customer button */}
         <button
           onClick={onOpenAddCustomer}
-          style={{ backgroundColor: '#9810FA' }}
-          className="flex items-center gap-1 hover:brightness-110 active:scale-95 text-white border border-[#9810FA] text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
+          className="flex items-center gap-1 bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white border border-[#00B9F1]/50 text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
           title="Add New Customer"
         >
-          <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <UserPlus className="w-3.5 h-3.5 text-[#00B9F1] stroke-[2.5]" />
           <span className="hidden xs:inline text-[11px] sm:text-xs">+ Customer</span>
           <span className="xs:hidden text-[11px]">+ Cust</span>
         </button>
@@ -109,7 +107,7 @@ export default function MobileHeader({
         {/* History / Clock button */}
         <button
           onClick={onOpenHistory}
-          className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-blue-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
+          className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-[#F2F8FC] hover:bg-[#E5F3FC] active:scale-95 text-[#002E6E] hover:text-[#00B9F1] border border-[#D0E4F5] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
           title="Transaction History"
           aria-label="Transaction History"
         >
@@ -119,12 +117,12 @@ export default function MobileHeader({
         {/* Notification Bell Icon */}
         <button
           onClick={onOpenNotifications}
-          className="relative w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-blue-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
+          className="relative w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-[#F2F8FC] hover:bg-[#E5F3FC] active:scale-95 text-[#002E6E] hover:text-[#00B9F1] border border-[#D0E4F5] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
           title="Notifications & Updates"
           aria-label="Notifications & Updates"
         >
           <Bell className="w-4.5 h-4.5 stroke-[2.4]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-1.5 ring-white" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00B9F1] ring-1.5 ring-white" />
         </button>
       </div>
     </header>

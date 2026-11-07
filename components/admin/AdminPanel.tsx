@@ -1269,11 +1269,11 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-[#edf1f5] text-slate-800 font-sans flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-[#F2F8FC] text-[#172B75] font-sans flex flex-col antialiased selection:bg-[#00B9F1] selection:text-white">
       {/* =========================================================================
-          1. TOP CYAN HEADER BAR (Matching FAB ADMIN Design + Sidebar Toggle)
+          1. TOP HEADER BAR (Paytm Blue Theme)
           ========================================================================= */}
-      <header className="bg-[#009aaa] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md z-30 shrink-0">
+      <header className="bg-[#002E6E] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md z-30 shrink-0 border-b border-[#00B9F1]/30">
         {/* Left: Sidebar Toggle Button + Logo Brand + Dropdown Control */}
         <div className="flex items-center gap-3">
           {/* Hamburger Sidebar Toggle Button */}
@@ -1452,7 +1452,7 @@ export default function AdminPanel() {
                             }}
                             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                               isActive
-                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                ? 'bg-[#002E6E] text-white shadow-md font-extrabold'
                                 : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                             }`}
                           >
@@ -1464,7 +1464,7 @@ export default function AdminPanel() {
                               {item.badge !== undefined && item.badge > 0 && (
                                 <span
                                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                    isActive ? 'bg-white text-[#002E6E]' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                                   }`}
                                 >
                                   {item.badge}
@@ -1500,7 +1500,7 @@ export default function AdminPanel() {
                             }}
                             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                               isActive
-                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                ? 'bg-[#002E6E] text-white shadow-md font-extrabold'
                                 : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                             }`}
                           >
@@ -1512,7 +1512,7 @@ export default function AdminPanel() {
                               {item.badge !== undefined && item.badge > 0 && (
                                 <span
                                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                    isActive ? 'bg-white text-[#002E6E]' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                                   }`}
                                 >
                                   {item.badge}
@@ -1550,7 +1550,7 @@ export default function AdminPanel() {
                             }}
                             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                               isActive
-                                ? 'bg-[#00a8cc] text-white shadow-md font-extrabold'
+                                ? 'bg-[#002E6E] text-white shadow-md font-extrabold'
                                 : 'text-slate-300 hover:bg-[#2c3747] hover:text-white'
                             }`}
                           >
@@ -1562,7 +1562,7 @@ export default function AdminPanel() {
                               {item.badge !== undefined && item.badge > 0 && (
                                 <span
                                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                                    isActive ? 'bg-white text-[#00a8cc]' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                                    isActive ? 'bg-white text-[#002E6E]' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
                                   }`}
                                 >
                                   {item.badge}
@@ -1761,7 +1761,7 @@ export default function AdminPanel() {
                           <div className="w-full flex items-end justify-center gap-1 h-28">
                             <div
                               style={{ height: `${bar.dep}%` }}
-                              className="w-3.5 bg-[#00a8cc] rounded-t-sm transition-all"
+                              className="w-3.5 bg-[#002E6E] rounded-t-sm transition-all"
                               title={`Deposit: ${bar.dep}%`}
                             />
                             <div
@@ -4957,7 +4957,7 @@ export default function AdminPanel() {
             {/* Top Header Card */}
             <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#00a8cc] to-[#007b99] text-white flex items-center justify-center shrink-0 shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#002E6E] to-[#007b99] text-white flex items-center justify-center shrink-0 shadow-md">
                   <Megaphone className="w-6 h-6" />
                 </div>
                 <div>
@@ -5161,7 +5161,7 @@ export default function AdminPanel() {
                     <button
                       type="submit"
                       disabled={popupSaving}
-                      className="w-full py-3.5 bg-gradient-to-r from-[#00a8cc] to-[#007b99] hover:from-[#0092b3] hover:to-[#006982] text-white font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+                      className="w-full py-3.5 bg-gradient-to-r from-[#002E6E] to-[#007b99] hover:from-[#0092b3] hover:to-[#006982] text-white font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
                     >
                       {popupSaving ? (
                         <>
@@ -5254,7 +5254,7 @@ export default function AdminPanel() {
                         <div className="pt-1">
                           <button
                             type="button"
-                            className="w-full py-2 bg-gradient-to-r from-[#00a8cc] to-[#007b99] text-white font-black text-xs rounded-xl shadow-xs"
+                            className="w-full py-2 bg-gradient-to-r from-[#002E6E] to-[#007b99] text-white font-black text-xs rounded-xl shadow-xs"
                           >
                             Explore Now
                           </button>
