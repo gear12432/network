@@ -632,9 +632,9 @@ export default function PurchaseHistoryContent({
                     </button>
                   ) : !isComplete ? (
                     /* DURATION NOT EXPIRED: SHOW TIMER ONLY, HIDE CLAIM BUTTON */
-                    <div className="px-3.5 py-1.5 bg-slate-900 text-amber-400 font-mono font-black text-xs rounded-xl border border-amber-500/40 flex items-center gap-1.5 shadow-2xs">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                      <span className="tracking-widest">{timerStr}</span>
+                    <div className="px-3.5 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-xl border border-[#00B9F1]/40 flex items-center gap-1.5 shadow-2xs">
+                      <Clock className="w-3.5 h-3.5 text-[#00B9F1] animate-pulse" />
+                      <span className="tracking-widest text-white">{timerStr}</span>
                     </div>
                   ) : (
                     /* DURATION EXPIRED: HIDE TIMER, SHOW CLEAN / CLAIM BUTTON */
@@ -722,9 +722,9 @@ export default function PurchaseHistoryContent({
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
                   ) : !isComplete ? (
                     /* DURATION NOT EXPIRED: TIMER ONLY */
-                    <div className="px-2.5 py-1 bg-slate-900 text-amber-400 font-mono font-bold text-[11px] rounded-lg border border-amber-500/30 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
-                      <span>{timerStr}</span>
+                    <div className="px-2.5 py-1 bg-[#002E6E] text-white font-mono font-bold text-[11px] rounded-lg border border-[#00B9F1]/30 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
+                      <span className="text-white">{timerStr}</span>
                     </div>
                   ) : (
                     /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */

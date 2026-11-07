@@ -202,7 +202,7 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
               e.stopPropagation();
               onJoin(plan);
             }}
-            className="bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer group-hover:shadow-md"
+            className="bg-[#172B75] hover:bg-[#0e1b4a] active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer group-hover:shadow-md"
           >
             <span>Join</span>
             <ArrowRight className="w-3.5 h-3.5 text-[#00B9F1] stroke-[2.5]" />
@@ -259,7 +259,7 @@ export default function PlanCard({ plan, onJoin, onViewDetails, viewMode = 'grid
             e.stopPropagation();
             onJoin(plan);
           }}
-          className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+          className="bg-[#172B75] hover:bg-[#0e1b4a] active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-xs flex items-center gap-1 cursor-pointer"
         >
           <span>Join</span>
         </button>

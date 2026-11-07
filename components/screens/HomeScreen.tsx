@@ -19,6 +19,7 @@ import {
   UserCheck,
   X,
   Megaphone,
+  Check,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { InvestmentPlan, Category, UserStats, ActiveInvestment } from '@/types/investment';
@@ -96,13 +97,16 @@ export default function HomeScreen({
   const [homePopup, setHomePopup] = useState<HomePopupSettings | null>(null);
   const [showPopupModal, setShowPopupModal] = useState<boolean>(false);
 
-  // Load and listen to Home Screen Popup settings in real-time
+  // Load and listen to Home Screen Popup settings in real-time (Once per day)
   useEffect(() => {
     getHomePopupFromFirestore().then((popup) => {
-      if (popup) {
+      if (popup && popup.active) {
         setHomePopup(popup);
-        if (popup.active) {
+        const lastShown = localStorage.getItem('home_popup_last_shown_date');
+        const today = new Date().toDateString();
+        if (lastShown !== today) {
           setShowPopupModal(true);
+          localStorage.setItem('home_popup_last_shown_date', today);
         }
       }
     });
@@ -116,7 +120,12 @@ export default function HomeScreen({
             const data = snap.data() as HomePopupSettings;
             setHomePopup(data);
             if (data.active) {
-              setShowPopupModal(true);
+              const lastShown = localStorage.getItem('home_popup_last_shown_date');
+              const today = new Date().toDateString();
+              if (lastShown !== today) {
+                setShowPopupModal(true);
+                localStorage.setItem('home_popup_last_shown_date', today);
+              }
             } else {
               setShowPopupModal(false);
             }
@@ -527,9 +536,10 @@ export default function HomeScreen({
             {onOpenFullKyc && (
               <button
                 onClick={onOpenFullKyc}
-                className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold rounded-lg transition-all shadow-xs shrink-0 cursor-pointer"
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold rounded-lg transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
               >
-                Full KYC
+                <Check className="w-3 h-3 text-white stroke-[3]" />
+                <span>Full KYC</span>
               </button>
             )}
           </div>
@@ -556,7 +566,7 @@ export default function HomeScreen({
                   onOpenPurchaseHistory();
                 }
               }}
-              style={{ backgroundColor: '#C27AFF' }}
+              style={{ backgroundColor: '#00B9F1' }}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:brightness-110 active:scale-95 text-white font-extrabold text-[11px] sm:text-xs shadow-xs transition-all cursor-pointer shrink-0"
               title="Plan History"
             >
