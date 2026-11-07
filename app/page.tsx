@@ -1031,9 +1031,14 @@ function InvestmentAppMain() {
         isOpen={activeModal === 'history'}
         onClose={() => setActiveModal('none')}
         title="Transaction History"
+        theme="navy"
       >
-        <HistoryContent transactions={transactions} />
+        <HistoryContent
+          transactions={transactions}
+          userStats={userStats}
+        />
       </SlideFullScreenModal>
+
 
       <SlideFullScreenModal
         isOpen={activeModal === 'tax-summary'}

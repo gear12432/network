@@ -26,7 +26,7 @@ import { collection, onSnapshot } from 'firebase/firestore';
 interface HelpdeskChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userStats: UserStats;
+  userStats?: UserStats;
 }
 
 export default function HelpdeskChatModal({
@@ -34,6 +34,7 @@ export default function HelpdeskChatModal({
   onClose,
   userStats,
 }: HelpdeskChatModalProps) {
+
   const [messages, setMessages] = useState<SupportChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -54,7 +55,11 @@ export default function HelpdeskChatModal({
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
   const isTouchDevice = useRef(false);
 
-  const myUid = userStats.loginUid || 'GK35648';
+  const myUid =
+    userStats?.loginUid ||
+    (typeof window !== 'undefined'
+      ? localStorage.getItem('network_join_pro_logged_in_uid') || 'GK35648'
+      : 'GK35648');
   const isSelectionMode = selectedMsgIds.length > 0;
 
   // Initial welcome message fallback if chat is empty
@@ -63,10 +68,11 @@ export default function HelpdeskChatModal({
     sender: 'admin',
     senderName: 'VIP Helpdesk Support',
     userUid: myUid,
-    text: `Hello ${userStats.userName || 'Valued Partner'}, welcome to 24/7 VIP Helpdesk! How can we assist you with your investments, withdrawals, or account today?`,
+    text: `Hello ${userStats?.userName || 'Valued Partner'}, welcome to 24/7 VIP Helpdesk! How can we assist you with your investments, withdrawals, or account today?`,
     timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
     createdAt: Date.now() - 60000,
   };
+
 
   // 1. Fetch & Subscribe to Firestore Chat Messages in Real-Time
   useEffect(() => {
@@ -121,7 +127,7 @@ export default function HelpdeskChatModal({
       isMounted = false;
       unsubscribe();
     };
-  }, [isOpen, myUid, userStats.userName]);
+  }, [isOpen, myUid, userStats?.userName]);
 
   // Scroll to bottom on new message if not selecting
   useEffect(() => {
@@ -170,13 +176,14 @@ export default function HelpdeskChatModal({
     const newMsg: SupportChatMessage = {
       id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       sender: 'user',
-      senderName: userStats.userName || 'VIP Member',
+      senderName: userStats?.userName || 'VIP Member',
       senderUid: myUid,
       userUid: myUid,
-      userName: userStats.userName || 'VIP Member',
-      userMobile: userStats.mobile || '',
+      userName: userStats?.userName || 'VIP Member',
+      userMobile: userStats?.mobile || '',
       text: trimmedText || undefined,
       imageUrl: selectedImage || undefined,
+
       timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
       createdAt: Date.now(),
     };
@@ -329,8 +336,9 @@ export default function HelpdeskChatModal({
               </span>
             </div>
             <p className="text-[11px] text-amber-100/90 font-mono mt-0.5">
-              UID: {myUid} • {userStats.userName}
+              UID: {myUid} • {userStats?.userName || 'VIP Member'}
             </p>
+
           </div>
         </div>
 
