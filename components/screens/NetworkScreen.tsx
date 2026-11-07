@@ -482,12 +482,12 @@ export default function NetworkScreen({
         {(['This Week', 'Yesterday Earn', 'Last Week'] as TimeFilter[]).map((filter) => {
           const isActive = timeFilter === filter;
           return (
-            <button
+             <button
               key={filter}
               onClick={() => setTimeFilter(filter)}
               className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center cursor-pointer ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-black'
+                  ? 'bg-[#002E6E] text-white shadow-sm shadow-[#002E6E]/30 font-black'
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -500,13 +500,16 @@ export default function NetworkScreen({
       {/* =========================================================================
           5. LEADERBOARD PODIUM: TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
           ========================================================================= */}
-      <div className="bg-[#FFFFFF] rounded-3xl p-4 sm:p-5 shadow-xs border border-[#D0E4F5]">
-        <h3 className="text-center font-bold text-xs sm:text-sm text-[#002E6E] uppercase tracking-wide mb-4">
-          TOP 3 CUSTOMERS WHO PURCHASED THE PLAN THE MOST
-        </h3>
+      <div className="bg-[#FFFFFF] rounded-3xl overflow-hidden shadow-xs border border-[#00B9F1]/40">
+        {/* Top Header Bar (#00B9F1) */}
+        <div className="bg-[#00B9F1] px-4 py-3 text-white text-center font-black text-xs sm:text-sm tracking-wide">
+          TOP 3 CUSTOMERS LEADERBOARD
+        </div>
 
-        {/* 3D Marble Podium Pedestals */}
-        <div className="grid grid-cols-3 items-end gap-2 pt-8 pb-3 max-w-md mx-auto">
+        {/* Body (#F2F8FC) */}
+        <div className="p-4 sm:p-5 bg-[#F2F8FC]">
+          {/* 3D Marble Podium Pedestals */}
+          <div className="grid grid-cols-3 items-end gap-2 pt-6 pb-2 max-w-md mx-auto">
           {/* RANK 2: LEFT SILVER PEDESTAL */}
           <div
             onClick={() => rank2 && setSelectedInvestmentDetails(rank2)}
@@ -630,6 +633,7 @@ export default function NetworkScreen({
           </div>
         </div>
       </div>
+    </div>
 
       {/* =========================================================================
           7. RANKED TABLE: CUSTOMER PLAN PURCHASE DISTRIBUTION LIST VIEW
