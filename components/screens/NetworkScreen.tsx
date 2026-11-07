@@ -640,16 +640,6 @@ export default function NetworkScreen({
           Rank | Customer ID & Name | Plan Purchased | Total Earnings
           ========================================================================= */}
       <div className="space-y-2 pt-2">
-        <div className="flex items-center justify-between px-1">
-          <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#D0872E]" />
-            <span>CUSTOMER PLAN PURCHASE DISTRIBUTION</span>
-          </h4>
-          <span className="text-[10px] text-slate-500 font-bold">
-            {allCustomerPurchases.length} Active in Firebase
-          </span>
-        </div>
-
         {/* Table Header Bar */}
         <div className="bg-[#edd8ba] rounded-xl px-3 sm:px-4 py-2 grid grid-cols-12 text-[10.5px] sm:text-xs font-bold text-[#55361e] shadow-xs">
           <span className="col-span-2 text-center">Rank</span>
@@ -664,7 +654,7 @@ export default function NetworkScreen({
             <div
               key={item.id}
               onClick={() => setSelectedInvestmentDetails(item)}
-              className="bg-gradient-to-r from-[#fffefc] via-[#fffbf3] to-[#fcf5e5] rounded-xl px-3 sm:px-4 py-2.5 grid grid-cols-12 items-center text-xs sm:text-sm shadow-2xs hover:bg-[#fff7e6] hover:shadow-xs transition-all cursor-pointer border border-amber-200/50 group"
+              className="bg-transparent px-3 sm:px-4 py-3 grid grid-cols-12 items-center text-xs sm:text-sm transition-all cursor-pointer border-b border-[#172B75] group"
             >
               {/* Rank Badge */}
               <div className="col-span-2 flex items-center justify-center">
