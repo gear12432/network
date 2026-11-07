@@ -312,7 +312,7 @@ export default function HelpdeskChatModal({
   return (
     <div className="fixed inset-0 z-50 w-full h-full min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col overflow-hidden animate-in fade-in duration-200">
       {/* 1. Full-Width Top Header */}
-      <div className="w-full px-3.5 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white flex items-center justify-between shrink-0 shadow-md">
+      <div className="w-full px-3.5 sm:px-6 py-3 sm:py-3.5 bg-[#002E6E] text-white flex items-center justify-between shrink-0 shadow-md">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -323,19 +323,19 @@ export default function HelpdeskChatModal({
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 shadow-xs">
-            <Headphones className="w-5 h-5 text-amber-200 stroke-[2.5]" />
+          <div className="w-10 h-10 rounded-2xl bg-[#00B9F1]/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-[#00B9F1]/40 shadow-xs">
+            <Headphones className="w-5 h-5 text-[#00B9F1] stroke-[2.5]" />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-sm sm:text-base leading-tight">24/7 VIP Helpdesk</h3>
+              <h3 className="font-extrabold text-sm sm:text-base leading-tight text-white">24/7 VIP Helpdesk</h3>
               <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/25 text-emerald-100 px-2 py-0.5 rounded-full font-bold border border-emerald-400/40">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 Online
               </span>
             </div>
-            <p className="text-[11px] text-amber-100/90 font-mono mt-0.5">
+            <p className="text-[11px] text-[#00B9F1] font-mono mt-0.5">
               UID: {myUid} • {userStats?.userName || 'VIP Member'}
             </p>
 
@@ -353,13 +353,13 @@ export default function HelpdeskChatModal({
       </div>
 
       {/* 2. Security / VIP Status Ribbon */}
-      <div className="w-full bg-amber-50 dark:bg-slate-900 px-3.5 sm:px-6 py-2 border-b border-amber-200/70 dark:border-slate-800 flex items-center justify-between text-[11px] text-amber-900 dark:text-amber-200 shrink-0">
+      <div className="w-full bg-[#F2F8FC] px-3.5 sm:px-6 py-2 border-b border-[#172B75] flex items-center justify-between text-[11px] text-[#172B75] shrink-0">
         <div className="flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-[#002E6E] shrink-0" />
           <span className="font-bold">256-Bit Encrypted VIP Support Channel</span>
         </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-amber-700 dark:text-amber-300">
-          <Sparkles className="w-3 h-3 text-amber-500 animate-spin" />
+        <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-[#002E6E]">
+          <Sparkles className="w-3 h-3 text-[#00B9F1] animate-spin" />
           Fast Response
         </span>
       </div>
@@ -423,8 +423,8 @@ export default function HelpdeskChatModal({
                       isSelected ? 'ring-4 ring-rose-500 shadow-xl' : ''
                     } ${
                       isUser
-                        ? 'bg-amber-600 dark:bg-amber-600 rounded-tr-none'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-tl-none shadow-xs'
+                        ? 'bg-[#002E6E] text-white rounded-tr-none'
+                        : 'bg-white dark:bg-slate-900 border border-[#172B75] dark:border-slate-800 rounded-tl-none shadow-xs'
                     }`}
                   >
                     {/* Attached Image (Edge-to-Edge inside bubble, zero outer padding) */}
@@ -595,7 +595,7 @@ export default function HelpdeskChatModal({
             type="submit"
             onClick={handleSendMessage}
             disabled={(!inputText.trim() && !selectedImage) || isUploading}
-            className="p-3 px-4 sm:px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-amber-950 font-extrabold shadow-md transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1.5"
+            className="p-3 px-4 sm:px-5 rounded-2xl bg-[#002E6E] hover:bg-[#001f4e] disabled:opacity-40 text-white font-extrabold shadow-md transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1.5"
             title="Send Message"
           >
             <Send className="w-5 h-5 stroke-[2.5]" />

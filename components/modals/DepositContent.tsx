@@ -187,16 +187,16 @@ export default function DepositContent({
   return (
     <div className="space-y-4 text-slate-900">
       {/* Current Balance Banner */}
-      <div className="bg-blue-600 text-white rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
+      <div className="bg-[#002E6E] text-white rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
         <div>
-          <span className="text-[11px] text-blue-100 block">Current Balance</span>
+          <span className="text-[11px] text-[#00B9F1] block">Current Balance</span>
           <span className="text-xl font-black text-white font-mono">
             ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-blue-200 block">Gateway</span>
-          <span className="text-xs font-bold text-blue-900 bg-white px-2 py-0.5 rounded-md">
+          <span className="text-[10px] text-[#00B9F1] block">Gateway</span>
+          <span className="text-xs font-bold text-[#002E6E] bg-white px-2 py-0.5 rounded-md">
             Fast UPI 2.0
           </span>
         </div>
@@ -222,8 +222,8 @@ export default function DepositContent({
                     }}
                     className={`py-2 px-1 text-center rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                        : 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50'
+                        ? 'bg-[#002E6E] text-white border-[#002E6E] shadow-xs'
+                        : 'bg-white text-slate-900 border-[#172B75]/40 hover:bg-slate-50'
                     }`}
                   >
                     ₹{amt.toLocaleString('en-IN')}
@@ -249,8 +249,8 @@ export default function DepositContent({
           </div>
 
           {/* Payment Gateway Options */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-2.5">
-            <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
+          <div className="bg-white rounded-2xl p-4 border border-[#172B75]/40 shadow-xs space-y-2.5">
+            <label className="text-xs font-black text-[#172B75] uppercase tracking-wider block">
               Select Payment Method
             </label>
             <div className="grid grid-cols-2 gap-2.5">
@@ -267,17 +267,17 @@ export default function DepositContent({
                     onClick={() => setPaymentMethod(m.id as any)}
                     className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-blue-50/60 border-blue-600 ring-1 ring-blue-500/30 shadow-xs'
-                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                        ? 'bg-[#F2F8FC] border-[#002E6E] ring-1 ring-[#00B9F1]/30 shadow-xs'
+                        : 'bg-white border-[#172B75]/40 hover:bg-slate-50'
                     }`}
                   >
                     <div>
-                      <span className="text-xs font-bold text-slate-900 block">{m.name}</span>
-                      <span className="text-[10px] text-blue-600 font-semibold">{m.badge}</span>
+                      <span className="text-xs font-bold text-[#172B75] block">{m.name}</span>
+                      <span className="text-[10px] text-[#002E6E] font-semibold">{m.badge}</span>
                     </div>
                     <div
                       className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
+                        isSelected ? 'border-[#002E6E] bg-[#002E6E]' : 'border-slate-300'
                       }`}
                     >
                       {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -289,8 +289,8 @@ export default function DepositContent({
           </div>
 
           {/* Zero Fee Guarantee Note */}
-          <div className="bg-blue-50 text-blue-900 rounded-xl p-3 text-xs flex items-center gap-2 border border-blue-100">
-            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+          <div className="bg-[#F2F8FC] text-[#172B75] rounded-xl p-3 text-xs flex items-center gap-2 border border-[#00B9F1]/40">
+            <ShieldCheck className="w-4 h-4 text-[#002E6E] shrink-0" />
             <span className="font-medium">100% Secure Payment • 0% Deposit Fee • Instant Auto-Credit</span>
           </div>
 
@@ -300,11 +300,11 @@ export default function DepositContent({
             disabled={amountToDeposit < 100}
             className={`w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
               amountToDeposit >= 100
-                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
+                ? 'bg-[#002E6E] hover:bg-[#001f4e] text-white shadow-[#002E6E]/30'
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Zap className="w-4 h-4 text-blue-200" />
+            <Zap className="w-4 h-4 text-[#00B9F1]" />
             <span>Pay ₹{amountToDeposit.toLocaleString('en-IN')} Instantly</span>
           </button>
         </div>
@@ -467,13 +467,13 @@ export default function DepositContent({
               <button
                 onClick={handleSubmitPayment}
                 disabled={isSubmitting}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 bg-[#002E6E] hover:bg-[#001f4e] active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>सबमिट हो रहा है...</span>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4 text-blue-200" />
+                    <Zap className="w-4 h-4 text-[#00B9F1]" />
                     <span>Submit Payment (सबमिट करें)</span>
                   </>
                 )}

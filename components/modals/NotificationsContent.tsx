@@ -11,7 +11,7 @@ export default function NotificationsContent() {
       desc: '₹248.50 has been generated today from your active plans. Tap Claim to credit to wallet.',
       time: '10 mins ago',
       icon: Gift,
-      color: 'bg-[#faecd4] text-[#8a5416] border border-[#dfbe7e]',
+      color: 'bg-[#F2F8FC] text-[#002E6E] border border-[#00B9F1]/40',
     },
     {
       id: 2,
@@ -19,7 +19,7 @@ export default function NotificationsContent() {
       desc: 'Your Full KYC Aadhaar & PAN verification is active. Instant 24/7 withdrawals enabled.',
       time: '2 hours ago',
       icon: ShieldCheck,
-      color: 'bg-[#faecd4] text-[#8a5416] border border-[#dfbe7e]',
+      color: 'bg-[#F2F8FC] text-[#002E6E] border border-[#00B9F1]/40',
     },
     {
       id: 3,
@@ -27,7 +27,7 @@ export default function NotificationsContent() {
       desc: 'Withdrawal settlement speed is currently under 60 seconds with 0% platform fee.',
       time: 'Today, 08:30 AM',
       icon: Sparkles,
-      color: 'bg-[#faecd4] text-[#8a5416] border border-[#dfbe7e]',
+      color: 'bg-[#F2F8FC] text-[#002E6E] border border-[#00B9F1]/40',
     },
     {
       id: 4,
@@ -35,17 +35,17 @@ export default function NotificationsContent() {
       desc: 'Gold Elite Accelerator plan is now live with 40% net returns in 45 days.',
       time: 'Yesterday',
       icon: TrendingUp,
-      color: 'bg-[#faecd4] text-[#8a5416] border border-[#dfbe7e]',
+      color: 'bg-[#F2F8FC] text-[#002E6E] border border-[#00B9F1]/40',
     },
   ];
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1 mb-1">
-        <span className="text-xs font-bold text-[#7a5328] uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#172B75] uppercase tracking-wider">
           System Alerts & Updates
         </span>
-        <span className="text-xs text-[#22c55e] font-bold bg-[#faecd4] border border-[#dfbe7e] px-2 py-0.5 rounded-full">
+        <span className="text-xs text-emerald-600 font-bold bg-[#F2F8FC] border border-[#00B9F1]/40 px-2 py-0.5 rounded-full">
           All Systems Live
         </span>
       </div>
@@ -56,17 +56,17 @@ export default function NotificationsContent() {
           return (
             <div
               key={alert.id}
-              className="bg-gradient-to-b from-[#fffefc] via-[#fbf5e7] to-[#f4e4c2] rounded-2xl p-3.5 border-2 border-[#dfbe7e] shadow-xs flex items-start gap-3 hover:border-[#c59c55] transition-colors"
+              className="bg-white rounded-2xl p-3.5 border border-[#172B75] shadow-xs flex items-start gap-3 hover:border-[#002E6E] transition-colors"
             >
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${alert.color}`}>
                 <Icon className="w-4 h-4 stroke-[2.2]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <h4 className="text-xs font-bold text-[#46280b] truncate">{alert.title}</h4>
-                  <span className="text-[10px] text-[#7a5328] shrink-0">{alert.time}</span>
+                  <h4 className="text-xs font-bold text-[#172B75] truncate">{alert.title}</h4>
+                  <span className="text-[10px] text-slate-500 shrink-0">{alert.time}</span>
                 </div>
-                <p className="text-[11px] text-[#7a5328] leading-relaxed">{alert.desc}</p>
+                <p className="text-[11px] text-slate-600 leading-relaxed">{alert.desc}</p>
               </div>
             </div>
           );

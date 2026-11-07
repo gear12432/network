@@ -249,24 +249,24 @@ export default function AddCustomerContent({
 
       <form onSubmit={handleStartSave} className="space-y-4">
         {/* BOX 1: Customer Personal Details - CLEAN WHITE BACKGROUND */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+        <div className="bg-white rounded-2xl p-4 border border-[#172B75]/40 shadow-xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h4 className="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
-              <User className="w-4 h-4 text-blue-600" />
+            <h4 className="font-black text-[#172B75] text-xs sm:text-sm flex items-center gap-1.5">
+              <User className="w-4 h-4 text-[#002E6E]" />
               <span>Customer Personal Details</span>
             </h4>
 
             {/* Auto Generated Customer ID */}
-            <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
-              <span className="text-[10px] font-extrabold text-blue-700 uppercase">ID:</span>
-              <span className="text-xs font-mono font-black text-blue-900">
+            <div className="flex items-center gap-1.5 bg-[#F2F8FC] border border-[#00B9F1]/40 px-2.5 py-1 rounded-lg">
+              <span className="text-[10px] font-extrabold text-[#002E6E] uppercase">ID:</span>
+              <span className="text-xs font-mono font-black text-[#172B75]">
                 {customerId}
               </span>
               <button
                 type="button"
                 onClick={handleRegenerateId}
                 disabled={isSaving}
-                className="text-blue-600 hover:text-blue-800 p-0.5 transition-colors cursor-pointer"
+                className="text-[#002E6E] hover:text-[#001f4e] p-0.5 transition-colors cursor-pointer"
                 title="Regenerate ID"
               >
                 <RefreshCw className="w-3 h-3" />
@@ -480,7 +480,7 @@ export default function AddCustomerContent({
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-md shadow-blue-500/25 transition-all disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer"
+            className="px-6 py-3 rounded-xl bg-[#002E6E] hover:bg-[#001f4e] active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-md shadow-[#002E6E]/25 transition-all disabled:opacity-90 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSaving ? (
               <>
