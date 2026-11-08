@@ -49,6 +49,7 @@ import {
   Menu,
   Megaphone,
   SlidersHorizontal,
+  ShieldCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -5756,134 +5757,219 @@ export default function AdminPanel() {
                   </div>
 
                   {/* Simulated Certificate Container */}
-                  <div className="bg-white p-3 rounded-xl border-2 border-amber-500/80 shadow-md relative text-slate-900 font-sans space-y-2 overflow-hidden w-full">
-                    {/* Decorative Corner Graphics */}
-                    <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-90">
-                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-500 fill-current">
+                  <div
+                    className="p-3 rounded-xl border-2 shadow-md relative font-sans space-y-2 overflow-hidden w-full"
+                    style={{
+                      backgroundColor: '#F2F8FC',
+                      borderColor: '#172B75',
+                      color: '#172B75',
+                    }}
+                  >
+                    {/* Top Decorative Corner Graphics (#00B9F1) */}
+                    <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-95">
+                      <svg viewBox="0 0 100 100" className="w-full h-full fill-current" style={{ color: '#00B9F1' }}>
                         <path d="M0 0 L100 0 C60 20 20 60 0 100 Z" />
                       </svg>
                     </div>
-                    <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none opacity-90">
-                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600 fill-current">
+                    <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none opacity-95">
+                      <svg viewBox="0 0 100 100" className="w-full h-full fill-current" style={{ color: '#00B9F1' }}>
                         <path d="M100 0 L0 0 C40 20 80 60 100 100 Z" />
                       </svg>
                     </div>
-                    <div className="absolute bottom-0 right-0 w-16 h-16 pointer-events-none opacity-90">
-                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-500 fill-current">
+
+                    {/* Bottom Decorative Corner Graphics (#002E6E) */}
+                    <div className="absolute bottom-0 right-0 w-16 h-16 pointer-events-none opacity-95">
+                      <svg viewBox="0 0 100 100" className="w-full h-full fill-current" style={{ color: '#002E6E' }}>
                         <path d="M100 100 L0 100 C40 80 80 40 100 0 Z" />
                       </svg>
                     </div>
-                    <div className="absolute bottom-0 left-0 w-16 h-16 pointer-events-none opacity-90">
-                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600 fill-current">
+                    <div className="absolute bottom-0 left-0 w-16 h-16 pointer-events-none opacity-95">
+                      <svg viewBox="0 0 100 100" className="w-full h-full fill-current" style={{ color: '#002E6E' }}>
                         <path d="M0 100 L100 100 C60 80 20 40 0 0 Z" />
                       </svg>
                     </div>
 
                     {/* Header Branding */}
-                    <div className="relative z-10 text-center space-y-0.5 pt-0.5 border-b border-amber-200 pb-1.5">
+                    <div
+                      className="relative z-10 text-center space-y-0.5 pt-0.5 border-b pb-1.5"
+                      style={{ borderColor: 'rgba(0, 185, 241, 0.4)' }}
+                    >
                       <div className="flex items-center justify-center gap-1.5">
                         {appSettings.appLogo ? (
                           <img
                             src={appSettings.appLogo}
                             alt="Logo"
-                            className="w-8 h-8 rounded-full object-contain bg-white border border-amber-400 p-0.5 shadow-xs"
+                            className="w-8 h-8 rounded-full object-contain bg-white border-2 p-0.5 shadow-xs"
+                            style={{ borderColor: '#00B9F1' }}
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                          <div
+                            className="w-8 h-8 rounded-full text-white font-black text-xs flex items-center justify-center shadow-xs border-2"
+                            style={{ backgroundColor: '#002E6E', borderColor: '#00B9F1' }}
+                          >
                             {appSettings.appShortName || 'NJP'}
                           </div>
                         )}
                       </div>
 
-                      <h1 className="text-lg font-black tracking-wide text-amber-700 uppercase font-serif">
+                      <h1
+                        className="text-lg font-black tracking-wide uppercase font-serif"
+                        style={{ color: '#002E6E' }}
+                      >
                         CERTIFICATE
                       </h1>
-                      <p className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">
+                      <p
+                        className="text-[9px] font-black uppercase tracking-wider"
+                        style={{ color: '#172B75' }}
+                      >
                         OF INVESTMENT BOND PARTICIPATION
                       </p>
                     </div>
 
-                    {/* Customer Mock Card */}
-                    <div className="relative z-10 bg-amber-50/50 border border-amber-200/90 rounded-lg p-2 flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                    {/* Customer Mock Card (Card: #FFFFFF) */}
+                    <div
+                      className="relative z-10 bg-white border-2 rounded-lg p-2 flex items-center gap-2 shadow-2xs"
+                      style={{ borderColor: 'rgba(0, 185, 241, 0.5)' }}
+                    >
+                      <div
+                        className="w-9 h-9 rounded-lg text-white font-black text-xs flex items-center justify-center shrink-0 border"
+                        style={{ backgroundColor: '#002E6E', borderColor: '#00B9F1' }}
+                      >
                         BB
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
-                          <strong className="text-xs font-black text-slate-900 truncate">BBBB</strong>
-                          <span className="text-[8px] font-mono text-amber-900 bg-amber-100 px-1 rounded">ID: CUST-587393</span>
+                          <strong className="text-xs font-black truncate" style={{ color: '#172B75' }}>BBBB</strong>
+                          <span
+                            className="text-[8px] font-mono px-1 rounded border"
+                            style={{ backgroundColor: '#F2F8FC', color: '#002E6E', borderColor: '#00B9F1' }}
+                          >
+                            ID: CUST-587393
+                          </span>
                         </div>
-                        <span className="text-[10px] text-slate-600 block truncate">+91 9000000009 • Nxnxbx, Uttar Pradesh</span>
+                        <span className="text-[10px] block truncate" style={{ color: '#172B75' }}>
+                          +91 9000000009 • Nxnxbx, Uttar Pradesh
+                        </span>
                       </div>
                     </div>
 
                     {/* Plan Details Box with Dynamic Application Name */}
-                    <div className="relative z-10 bg-white border border-slate-200 rounded-lg overflow-hidden text-xs shadow-2xs">
-                      <div className="bg-slate-50 border-b border-slate-200 px-2 py-1 flex items-center justify-between">
+                    <div
+                      className="relative z-10 bg-white border-2 rounded-lg overflow-hidden text-xs shadow-2xs"
+                      style={{ borderColor: 'rgba(0, 46, 110, 0.3)' }}
+                    >
+                      <div
+                        className="px-2 py-1 flex items-center justify-between text-white"
+                        style={{ backgroundColor: '#002E6E' }}
+                      >
                         <div>
-                          <span className="text-[8px] font-black text-amber-700 uppercase block leading-none">Application Name</span>
-                          <strong className="text-xs font-black text-slate-900 uppercase">
+                          <span
+                            className="text-[8px] font-black uppercase block leading-none"
+                            style={{ color: '#00B9F1' }}
+                          >
+                            Application Name
+                          </span>
+                          <strong className="text-xs font-black text-white uppercase">
                             {appSettings.appName || 'NETWORK JOIN PRO'}
                           </strong>
                         </div>
                         <div className="text-right">
-                          <span className="text-[8px] font-bold text-slate-500 uppercase block leading-none">Selected Plan</span>
-                          <span className="font-bold text-blue-700 text-[11px]">Gold Investment Plan 🥇</span>
+                          <span className="text-[8px] font-bold text-white/80 uppercase block leading-none">Selected Plan</span>
+                          <span className="font-extrabold text-[11px]" style={{ color: '#00B9F1' }}>
+                            Gold Investment Plan 🥇
+                          </span>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-4 divide-x divide-slate-200 text-center p-1 bg-white text-[10px]">
+                      <div
+                        className="grid grid-cols-4 divide-x text-center p-1 bg-white text-[10px]"
+                        style={{ borderColor: 'rgba(0, 46, 110, 0.15)' }}
+                      >
                         <div>
-                          <span className="text-[8px] text-slate-400 block">Invested</span>
-                          <strong className="text-slate-900">₹20,000</strong>
+                          <span className="text-[8px] block" style={{ color: '#172B75' }}>Invested</span>
+                          <strong style={{ color: '#002E6E' }}>₹20,000</strong>
                         </div>
                         <div>
-                          <span className="text-[8px] text-slate-400 block">Daily</span>
+                          <span className="text-[8px] block" style={{ color: '#172B75' }}>Daily</span>
                           <strong className="text-emerald-600">₹16.00</strong>
                         </div>
                         <div>
-                          <span className="text-[8px] text-slate-400 block">Return</span>
-                          <strong className="text-blue-600">₹16.00</strong>
+                          <span className="text-[8px] block" style={{ color: '#172B75' }}>Return</span>
+                          <strong style={{ color: '#00B9F1' }}>₹16.00</strong>
                         </div>
-                        <div className="bg-amber-50/50">
-                          <span className="text-[8px] text-amber-800 block">Total</span>
-                          <strong className="text-amber-900">₹20,016.00</strong>
+                        <div style={{ backgroundColor: '#F2F8FC' }}>
+                          <span className="text-[8px] block" style={{ color: '#002E6E' }}>Total</span>
+                          <strong style={{ color: '#002E6E' }}>₹20,016.00</strong>
                         </div>
                       </div>
                     </div>
 
-                    {/* Badges Row */}
-                    <div className="relative z-10 pt-1 border-t border-slate-200 flex items-center justify-between text-[8px]">
-                      <div className="flex items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border border-blue-600 bg-blue-50 flex flex-col items-center justify-center text-blue-700 text-[6px] font-black">
-                          <span>ISO</span>
-                          <span>9001</span>
+                    {/* Bottom Left App Logo & Badges Row */}
+                    <div
+                      className="relative z-10 pt-1 border-t flex items-center justify-between text-[8px]"
+                      style={{ borderColor: 'rgba(0, 185, 241, 0.4)' }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className="w-8 h-8 rounded-full border-2 bg-white flex flex-col items-center justify-center p-0.5 leading-none shrink-0 shadow-xs relative overflow-hidden"
+                          style={{ borderColor: '#00B9F1' }}
+                        >
+                          {appSettings.appLogo ? (
+                            <img
+                              src={appSettings.appLogo}
+                              alt="App Logo"
+                              className="w-full h-full object-contain p-0.5"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full rounded-full flex flex-col items-center justify-center font-black text-[6px]"
+                              style={{ backgroundColor: '#002E6E', color: '#FFFFFF' }}
+                            >
+                              <ShieldCheck className="w-2.5 h-2.5" style={{ color: '#00B9F1' }} />
+                              <span className="leading-none">{appSettings.appShortName || 'NJP'}</span>
+                            </div>
+                          )}
                         </div>
-                        <span className="font-bold text-slate-700">Authenticated Bond</span>
+                        <div className="space-y-0.2">
+                          <span className="font-black block" style={{ color: '#002E6E' }}>
+                            Authenticated Bond
+                          </span>
+                          <span className="text-[7px] block" style={{ color: '#172B75' }}>
+                            ISO 9001 • Secured
+                          </span>
+                        </div>
                       </div>
                       <div className="text-right">
-                        <span className="italic font-bold text-slate-900 block">A.K. Sharma</span>
-                        <span className="text-[7px] text-slate-500">Auth. Registrar</span>
+                        <span className="italic font-bold block" style={{ color: '#002E6E' }}>A.K. Sharma</span>
+                        <span className="text-[7px]" style={{ color: '#172B75' }}>Auth. Registrar</span>
                       </div>
                     </div>
 
                     {/* Company Footer with Dynamic Details */}
-                    <div className="relative z-10 pt-1 border-t border-slate-200 text-[7.5px] text-slate-600 space-y-0.5 bg-slate-50 p-1.5 rounded-md border border-slate-200/80">
-                      <div className="flex items-center justify-between font-bold text-slate-900">
-                        <span className="flex items-center gap-0.5 truncate">
-                          <Building2 className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                          <span className="truncate">{appSettings.companyName || 'Network Join Pro India Private Limited'}</span>
+                    <div
+                      className="relative z-10 pt-1 text-[7.5px] space-y-0.5 bg-white p-1.5 rounded-md border shadow-2xs"
+                      style={{ borderColor: 'rgba(0, 185, 241, 0.45)', color: '#172B75' }}
+                    >
+                      <div className="flex items-center justify-between font-bold">
+                        <span className="flex items-center gap-0.5 truncate" style={{ color: '#002E6E' }}>
+                          <Building2 className="w-2.5 h-2.5 shrink-0" style={{ color: '#00B9F1' }} />
+                          <span className="truncate font-black">{appSettings.companyName || 'Network Join Pro India Private Limited'}</span>
                         </span>
-                        <span className="shrink-0 font-mono text-[7px]">CIN: {appSettings.cin || 'U74999UP2026PTC136667'}</span>
+                        <span className="shrink-0 font-mono text-[7px]" style={{ color: '#002E6E' }}>
+                          CIN: {appSettings.cin || 'U74999UP2026PTC136667'}
+                        </span>
                       </div>
-                      <div className="truncate">
+                      <div className="truncate" style={{ color: '#172B75' }}>
                         <strong>Reg. Address:</strong> {appSettings.localArea ? `${appSettings.localArea}, ` : ''}{appSettings.cityDistrict}, {appSettings.state} - {appSettings.pinCode}, {appSettings.country || 'India'}
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-x-1 text-[7px] text-slate-500 pt-0.5 border-t border-slate-200/60">
-                        <span>Email: <strong>{appSettings.email || 'support@networkjoinpro.in'}</strong></span>
-                        <span>Dist: <strong>{appSettings.cityDistrict || 'Lucknow'}</strong></span>
-                        <span>State: <strong>{appSettings.state || 'Uttar Pradesh'}</strong></span>
-                        <span>PIN: <strong>{appSettings.pinCode || '226010'}</strong></span>
+                      <div
+                        className="flex flex-wrap items-center justify-between gap-x-1 text-[7px] pt-0.5 border-t"
+                        style={{ borderColor: 'rgba(0, 185, 241, 0.3)', color: '#172B75' }}
+                      >
+                        <span>Email: <strong style={{ color: '#002E6E' }}>{appSettings.email || 'support@networkjoinpro.in'}</strong></span>
+                        <span>Dist: <strong style={{ color: '#002E6E' }}>{appSettings.cityDistrict || 'Lucknow'}</strong></span>
+                        <span>State: <strong style={{ color: '#002E6E' }}>{appSettings.state || 'Uttar Pradesh'}</strong></span>
+                        <span>PIN: <strong style={{ color: '#002E6E' }}>{appSettings.pinCode || '226010'}</strong></span>
                       </div>
                     </div>
                   </div>
