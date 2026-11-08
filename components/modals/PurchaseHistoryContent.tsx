@@ -21,6 +21,7 @@ import {
   UserCheck,
   Award,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { ActiveInvestment } from '@/types/investment';
 import FloatingInput from '@/components/ui/FloatingInput';
 import {
@@ -43,17 +44,17 @@ export function PlanCategoryIconBadge({
 }) {
   const sizeClasses =
     size === 'sm'
-      ? 'w-7 h-7 rounded-lg text-sm'
+      ? 'w-8 h-8 rounded-xl text-sm'
       : size === 'lg'
-      ? 'w-11 h-11 rounded-2xl text-2xl'
-      : 'w-9 h-9 rounded-xl text-lg';
+      ? 'w-14 h-14 rounded-3xl text-3xl'
+      : 'w-10 h-10 rounded-2xl text-lg';
 
   if (iconUrl) {
     return (
       <img
         src={iconUrl}
         alt={planName || 'Plan'}
-        className={`${sizeClasses} object-cover shadow-xs ring-1 ring-amber-400/80 shrink-0`}
+        className={`${sizeClasses} object-cover shadow-sm ring-1 ring-amber-400/20 shrink-0`}
         referrerPolicy="no-referrer"
       />
     );
@@ -64,7 +65,7 @@ export function PlanCategoryIconBadge({
 
   if (nameLower.includes('krantikari') || nameLower.includes('क्रांतिकारी') || catLower.includes('krantikari')) {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#991b1b] via-[#dc2626] to-[#f97316] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400/90`}>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#991b1b] via-[#dc2626] to-[#f97316] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
         <span>🚩</span>
       </div>
     );
@@ -72,63 +73,63 @@ export function PlanCategoryIconBadge({
 
   if (nameLower.includes('starter') || catLower === 'starter') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#78350f] via-[#b45309] to-[#f59e0b] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400/80`}>
-        <span>🚀</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#FF8904] via-[#FFB703] to-[#FFD60A] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">🚀</span>
       </div>
     );
   }
 
   if (nameLower.includes('basic') || catLower === 'basic') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#1e3a8a] via-[#1d4ed8] to-[#06b6d4] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-cyan-400/80`}>
-        <span>⚡</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#002E6E] via-[#0052A3] to-[#00B9F1] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">⚡</span>
       </div>
     );
   }
 
   if (nameLower.includes('silver') || catLower === 'silver') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#334155] via-[#64748b] to-[#cbd5e1] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-slate-300`}>
-        <span>🥈</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#334155] via-[#64748b] to-[#cbd5e1] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">🥈</span>
       </div>
     );
   }
 
   if (nameLower.includes('gold') || catLower === 'gold') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#78350f] via-[#d97706] to-[#fef08a] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-300`}>
-        <span>🥇</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#78350f] via-[#d97706] to-[#fef08a] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">🥇</span>
       </div>
     );
   }
 
   if (nameLower.includes('platinum') || catLower === 'platinum') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#1e293b] via-[#475569] to-[#e2e8f0] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-sky-300`}>
-        <span>💠</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#1e293b] via-[#475569] to-[#e2e8f0] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">💠</span>
       </div>
     );
   }
 
   if (nameLower.includes('diamond') || catLower === 'diamond') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#0c4a6e] via-[#0284c7] to-[#7dd3fc] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-cyan-300`}>
-        <span>💎</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#0c4a6e] via-[#0284c7] to-[#7dd3fc] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">💎</span>
       </div>
     );
   }
 
   if (nameLower.includes('vip') || nameLower.includes('premium') || catLower === 'vip' || catLower === 'premium') {
     return (
-      <div className={`${sizeClasses} bg-gradient-to-tr from-[#09090b] via-[#27272a] to-[#d97706] flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-amber-400`}>
-        <span>👑</span>
+      <div className={`${sizeClasses} bg-gradient-to-tr from-[#09090b] via-[#27272a] to-[#d97706] flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+        <span className="drop-shadow-sm">👑</span>
       </div>
     );
   }
 
   return (
-    <div className={`${sizeClasses} bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 flex items-center justify-center text-white shrink-0 shadow-xs ring-1 ring-blue-300`}>
-      <span>💼</span>
+    <div className={`${sizeClasses} bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 flex items-center justify-center text-white shrink-0 shadow-md ring-1 ring-white/20`}>
+      <span className="drop-shadow-sm">💼</span>
     </div>
   );
 }
@@ -476,7 +477,7 @@ export default function PurchaseHistoryContent({
           {onOpenPlans && (
             <button
               onClick={onOpenPlans}
-              className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+              className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#002E6E] hover:bg-[#002E6E]/90 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <span>Explore Plans & Purchase</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -485,7 +486,7 @@ export default function PurchaseHistoryContent({
         </div>
       ) : viewMode === 'list' ? (
         /* LIST VIEW */
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredInvestments.map((inv) => {
             const progressPercent = Math.min(
               100,
@@ -502,136 +503,139 @@ export default function PurchaseHistoryContent({
             return (
               <div
                 key={inv.id}
-                className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-2xs hover:shadow-md transition-all space-y-3"
+                className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#00B9F1]/10 shadow-sm hover:shadow-md transition-all space-y-4 overflow-hidden relative"
               >
                 {/* Header: Plan Name, Status & Amount */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <PlanCategoryIconBadge planName={inv.planName} />
+                <div className="flex items-start justify-between gap-3 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <PlanCategoryIconBadge planName={inv.planName} size="lg" />
                     <div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h4 className="font-bold text-slate-900 text-sm sm:text-base font-serif leading-tight">
+                      <div className="flex flex-col">
+                        <h4 className="font-black text-[#172B75] text-sm sm:text-base leading-tight">
                           {inv.planName}
                         </h4>
-                        <span
-                          className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${
-                            isWithdrawalPending
-                              ? 'bg-black text-white border border-slate-800'
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
+                              isWithdrawalPending
+                                ? 'bg-black text-white border-black shadow-xs'
+                                : inv.status === 'completed'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200 shadow-xs'
+                                : 'bg-[#E5F7FF] text-[#002E6E] border-[#00B9F1]/30 shadow-xs'
+                            }`}
+                          >
+                            {isWithdrawalPending
+                              ? 'Withdrawal Pending'
                               : inv.status === 'completed'
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                              : 'bg-blue-100 text-blue-800 border border-blue-300'
-                          }`}
-                        >
-                          {isWithdrawalPending
-                            ? 'Withdrawal Pending'
-                            : inv.status === 'completed'
-                            ? 'Completed'
-                            : 'Active Compounding'}
-                        </span>
+                              ? 'Completed'
+                              : 'Active Compounding'}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-mono block mt-0.5">
+                      <span className="text-[11px] text-slate-400 font-bold block mt-1.5 uppercase tracking-wider">
                         Purchased on: {inv.startDate}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Purchase Amt</span>
-                    <span className="text-base font-black text-slate-900 font-mono">
+                    <span className="text-[10px] text-slate-400 uppercase font-black block tracking-tight">Purchase Amt</span>
+                    <span className="text-xl font-black text-[#172B75] font-mono">
                       ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
 
-                {/* Linked Customer info if present */}
+                {/* Linked Customer info if present - Rounded Container style */}
                 {inv.customerName && (
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 min-w-0">
+                  <div className="bg-[#F2F8FC] p-3 rounded-2xl border border-[#00B9F1]/15 flex items-center justify-between text-xs group transition-colors hover:bg-white hover:border-[#00B9F1]/40">
+                    <div className="flex items-center gap-3 min-w-0">
                       {inv.customerPhoto ? (
                         <img
                           src={inv.customerPhoto}
                           alt={inv.customerName}
-                          className="w-7 h-7 rounded-full object-cover border border-blue-400"
+                          className="w-9 h-9 rounded-xl object-cover border border-[#00B9F1]/30 shadow-2xs group-hover:scale-105 transition-transform"
                         />
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center font-black text-sm shadow-2xs group-hover:scale-105 transition-transform">
                           {inv.customerName[0]}
                         </div>
                       )}
                       <div className="truncate">
-                        <span className="font-extrabold text-slate-900 block truncate">
+                        <span className="font-black text-[#172B75] block truncate text-sm">
                           {inv.customerName}
                         </span>
                         {inv.customerMobile && (
-                          <span className="text-[10px] text-slate-500 font-mono">
+                          <span className="text-[11px] text-[#002E6E] font-bold flex items-center gap-1 opacity-70">
+                            <Phone className="w-2.5 h-2.5" />
                             +91 {inv.customerMobile}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-md border border-blue-200 shrink-0">
+                    <span className="text-[10px] bg-white text-[#002E6E] font-black px-3 py-1 rounded-xl border border-[#00B9F1]/30 shadow-xs shrink-0 uppercase tracking-tighter">
                       Customer Linked
                     </span>
                   </div>
                 )}
 
-                {/* Return Projection Bar */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100 text-xs">
-                  <div>
-                    <span className="text-[9px] text-slate-500 uppercase font-bold block">Daily Return</span>
-                    <span className="font-black text-blue-700 font-mono">
+                {/* Return Projection Bar - Rounded Box */}
+                <div className="grid grid-cols-2 gap-3 bg-[#F2F8FC] p-3.5 rounded-2xl border border-[#00B9F1]/10 text-xs shadow-2xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-slate-500 uppercase font-black block tracking-tight">Daily Return</span>
+                    <span className="text-base font-black text-[#00B9F1] font-mono">
                       +₹{(inv.dailyReturn || 0).toFixed(2)}
                     </span>
                   </div>
 
-                  <div>
-                    <span className="text-[9px] text-slate-500 uppercase font-bold block">Expected Return</span>
-                    <span className="font-black text-emerald-700 font-mono">
+                  <div className="text-right space-y-0.5 border-l border-[#00B9F1]/10 pl-3">
+                    <span className="text-[10px] text-slate-500 uppercase font-black block tracking-tight">Expected Return</span>
+                    <span className="text-base font-black text-emerald-600 font-mono">
                       ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
 
-                  <div className="col-span-2 sm:col-span-1">
-                    <span className="text-[9px] text-slate-500 uppercase font-bold block">Progress</span>
-                    <span className="font-bold text-slate-800 text-[11px]">
-                      Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
-                    </span>
+                  <div className="col-span-2 pt-2 border-t border-[#00B9F1]/10">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] text-slate-500 uppercase font-black tracking-tight">Investment Progress</span>
+                      <span className="font-black text-[#172B75] text-[11px]">
+                        Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
+                      </span>
+                    </div>
+                    {/* Progress Bar - Slim Blue */}
+                    <div className="w-full bg-[#00B9F1]/10 h-2 rounded-full overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPercent}%` }}
+                        transition={{ duration: 1, ease: 'easeOut' }}
+                        className="bg-gradient-to-r from-[#002E6E] to-[#00B9F1] h-full rounded-full"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-
-                {/* Timer & Claim Action Section:
-                    - While duration is running: show Timer ONLY, hide Claim button
-                    - When duration is expired: hide Timer, show Clean / Claim button
-                    - When claimed: show black 'विड्रॉल पेंडिंग' button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-600">
-                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>Duration: {inv.totalDays || 30} Days ({(inv.totalDays || 30) * 24} Hours)</span>
+                {/* Timer & Claim Action Section */}
+                <div className="pt-2 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 text-[11px] font-black text-[#172B75]/60 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                    <Calendar className="w-3.5 h-3.5 text-[#00B9F1]" />
+                    <span>Duration: {inv.totalDays || 30} Days</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5 ml-auto">
                     {onViewCertificate && (
                       <button
                         onClick={() => onViewCertificate(inv)}
-                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg border border-blue-200 transition-all cursor-pointer shadow-2xs"
-                        title="View Investment Certificate"
+                        className="w-10 h-10 flex items-center justify-center bg-white hover:bg-[#F2F8FC] text-[#00B9F1] rounded-xl border border-[#00B9F1]/30 transition-all cursor-pointer shadow-xs active:scale-90"
+                        title="View Certificate"
                       >
-                        <Award className="w-4 h-4" />
+                        <Award className="w-5 h-5" />
                       </button>
                     )}
 
                     {isWithdrawalPending ? (
                       <button
                         disabled
-                        className="px-3.5 py-1.5 bg-black text-white font-extrabold text-xs rounded-xl border border-slate-800 shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                        className="px-5 py-2.5 bg-black text-white font-black text-xs rounded-xl border border-black shadow-md flex items-center gap-2 cursor-not-allowed uppercase tracking-tighter"
                       >
                         <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                         <span>विड्रॉल पेंडिंग</span>
@@ -639,25 +643,25 @@ export default function PurchaseHistoryContent({
                     ) : isApproved ? (
                       <button
                         disabled
-                        className="px-3.5 py-1.5 bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                        className="px-5 py-2.5 bg-emerald-600 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-not-allowed uppercase tracking-tighter"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                        <span>Withdrawal Approved</span>
+                        <CheckCircle2 className="w-4 h-4 text-white" />
+                        <span>Approved</span>
                       </button>
                     ) : !isComplete ? (
-                      /* DURATION NOT EXPIRED: SHOW TIMER ONLY, HIDE CLAIM BUTTON */
-                      <div className="px-3.5 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-xl border border-[#00B9F1]/40 flex items-center gap-1.5 shadow-2xs">
-                        <Clock className="w-3.5 h-3.5 text-[#00B9F1] animate-pulse" />
-                        <span className="tracking-widest text-white">{timerStr}</span>
+                      /* DURATION NOT EXPIRED: SHOW TIMER ONLY */
+                      <div className="px-5 py-2.5 bg-[#002E6E] text-white font-mono font-black text-sm rounded-xl border border-[#002E6E] flex items-center gap-2.5 shadow-md">
+                        <Clock className="w-4 h-4 text-[#00B9F1] animate-pulse" />
+                        <span className="tracking-[0.1em]">{timerStr}</span>
                       </div>
                     ) : (
-                      /* DURATION EXPIRED: HIDE TIMER, SHOW CLEAN / CLAIM BUTTON */
+                      /* DURATION EXPIRED: SHOW CLAIM BUTTON */
                       <button
                         onClick={() => handleClaimAndWithdraw(inv)}
                         disabled={claimingMap[inv.id]}
-                        className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        className="px-6 py-2.5 bg-gradient-to-r from-[#FF8904] to-[#ff5d00] hover:scale-105 active:scale-95 text-white font-black text-sm rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 uppercase tracking-tight"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <CheckCircle2 className="w-4 h-4 text-white" />
                         <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim Now'}</span>
                       </button>
                     )}
@@ -669,7 +673,7 @@ export default function PurchaseHistoryContent({
         </div>
       ) : (
         /* GRID VIEW */
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredInvestments.map((inv) => {
             const { isComplete, timerStr } = getInvestmentCountdown(inv, now);
             const isWithdrawalPending =
@@ -681,85 +685,91 @@ export default function PurchaseHistoryContent({
             return (
               <div
                 key={inv.id}
-                className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+                className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#00B9F1]/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <PlanCategoryIconBadge planName={inv.planName} size="sm" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <PlanCategoryIconBadge planName={inv.planName} size="md" />
                     <div className="min-w-0">
                       <span
-                        className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
+                        className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${
                           isWithdrawalPending
-                            ? 'bg-black text-white border-slate-800'
-                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-[#F2F8FC] text-[#002E6E] border-[#00B9F1]/20'
                         }`}
                       >
                         {isWithdrawalPending ? 'Pending' : inv.status}
                       </span>
-                      <h4 className="font-extrabold text-slate-900 text-sm font-serif mt-1 truncate">
+                      <h4 className="font-black text-[#172B75] text-sm mt-1 truncate">
                         {inv.planName}
                       </h4>
                     </div>
                   </div>
-                  <span className="text-base font-black text-slate-900 font-mono shrink-0">
+                  <span className="text-base font-black text-[#172B75] font-mono shrink-0">
                     ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 {inv.customerName && (
-                  <div className="text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Customer</span>
-                    <span className="font-bold text-slate-800">{inv.customerName}</span>
+                  <div className="text-xs bg-[#F2F8FC] p-2.5 rounded-xl border border-[#00B9F1]/10">
+                    <span className="text-[10px] text-slate-400 block uppercase font-black mb-0.5 tracking-tight">Linked Customer</span>
+                    <span className="font-black text-[#172B75] text-sm">{inv.customerName}</span>
                     {inv.customerMobile && (
-                      <span className="text-[10px] text-slate-500 font-mono block">
+                      <span className="text-[10px] text-[#002E6E]/60 font-bold block mt-0.5">
                         +91 {inv.customerMobile}
                       </span>
                     )}
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-500">Daily: +₹{(inv.dailyReturn || 0).toFixed(2)}</span>
-                  <span className="text-emerald-600 font-bold">Total: ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
+                <div className="pt-2 border-t border-[#00B9F1]/10 flex items-center justify-between text-[11px] font-mono">
+                  <div className="flex flex-col">
+                    <span className="text-slate-400 font-bold uppercase text-[9px]">Daily</span>
+                    <span className="text-[#00B9F1] font-black">+₹{(inv.dailyReturn || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-slate-400 font-bold uppercase text-[9px]">Return</span>
+                    <span className="text-emerald-600 font-black">₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
+                  </div>
                 </div>
 
                 {/* Grid View Timer vs Claim button vs Black Pending button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
                     {onViewCertificate && (
                       <button
                         onClick={() => onViewCertificate(inv)}
-                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md border border-blue-200 transition-all cursor-pointer shadow-2xs"
+                        className="w-8 h-8 flex items-center justify-center bg-white hover:bg-[#F2F8FC] text-[#00B9F1] rounded-lg border border-[#00B9F1]/30 transition-all cursor-pointer shadow-xs active:scale-90"
                         title="View Certificate"
                       >
-                        <Award className="w-3.5 h-3.5" />
+                        <Award className="w-4 h-4" />
                       </button>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2 ml-auto">
                     {isWithdrawalPending ? (
                       <button
                         disabled
-                        className="px-3 py-1 bg-black text-white font-extrabold text-[11px] rounded-lg border border-slate-800 shadow-2xs flex items-center gap-1 cursor-not-allowed"
+                        className="px-3 py-1.5 bg-black text-white font-black text-[10px] rounded-lg border border-black shadow-xs flex items-center gap-1 cursor-not-allowed uppercase"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        <span>विड्रॉल पेंडिंग</span>
+                        <span>पेंडिंग</span>
                       </button>
                     ) : isApproved ? (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
+                      <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 uppercase tracking-tighter">Approved</span>
                     ) : !isComplete ? (
                       /* DURATION NOT EXPIRED: TIMER ONLY */
-                      <div className="px-2.5 py-1 bg-[#002E6E] text-white font-mono font-bold text-[11px] rounded-lg border border-[#00B9F1]/30 flex items-center gap-1">
+                      <div className="px-3 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-lg border border-[#002E6E] flex items-center gap-1.5 shadow-sm">
                         <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
-                        <span className="text-white">{timerStr}</span>
+                        <span className="tracking-tighter">{timerStr}</span>
                       </div>
                     ) : (
                       /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */
                       <button
                         onClick={() => handleClaimAndWithdraw(inv)}
                         disabled={claimingMap[inv.id]}
-                        className="px-3 py-1 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-bold text-[11px] rounded-lg shadow-2xs transition-all cursor-pointer"
+                        className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#ff5d00] active:scale-95 text-white font-black text-[10px] rounded-lg shadow-md transition-all cursor-pointer uppercase tracking-tight"
                       >
                         Claim Now
                       </button>
