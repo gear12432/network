@@ -19,6 +19,7 @@ import {
   Building2,
   CreditCard,
   UserCheck,
+  Award,
 } from 'lucide-react';
 import { ActiveInvestment } from '@/types/investment';
 import FloatingInput from '@/components/ui/FloatingInput';
@@ -137,6 +138,7 @@ interface PurchaseHistoryContentProps {
   currentUser?: UserAccountData | null;
   onOpenPlans?: () => void;
   onRefreshInvestments?: () => void;
+  onViewCertificate?: (inv: ActiveInvestment) => void;
 }
 
 export default function PurchaseHistoryContent({
@@ -144,6 +146,7 @@ export default function PurchaseHistoryContent({
   currentUser,
   onOpenPlans,
   onRefreshInvestments,
+  onViewCertificate,
 }: PurchaseHistoryContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -614,39 +617,51 @@ export default function PurchaseHistoryContent({
                     <span>Duration: {inv.totalDays || 30} Days ({(inv.totalDays || 30) * 24} Hours)</span>
                   </div>
 
-                  {isWithdrawalPending ? (
-                    <button
-                      disabled
-                      className="px-3.5 py-1.5 bg-black text-white font-extrabold text-xs rounded-xl border border-slate-800 shadow-xs flex items-center gap-1.5 cursor-not-allowed"
-                    >
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                      <span>विड्रॉल पेंडिंग</span>
-                    </button>
-                  ) : isApproved ? (
-                    <button
-                      disabled
-                      className="px-3.5 py-1.5 bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-not-allowed"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                      <span>Withdrawal Approved</span>
-                    </button>
-                  ) : !isComplete ? (
-                    /* DURATION NOT EXPIRED: SHOW TIMER ONLY, HIDE CLAIM BUTTON */
-                    <div className="px-3.5 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-xl border border-[#00B9F1]/40 flex items-center gap-1.5 shadow-2xs">
-                      <Clock className="w-3.5 h-3.5 text-[#00B9F1] animate-pulse" />
-                      <span className="tracking-widest text-white">{timerStr}</span>
-                    </div>
-                  ) : (
-                    /* DURATION EXPIRED: HIDE TIMER, SHOW CLEAN / CLAIM BUTTON */
-                    <button
-                      onClick={() => handleClaimAndWithdraw(inv)}
-                      disabled={claimingMap[inv.id]}
-                      className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                      <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim Now'}</span>
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {onViewCertificate && (
+                      <button
+                        onClick={() => onViewCertificate(inv)}
+                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg border border-blue-200 transition-all cursor-pointer shadow-2xs"
+                        title="View Investment Certificate"
+                      >
+                        <Award className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    {isWithdrawalPending ? (
+                      <button
+                        disabled
+                        className="px-3.5 py-1.5 bg-black text-white font-extrabold text-xs rounded-xl border border-slate-800 shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                        <span>विड्रॉल पेंडिंग</span>
+                      </button>
+                    ) : isApproved ? (
+                      <button
+                        disabled
+                        className="px-3.5 py-1.5 bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-not-allowed"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <span>Withdrawal Approved</span>
+                      </button>
+                    ) : !isComplete ? (
+                      /* DURATION NOT EXPIRED: SHOW TIMER ONLY, HIDE CLAIM BUTTON */
+                      <div className="px-3.5 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-xl border border-[#00B9F1]/40 flex items-center gap-1.5 shadow-2xs">
+                        <Clock className="w-3.5 h-3.5 text-[#00B9F1] animate-pulse" />
+                        <span className="tracking-widest text-white">{timerStr}</span>
+                      </div>
+                    ) : (
+                      /* DURATION EXPIRED: HIDE TIMER, SHOW CLEAN / CLAIM BUTTON */
+                      <button
+                        onClick={() => handleClaimAndWithdraw(inv)}
+                        disabled={claimingMap[inv.id]}
+                        className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim Now'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -709,33 +724,47 @@ export default function PurchaseHistoryContent({
                 </div>
 
                 {/* Grid View Timer vs Claim button vs Black Pending button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
-                  {isWithdrawalPending ? (
-                    <button
-                      disabled
-                      className="px-3 py-1 bg-black text-white font-extrabold text-[11px] rounded-lg border border-slate-800 shadow-2xs flex items-center gap-1 cursor-not-allowed"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      <span>विड्रॉल पेंडिंग</span>
-                    </button>
-                  ) : isApproved ? (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
-                  ) : !isComplete ? (
-                    /* DURATION NOT EXPIRED: TIMER ONLY */
-                    <div className="px-2.5 py-1 bg-[#002E6E] text-white font-mono font-bold text-[11px] rounded-lg border border-[#00B9F1]/30 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
-                      <span className="text-white">{timerStr}</span>
-                    </div>
-                  ) : (
-                    /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */
-                    <button
-                      onClick={() => handleClaimAndWithdraw(inv)}
-                      disabled={claimingMap[inv.id]}
-                      className="px-3 py-1 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-bold text-[11px] rounded-lg shadow-2xs transition-all cursor-pointer"
-                    >
-                      Claim Now
-                    </button>
-                  )}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    {onViewCertificate && (
+                      <button
+                        onClick={() => onViewCertificate(inv)}
+                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md border border-blue-200 transition-all cursor-pointer shadow-2xs"
+                        title="View Certificate"
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {isWithdrawalPending ? (
+                      <button
+                        disabled
+                        className="px-3 py-1 bg-black text-white font-extrabold text-[11px] rounded-lg border border-slate-800 shadow-2xs flex items-center gap-1 cursor-not-allowed"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        <span>विड्रॉल पेंडिंग</span>
+                      </button>
+                    ) : isApproved ? (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">Approved</span>
+                    ) : !isComplete ? (
+                      /* DURATION NOT EXPIRED: TIMER ONLY */
+                      <div className="px-2.5 py-1 bg-[#002E6E] text-white font-mono font-bold text-[11px] rounded-lg border border-[#00B9F1]/30 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
+                        <span className="text-white">{timerStr}</span>
+                      </div>
+                    ) : (
+                      /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */
+                      <button
+                        onClick={() => handleClaimAndWithdraw(inv)}
+                        disabled={claimingMap[inv.id]}
+                        className="px-3 py-1 bg-[#FF8904] hover:bg-[#e67a00] active:scale-95 text-white font-bold text-[11px] rounded-lg shadow-2xs transition-all cursor-pointer"
+                      >
+                        Claim Now
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

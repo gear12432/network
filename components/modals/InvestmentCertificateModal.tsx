@@ -11,18 +11,59 @@ interface InvestmentCertificateModalProps {
   onClose: () => void;
   plan: InvestmentPlan | null;
   customer: Customer | null;
+  investment?: ActiveInvestment | null;
 }
 
 export default function InvestmentCertificateModal({
   isOpen,
   onClose,
-  plan,
-  customer,
+  plan: propPlan,
+  customer: propCustomer,
+  investment,
 }: InvestmentCertificateModalProps) {
   const certRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+
+  // Reconstruct plan and customer details from investment if provided
+  let plan = propPlan;
+  let customer = propCustomer;
+
+  if (investment) {
+    plan = {
+      id: investment.planId,
+      name: investment.planName,
+      amount: investment.investedAmount,
+      dailyEarnings: investment.dailyReturn,
+      totalReturn: investment.totalReturn,
+      durationDays: investment.totalDays,
+      roiPercentage: (investment.dailyReturn / (investment.investedAmount || 1)) * 100,
+      category: 'Starter', // default
+      totalInvestors: 0,
+      description: '',
+      iconType: 'lightning',
+    };
+
+    customer = {
+      id: investment.customerId || '',
+      name: investment.customerName || '',
+      mobile: investment.customerMobile || '',
+      photo: investment.customerPhoto || '',
+      address: investment.customerAddress || '',
+      state: '',
+      district: '',
+      pincode: '',
+      panNumber: '',
+      aadhaarNumber: '',
+      bankHolderName: investment.bankHolderName || '',
+      bankName: investment.bankName || '',
+      accountNumber: investment.accountNumber || '',
+      ifscCode: investment.ifscCode || '',
+      createdDate: '',
+      kycStatus: 'verified',
+    };
+  }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -437,7 +478,7 @@ export default function InvestmentCertificateModal({
                       className="font-serif italic font-bold text-xs border-b pb-0.2 px-1"
                       style={{ color: '#002E6E', borderColor: 'rgba(0, 46, 110, 0.3)' }}
                     >
-                      A.K. Sharma
+                      {appSettings.registrarName || 'A.K. Sharma'}
                     </div>
                     <span className="text-[8px] font-bold block" style={{ color: '#172B75' }}>
                       Auth. Registrar

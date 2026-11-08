@@ -137,6 +137,7 @@ export interface AppSettings {
   country: string;
   email: string;
   cin: string;
+  registrarName: string;
   updatedAt?: string;
 }
 
@@ -152,5 +153,6 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   country: 'India',
   email: 'support@networkjoinpro.in',
   cin: 'U74999UP2026PTC136667',
+  registrarName: 'A.K. Sharma',
 };
 

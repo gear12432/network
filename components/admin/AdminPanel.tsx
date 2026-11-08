@@ -50,6 +50,7 @@ import {
   Megaphone,
   SlidersHorizontal,
   ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -5630,6 +5631,25 @@ export default function AdminPanel() {
                           <Mail className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                       </div>
+
+                      {/* Authorized Registrar Name */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                          <span>Auth. Registrar Name *</span>
+                          <span className="text-[10px] font-normal text-slate-400">(Shows on Certificate Signature)</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            required
+                            value={appSettings.registrarName}
+                            onChange={(e) => setAppSettings((prev) => ({ ...prev, registrarName: e.target.value }))}
+                            placeholder="e.g. A.K. Sharma"
+                            className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                          />
+                          <UserCheck className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -5940,7 +5960,7 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="italic font-bold block" style={{ color: '#002E6E' }}>A.K. Sharma</span>
+                        <span className="italic font-bold block" style={{ color: '#002E6E' }}>{appSettings.registrarName || 'A.K. Sharma'}</span>
                         <span className="text-[7px]" style={{ color: '#172B75' }}>Auth. Registrar</span>
                       </div>
                     </div>

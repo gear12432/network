@@ -215,6 +215,7 @@ function InvestmentAppMain() {
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [certificatePlan, setCertificatePlan] = useState<InvestmentPlan | null>(null);
   const [certificateCustomer, setCertificateCustomer] = useState<Customer | null>(null);
+  const [certificateInvestment, setCertificateInvestment] = useState<ActiveInvestment | null>(null);
 
   // Hydration & Client-side Initialization
   useEffect(() => {
@@ -348,6 +349,13 @@ function InvestmentAppMain() {
       window.removeEventListener('hashchange', handleRouteCheck);
     };
   }, []);
+
+  const handleViewCertificate = (inv: ActiveInvestment) => {
+    setCertificateInvestment(inv);
+    setCertificatePlan(null);
+    setCertificateCustomer(null);
+    setShowCertificateModal(true);
+  };
 
   // 1. Real-time Subscription for Investment Plans
   useEffect(() => {
@@ -1189,6 +1197,7 @@ function InvestmentAppMain() {
             setActiveTab('home');
           }}
           onRefreshInvestments={() => {}}
+          onViewCertificate={handleViewCertificate}
         />
       </SlideFullScreenModal>
 
@@ -1196,9 +1205,13 @@ function InvestmentAppMain() {
       {/* Official Government Investment Certificate Modal */}
       <InvestmentCertificateModal
         isOpen={showCertificateModal}
-        onClose={() => setShowCertificateModal(false)}
+        onClose={() => {
+          setShowCertificateModal(false);
+          setCertificateInvestment(null);
+        }}
         plan={certificatePlan}
         customer={certificateCustomer}
+        investment={certificateInvestment}
       />
     </div>
   );
