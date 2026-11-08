@@ -504,13 +504,13 @@ export default function PurchaseHistoryContent({
                 key={inv.id}
                 className="relative bg-white rounded-[2.5rem] border-2 border-[#D9E7F5] shadow-xl overflow-hidden flex flex-col"
               >
-                {/* 1. Top Sky Blue Accent Header */}
-                <div className="h-10 w-full bg-[#00B9F1]" />
+                {/* 1. Top Sky Blue Accent Header - Increased height as requested */}
+                <div className="h-32 w-full bg-[#00B9F1]" />
 
                 {/* 2. Main Card Content Area */}
-                <div className="px-5 pb-6 -mt-4 relative z-10 space-y-4">
-                  {/* Internal Card (White) */}
-                  <div className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#D9E7F5]/50 shadow-sm space-y-5">
+                <div className="px-5 pb-6 -mt-24 relative z-10 space-y-4">
+                  {/* Internal Card (No background as requested) */}
+                  <div className="p-4 sm:p-5 space-y-6">
                     
                     {/* Header Row: Icon + Name + Amount */}
                     <div className="flex items-start justify-between gap-3">
@@ -529,7 +529,7 @@ export default function PurchaseHistoryContent({
                       </div>
 
                       <div className="text-right flex flex-col items-end pt-1">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">PURCHASE AMT</span>
+                        <span className="text-[10px] text-white font-black uppercase tracking-tight drop-shadow-sm">PURCHASE AMT</span>
                         <span className="text-xl sm:text-2xl font-black text-[#002E6E] font-mono leading-none">
                           ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                         </span>
@@ -537,76 +537,8 @@ export default function PurchaseHistoryContent({
                     </div>
 
                     {/* Purchase Meta */}
-                    <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider pl-1.5">
-                      PURCHASED ON: <span className="text-slate-600">{inv.startDate}</span>
-                    </div>
-
-                    {/* Customer Sub-Card */}
-                    {inv.customerName && (
-                      <div className="bg-[#F2F8FC] p-3.5 rounded-2xl border border-[#D9E7F5] flex items-center justify-between group">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {inv.customerPhoto ? (
-                            <img
-                              src={inv.customerPhoto}
-                              alt={inv.customerName}
-                              className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-sm"
-                            />
-                          ) : (
-                            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center font-black text-sm shadow-sm border-2 border-white">
-                              {inv.customerName[0]}
-                            </div>
-                          )}
-                          <div className="truncate">
-                            <span className="font-black text-[#172B75] block text-base truncate">
-                              {inv.customerName}
-                            </span>
-                            <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-bold">
-                              <Phone className="w-3 h-3 text-[#00B9F1]" />
-                              <span>+91 {inv.customerMobile}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <span className="bg-[#EAF5FF] text-[#002E6E] text-[10px] font-black px-4 py-1.5 rounded-full border border-[#00B9F1]/20 uppercase shadow-xs">
-                          Customer Linked
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Return Statistics Area */}
-                    <div className="bg-[#F2F8FC] p-5 rounded-[1.5rem] border border-[#D9E7F5] space-y-4 shadow-2xs">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">DAILY RETURN</span>
-                          <span className="text-xl font-black text-[#00B9F1] font-mono block">
-                            +₹{(inv.dailyReturn || 0).toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="space-y-1 pl-5 border-l border-[#D9E7F5]">
-                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">EXPECTED RETURN</span>
-                          <span className="text-xl font-black text-[#07865B] font-mono block">
-                            ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Progress Indicator */}
-                      <div className="pt-2 border-t border-[#D9E7F5]">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">INVESTMENT PROGRESS</span>
-                          <span className="text-[12px] font-black text-[#002E6E]">
-                            Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
-                          </span>
-                        </div>
-                        {/* Custom Styled Progress Bar */}
-                        <div className="w-full bg-[#D9E7F5] h-2.5 rounded-full overflow-hidden shadow-inner p-[1px]">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progressPercent}%` }}
-                            transition={{ duration: 1.5, ease: 'easeOut' }}
-                            className="bg-[#00B9F1] h-full rounded-full shadow-sm"
-                          />
-                        </div>
-                      </div>
+                    <div className="text-[11px] text-[#002E6E] font-black uppercase tracking-wider pl-1.5">
+                      PURCHASED ON: <span className="text-slate-800">{inv.startDate}</span>
                     </div>
 
                     {/* Duration Section */}
@@ -618,7 +550,7 @@ export default function PurchaseHistoryContent({
                     </div>
 
                     {/* Bottom Action Section (Award + Timer/Claim) */}
-                    <div className="flex items-center justify-between gap-4 pt-1">
+                    <div className="flex items-center justify-between gap-4 pt-4">
                       {/* Left: Certificate Square Button */}
                       {onViewCertificate && (
                         <button
@@ -671,8 +603,8 @@ export default function PurchaseHistoryContent({
                   </div>
                 </div>
 
-                {/* Card Curved Footer Decoration */}
-                <div className="bg-[#002E6E] h-12 w-full mt-auto" style={{ clipPath: 'ellipse(70% 100% at 50% 100%)' }} />
+                {/* Card Curved Footer Decoration - Taller and more styled as requested */}
+                <div className="bg-[#002E6E] h-24 w-full mt-auto" style={{ clipPath: 'ellipse(90% 100% at 50% 100%)' }} />
               </div>
             );
           })}
