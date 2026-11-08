@@ -504,24 +504,24 @@ export default function PurchaseHistoryContent({
                 key={inv.id}
                 className="relative bg-white rounded-[2.5rem] border-2 border-[#D9E7F5] shadow-xl overflow-hidden flex flex-col"
               >
-                {/* 1. Top Sky Blue Accent Header - Increased height as requested */}
-                <div className="h-32 w-full bg-[#00B9F1]" />
+                {/* 1. Top Sky Blue Accent Header - Balanced height */}
+                <div className="h-36 w-full bg-[#00B9F1]" />
 
                 {/* 2. Main Card Content Area */}
-                <div className="px-5 pb-6 -mt-24 relative z-10 space-y-4">
-                  {/* Internal Card (No background as requested) */}
-                  <div className="p-4 sm:p-5 space-y-6">
+                <div className="px-4 pb-3 -mt-28 relative z-10 space-y-2.5">
+                  {/* Internal Plan Header */}
+                  <div className="p-3 space-y-3">
                     
                     {/* Header Row: Icon + Name + Amount */}
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <PlanCategoryIconBadge planName={inv.planName} size="lg" />
-                        <div className="space-y-1">
-                          <h4 className="font-black text-[#002E6E] text-base sm:text-lg leading-tight tracking-tight">
+                        <div className="space-y-0.5">
+                          <h4 className="font-black text-[#002E6E] text-sm sm:text-base leading-tight tracking-tight">
                             {inv.planName}
                           </h4>
                           <div className="inline-block">
-                            <span className="bg-[#EAF5FF] text-[#00B9F1] text-[10px] font-black px-3.5 py-1.5 rounded-full uppercase border border-[#00B9F1]/20 shadow-xs">
+                            <span className="bg-white/20 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase border border-white/30 backdrop-blur-sm shadow-xs">
                               ACTIVE COMPOUNDING
                             </span>
                           </div>
@@ -529,82 +529,76 @@ export default function PurchaseHistoryContent({
                       </div>
 
                       <div className="text-right flex flex-col items-end pt-1">
-                        <span className="text-[10px] text-white font-black uppercase tracking-tight drop-shadow-sm">PURCHASE AMT</span>
-                        <span className="text-xl sm:text-2xl font-black text-[#002E6E] font-mono leading-none">
+                        <span className="text-[8px] text-white font-black uppercase tracking-tight opacity-90">PURCHASE AMT</span>
+                        <span className="text-lg sm:text-xl font-black text-[#002E6E] font-mono leading-none">
                           ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
 
-                    {/* Purchase Meta */}
-                    <div className="text-[11px] text-[#002E6E] font-black uppercase tracking-wider pl-1.5">
-                      PURCHASED ON: <span className="text-slate-800">{inv.startDate}</span>
-                    </div>
-
-                    {/* Duration Section */}
-                    <div className="pt-2 flex items-center gap-3">
-                      <div className="flex items-center gap-2 text-[12px] font-black text-[#172B75] bg-[#F2F8FC] px-4 py-2 rounded-xl border border-[#D9E7F5] shadow-xs">
-                        <Calendar className="w-4 h-4 text-[#00B9F1]" />
-                        <span>Duration: {inv.totalDays || 30} Days</span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Action Section (Award + Timer/Claim) */}
-                    <div className="flex items-center justify-between gap-4 pt-4">
-                      {/* Left: Certificate Square Button */}
-                      {onViewCertificate && (
-                        <button
-                          onClick={() => onViewCertificate(inv)}
-                          className="w-14 h-14 flex items-center justify-center bg-white text-[#00B9F1] rounded-2xl border-2 border-[#D9E7F5] transition-all cursor-pointer shadow-sm active:scale-90 hover:border-[#00B9F1]/50"
-                          title="View Official Certificate"
-                        >
-                          <Award className="w-7 h-7" />
-                        </button>
-                      )}
-
-                      {/* Right: Primary Action / Timer */}
-                      <div className="flex-1">
-                        {isWithdrawalPending ? (
-                          <button
-                            disabled
-                            className="w-full h-14 bg-black text-white font-black text-sm rounded-2xl border-2 border-black shadow-md flex items-center justify-center gap-2 cursor-not-allowed uppercase"
-                          >
-                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                            <span>विड्रॉल पेंडिंग</span>
-                          </button>
-                        ) : isApproved ? (
-                          <button
-                            disabled
-                            className="w-full h-14 bg-[#07865B] text-white font-black text-sm rounded-2xl shadow-md border-2 border-white flex items-center justify-center gap-2 cursor-not-allowed uppercase"
-                          >
-                            <CheckCircle2 className="w-5 h-5 text-white" />
-                            <span>APPROVED Payout</span>
-                          </button>
-                        ) : !isComplete ? (
-                          /* TIMER DESIGN: NAVY BOX WITH CYAN ACCENTS */
-                          <div className="w-full h-14 bg-[#002E6E] text-white font-mono font-black text-2xl rounded-2xl border-2 border-[#00B9F1]/40 flex items-center justify-center gap-4 shadow-xl relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                            <Clock className="w-6 h-6 text-[#00B9F1] animate-pulse" />
-                            <span className="tracking-[0.12em] shadow-xs">{timerStr}</span>
-                          </div>
+                    {/* NEW: Small Customer Details Box (Refined & Compact) */}
+                    <div className="bg-white/90 backdrop-blur-sm border border-[#D9E7F5] rounded-2xl p-2 flex items-center gap-2.5 shadow-sm">
+                      {/* Profile Photo */}
+                      <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-[#00B9F1] shrink-0 shadow-xs bg-slate-100">
+                        {inv.customerPhoto ? (
+                          <img src={inv.customerPhoto} alt={inv.customerName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         ) : (
-                          /* CLAIM ACTION DESIGN */
-                          <button
-                            onClick={() => handleClaimAndWithdraw(inv)}
-                            disabled={claimingMap[inv.id]}
-                            className="w-full h-14 bg-gradient-to-r from-[#FF8904] to-[#ff5d00] hover:shadow-orange-500/40 active:scale-95 text-white font-black text-lg rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 uppercase tracking-tight border-2 border-white/20"
-                          >
-                            <CheckCircle2 className="w-6 h-6 text-white" />
-                            <span>{claimingMap[inv.id] ? 'WAIT...' : 'CLAIM NOW'}</span>
-                          </button>
+                          <div className="w-full h-full flex items-center justify-center text-[#002E6E] font-black text-sm">
+                            {inv.customerName?.[0] || 'C'}
+                          </div>
                         )}
+                      </div>
+                      
+                      {/* Two-Line Details */}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-black text-[#172B75] truncate leading-tight">
+                          {inv.customerName || 'Investor'}
+                        </div>
+                        <div className="text-[9px] font-bold text-slate-500 flex items-center gap-1.5 flex-wrap mt-0.5">
+                          <span className="text-[#002E6E] font-black">{inv.startDate}</span>
+                          <span className="opacity-30">|</span>
+                          <span>Exp: <strong className="text-[#07865B]">₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</strong></span>
+                          <span className="opacity-30">|</span>
+                          <span>Daily: <strong className="text-[#172B75]">₹{(inv.dailyReturn || 0).toFixed(2)}</strong></span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Curved Footer Decoration - Taller and more styled as requested */}
-                <div className="bg-[#002E6E] h-24 w-full mt-auto" style={{ clipPath: 'ellipse(90% 100% at 50% 100%)' }} />
+                {/* 3. Card Curved Footer Decoration - INTEGRATED ACTIONS */}
+                <div 
+                  className="bg-[#002E6E] h-20 w-full mt-auto relative flex items-end justify-between px-6 pb-5 overflow-hidden" 
+                  style={{ clipPath: 'ellipse(100% 100% at 50% 100%)' }}
+                >
+                  {/* Decorative Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+
+                  {/* Left: Timer inside footer */}
+                  <div className="relative z-10 flex items-center gap-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Clock className="w-4.5 h-4.5 text-[#00B9F1]" />
+                    </motion.div>
+                    <span className="text-white font-mono font-black text-lg tracking-wider drop-shadow-md">
+                      {timerStr}
+                    </span>
+                  </div>
+
+                  {/* Right: View Certificate Button inside footer */}
+                  {onViewCertificate && (
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onViewCertificate(inv)}
+                      className="relative z-10 p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-[#00B9F1] transition-all border border-white/10 shadow-lg backdrop-blur-md"
+                      title="View Certificate"
+                    >
+                      <Award className="w-6 h-6 stroke-[2.5]" />
+                    </motion.button>
+                  )}
+                </div>
               </div>
             );
           })}
