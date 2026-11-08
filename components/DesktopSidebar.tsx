@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { NavTab } from './MobileBottomNav';
+import InvestAppLogo from './InvestAppLogo';
 
 interface DesktopSidebarProps {
   activeTab: NavTab;
@@ -56,15 +57,17 @@ export default function DesktopSidebar({
       {/* Top Branding & Hamburger Toggle */}
       <div>
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#00B9F1]/20">
-          {!collapsed && (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#00B9F1] to-[#008fc7] flex items-center justify-center font-black text-[#002E6E] text-base shadow-xs">
-                N
-              </div>
+          {!collapsed ? (
+            <div className="flex items-center gap-2">
+              <InvestAppLogo size="sm" showText={false} />
               <div className="leading-tight">
-                <span className="font-black text-sm tracking-tight text-white block">NetworkJoin</span>
-                <span className="text-[10px] text-[#00B9F1] font-medium">Pro Executive</span>
+                <span className="font-serif font-black text-xs tracking-tight text-white block">Invest App</span>
+                <span className="text-[9px] text-[#00B9F1] font-bold">Pro Wealth</span>
               </div>
+            </div>
+          ) : (
+            <div className="mx-auto">
+              <InvestAppLogo size="sm" showText={false} />
             </div>
           )}
 

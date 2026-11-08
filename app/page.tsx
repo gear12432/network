@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import { Coins, Sparkles } from 'lucide-react';
 import {
@@ -24,6 +25,7 @@ import DesktopSidebar from '@/components/DesktopSidebar';
 import DesktopHeader from '@/components/DesktopHeader';
 import MobileHeader from '@/components/MobileHeader';
 import MobileBottomNav, { NavTab } from '@/components/MobileBottomNav';
+import InvestAppLogo from '@/components/InvestAppLogo';
 import HomeScreen from '@/components/screens/HomeScreen';
 import NetworkScreen from '@/components/screens/NetworkScreen';
 import EarningsScreen from '@/components/screens/EarningsScreen';
@@ -116,8 +118,8 @@ function OnboardingSplashScreen({ onComplete }: { onComplete: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-[#F2F8FC] flex flex-col items-center justify-center p-6 select-none animate-in fade-in duration-300">
       <div className="text-center space-y-6 max-w-sm w-full">
-        <div className="w-20 h-20 mx-auto rounded-3xl bg-[#002E6E] flex items-center justify-center shadow-xl shadow-[#002E6E]/30 border-2 border-[#00B9F1]">
-          <Coins className="w-10 h-10 text-[#00B9F1]" />
+        <div className="flex justify-center py-2">
+          <InvestAppLogo size="xl" showText={false} className="scale-125" />
         </div>
         <div>
           <h2 className="font-serif font-black text-2xl text-[#172B75] tracking-tight">
