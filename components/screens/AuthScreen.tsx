@@ -705,7 +705,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-blue-500/25 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-full py-3.5 px-5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-[#002E6E]/25 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   {loginLoading ? (
                     <>
@@ -755,9 +755,9 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
             <div className="mb-6 pt-1">
               <div className="flex items-center justify-between relative">
                 {/* Horizontal progress track line */}
-                <div className="absolute top-4 left-6 right-6 h-0.5 bg-[#dfbe7e]/50 -z-0" />
+                <div className="absolute top-4 left-6 right-6 h-0.5 bg-[#00B9F1]/40 -z-0" />
                 <div
-                  className="absolute top-4 left-6 h-0.5 bg-[#d0872e] transition-all duration-300 -z-0"
+                  className="absolute top-4 left-6 h-0.5 bg-[#00B9F1] transition-all duration-300 -z-0"
                   style={{
                     width:
                       currentStep === 'details'
@@ -789,10 +789,10 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-md ${
                           isDone
-                            ? 'bg-[#22c55e] text-white shadow-[#22c55e]/30'
+                            ? 'bg-emerald-600 text-white shadow-emerald-600/30'
                             : isActive
-                            ? 'bg-[#d0872e] text-white ring-4 ring-[#d0872e]/30 shadow-[#d0872e]/40'
-                            : 'bg-[#fff8ea] border-2 border-[#dfbe7e] text-[#7a5328]'
+                            ? 'bg-emerald-600 text-white ring-4 ring-emerald-600/30 shadow-emerald-600/40'
+                            : 'bg-white border-2 border-[#00B9F1] text-[#172B75]'
                         }`}
                       >
                         {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : s.num}
@@ -900,7 +900,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                   <button
                     type="button"
                     onClick={handleNextStep}
-                    className="w-full py-3.5 px-5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#d0872e]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="w-full py-3.5 px-5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#002E6E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>Next: KYC Details</span>
                     <ArrowRight className="w-4 h-4" />
@@ -999,7 +999,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                         </div>
                       )}
                       <span className="text-[11px] font-bold text-[#46280b] mb-1">PAN Card Image</span>
-                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                      <label className="px-2.5 py-1 rounded-lg bg-[#002E6E] hover:bg-[#00204d] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
                         {panImage ? 'Change File' : 'Choose File'}
                         <input
                           type="file"
@@ -1023,7 +1023,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                         </div>
                       )}
                       <span className="text-[11px] font-bold text-[#46280b] mb-1">Aadhaar Front</span>
-                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                      <label className="px-2.5 py-1 rounded-lg bg-[#002E6E] hover:bg-[#00204d] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
                         {aadhaarFrontImage ? 'Change File' : 'Choose File'}
                         <input
                           type="file"
@@ -1047,7 +1047,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                         </div>
                       )}
                       <span className="text-[11px] font-bold text-[#46280b] mb-1">Aadhaar Back</span>
-                      <label className="px-2.5 py-1 rounded-lg bg-[#D0872E] hover:bg-[#b87324] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
+                      <label className="px-2.5 py-1 rounded-lg bg-[#002E6E] hover:bg-[#00204d] text-white text-[10px] font-bold cursor-pointer transition-colors shadow-xs">
                         {aadhaarBackImage ? 'Change File' : 'Choose File'}
                         <input
                           type="file"
@@ -1073,7 +1073,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                   <button
                     type="button"
                     onClick={handleNextStep}
-                    className="flex-1 py-3.5 px-5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#d0872e]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="flex-1 py-3.5 px-5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#002E6E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>Next: Address Details</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1146,7 +1146,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                   <button
                     type="button"
                     onClick={handleNextStep}
-                    className="flex-1 py-3.5 px-5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#d0872e]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="flex-1 py-3.5 px-5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#002E6E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>Review & Confirm</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1278,7 +1278,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                     type="button"
                     disabled={signupLoading}
                     onClick={handleConfirmAndRegister}
-                    className="flex-1 py-4 px-5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-black text-sm tracking-wide shadow-xl shadow-[#d0872e]/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 transition-all"
+                    className="flex-1 py-4 px-5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-black text-sm tracking-wide shadow-xl shadow-[#002E6E]/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 transition-all"
                   >
                     {signupLoading ? (
                       <>
@@ -1417,7 +1417,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
               <button
                 type="button"
                 onClick={handleSwitchToLoginWithCredentials}
-                className="w-full py-3.5 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-black text-sm tracking-wide shadow-lg shadow-[#d0872e]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                className="w-full py-3.5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-black text-sm tracking-wide shadow-lg shadow-[#002E6E]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
                 <span>Login Now with this UID</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1474,7 +1474,7 @@ export default function AuthScreen({ onLoginSuccess, initialMode = 'signup' }: A
                   type="button"
                   disabled={loginLoading}
                   onClick={handleCheckPendingStatus}
-                  className="w-full py-3.5 px-4 rounded-xl bg-[#D0872E] hover:bg-[#b87324] text-white font-bold text-sm tracking-wide shadow-md shadow-[#d0872e]/25 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white font-bold text-sm tracking-wide shadow-md shadow-[#002E6E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
                 >
                   {loginLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
