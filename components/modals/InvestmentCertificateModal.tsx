@@ -3,7 +3,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, ShieldCheck, Award, CheckCircle2, Phone, MapPin, Building2, QrCode } from 'lucide-react';
-import { Customer, InvestmentPlan } from '@/types/investment';
+import { Customer, InvestmentPlan, AppSettings, DEFAULT_APP_SETTINGS } from '@/types/investment';
+import { getAppSettingsFromFirestore } from '@/lib/firebase';
 
 interface InvestmentCertificateModalProps {
   isOpen: boolean;
@@ -21,6 +22,24 @@ export default function InvestmentCertificateModal({
   const certRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const local = localStorage.getItem('network_join_pro_app_settings');
+        if (local) setAppSettings({ ...DEFAULT_APP_SETTINGS, ...JSON.parse(local) });
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAppSettingsFromFirestore().then((settings) => {
+        if (settings) setAppSettings(settings);
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -155,9 +174,17 @@ export default function InvestmentCertificateModal({
               {/* Header Branding & Compact Title */}
               <div className="relative z-10 text-center space-y-0.5 pt-0.5 border-b border-amber-200 pb-1.5">
                 <div className="flex items-center justify-center gap-1.5">
-                  <div className="w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                    NJP
-                  </div>
+                  {appSettings.appLogo ? (
+                    <img
+                      src={appSettings.appLogo}
+                      alt={appSettings.appName || 'Logo'}
+                      className="w-8 h-8 rounded-full object-contain bg-white border border-amber-400 p-0.5 shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                      {appSettings.appShortName || 'NJP'}
+                    </div>
+                  )}
                 </div>
 
                 <h1 className="text-xl sm:text-2xl font-black tracking-wide text-amber-700 uppercase font-serif">
@@ -223,7 +250,9 @@ export default function InvestmentCertificateModal({
                 <div className="bg-slate-50 border-b border-slate-200 px-2.5 py-1 flex items-center justify-between">
                   <div>
                     <span className="text-[9px] font-black text-amber-700 uppercase block leading-none">Application Name</span>
-                    <strong className="text-xs sm:text-sm font-black text-slate-900">NETWORK JOIN PRO</strong>
+                    <strong className="text-xs sm:text-sm font-black text-slate-900 uppercase">
+                      {appSettings.appName || 'NETWORK JOIN PRO'}
+                    </strong>
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] font-bold text-slate-500 uppercase block leading-none">Selected Plan</span>
@@ -320,18 +349,19 @@ export default function InvestmentCertificateModal({
               <div className="relative z-10 pt-1 border-t border-slate-200 text-[8.5px] text-slate-600 space-y-0.5 bg-slate-50 p-1.5 rounded-md border border-slate-200/80">
                 <div className="flex items-center justify-between font-bold text-slate-900">
                   <span className="flex items-center gap-1">
-                    <Building2 className="w-2.5 h-2.5 text-amber-600" /> Network Join Pro India Private Limited
+                    <Building2 className="w-2.5 h-2.5 text-amber-600" />
+                    <span>{appSettings.companyName || 'Network Join Pro India Private Limited'}</span>
                   </span>
-                  <span>CIN: U74999UP2026PTC136667</span>
+                  <span>CIN: {appSettings.cin || 'U74999UP2026PTC136667'}</span>
                 </div>
                 <div>
-                  <strong>Reg. Address:</strong> Gomti Nagar, Lucknow, Uttar Pradesh - 226010, India
+                  <strong>Reg. Address:</strong> {appSettings.localArea ? `${appSettings.localArea}, ` : ''}{appSettings.cityDistrict}, {appSettings.state} - {appSettings.pinCode}, {appSettings.country || 'India'}
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-x-2 text-[8px] text-slate-500 pt-0.5 border-t border-slate-200/60">
-                  <span>Email: <strong>support@networkjoinpro.in</strong></span>
-                  <span>District: <strong>Lucknow</strong></span>
-                  <span>State: <strong>Uttar Pradesh</strong></span>
-                  <span>PIN: <strong>226010</strong></span>
+                  <span>Email: <strong>{appSettings.email || 'support@networkjoinpro.in'}</strong></span>
+                  <span>District: <strong>{appSettings.cityDistrict || 'Lucknow'}</strong></span>
+                  <span>State: <strong>{appSettings.state || 'Uttar Pradesh'}</strong></span>
+                  <span>PIN: <strong>{appSettings.pinCode || '226010'}</strong></span>
                 </div>
               </div>
             </div>

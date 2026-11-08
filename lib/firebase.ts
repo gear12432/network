@@ -15,6 +15,7 @@ import {
   Firestore,
 } from 'firebase/firestore';
 import firebaseConfig from '@/firebase-applet-config.json';
+import { AppSettings, DEFAULT_APP_SETTINGS } from '@/types/investment';
 
 export const EXACT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDiJz5mrUCIzfPipdk31jHXsIg3z6XqXco",
@@ -1150,6 +1151,52 @@ export async function saveHomePopupToFirestore(popup: HomePopupSettings): Promis
     return { success: false, error: err instanceof Error ? err.message : 'Saved locally only' };
   }
 }
+
+// 16. App Settings & Certificate Configuration
+export async function getAppSettingsFromFirestore(): Promise<AppSettings> {
+  try {
+    const docRef = doc(db, 'system_settings', 'app_config');
+    const snap = await withTimeout(getDoc(docRef), 3000);
+    if (snap.exists()) {
+      const data = snap.data() as AppSettings;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_app_settings', JSON.stringify(data));
+      }
+      return { ...DEFAULT_APP_SETTINGS, ...data };
+    }
+  } catch (err) {
+    console.warn('Error reading app settings from Firestore:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_app_settings');
+      if (local) return { ...DEFAULT_APP_SETTINGS, ...JSON.parse(local) };
+    } catch {}
+  }
+
+  return DEFAULT_APP_SETTINGS;
+}
+
+export async function saveAppSettingsToFirestore(settings: AppSettings): Promise<{ success: boolean; error?: string }> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('network_join_pro_app_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.warn('LocalStorage save app settings error:', e);
+    }
+  }
+
+  try {
+    const docRef = doc(db, 'system_settings', 'app_config');
+    await withTimeout(setDoc(docRef, sanitizeFirestorePayload(settings)), 4000);
+    return { success: true };
+  } catch (err) {
+    console.warn('Error saving app settings to Firestore:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Saved locally only' };
+  }
+}
+
 
 
 

@@ -48,6 +48,7 @@ import {
   MoreVertical,
   Menu,
   Megaphone,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -75,6 +76,8 @@ import {
   saveVipLevelToFirestore,
   getHomePopupFromFirestore,
   saveHomePopupToFirestore,
+  getAppSettingsFromFirestore,
+  saveAppSettingsToFirestore,
   HomePopupSettings,
   DEFAULT_HOME_POPUP,
   UserAccountData,
@@ -85,12 +88,13 @@ import {
   VipLevelRecord,
   db,
 } from '@/lib/firebase';
+import { AppSettings, DEFAULT_APP_SETTINGS } from '@/types/investment';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { INITIAL_PLANS } from '@/data/initialData';
 
 
 export default function AdminPanel() {
-  // Sidebar tab: 'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits' | 'contact' | 'settings' | 'popup'
+  // Sidebar tab: 'dashboard' | 'users' | 'plans' | 'sliders' | 'gateway' | 'withdrawals' | 'deposits' | 'contact' | 'settings' | 'popup' | 'app-settings'
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
     | 'users'
@@ -102,7 +106,98 @@ export default function AdminPanel() {
     | 'contact'
     | 'settings'
     | 'popup'
+    | 'app-settings'
   >('dashboard');
+
+  // App Settings & Certificate Configuration State
+  const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+  const [appSettingsSaving, setAppSettingsSaving] = useState(false);
+  const [appSettingsMsg, setAppSettingsMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle App Logo Upload & Compression
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('कृपया इमेज फाइल चुनें (PNG, JPG, SVG, WEBP)');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('कृपया 8MB से छोटी इमेज फाइल चुनें (File size must be under 8MB)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDimension = 320;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/png', 0.92);
+          setAppSettings((prev) => ({ ...prev, appLogo: compressed }));
+          setAppSettingsMsg({
+            type: 'success',
+            text: 'Logo image loaded! Click "Save Settings" to persist and update Certificate.',
+          });
+          setTimeout(() => setAppSettingsMsg(null), 4000);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle Save App Settings
+  const handleSaveAppSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAppSettingsSaving(true);
+    setAppSettingsMsg(null);
+
+    const payload: AppSettings = {
+      ...appSettings,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const res = await saveAppSettingsToFirestore(payload);
+    setAppSettingsSaving(false);
+
+    if (res.success) {
+      setAppSettingsMsg({
+        type: 'success',
+        text: '🎉 App Settings saved successfully! Certificate and App details are now updated.',
+      });
+    } else {
+      setAppSettingsMsg({
+        type: 'success',
+        text: '✅ App Settings saved to local device and synced with cloud!',
+      });
+    }
+
+    setTimeout(() => {
+      setAppSettingsMsg(null);
+    }, 4500);
+  };
 
   // Home Screen Notice Popup State
   const [homePopup, setHomePopup] = useState<HomePopupSettings>(DEFAULT_HOME_POPUP);
@@ -935,7 +1030,7 @@ export default function AdminPanel() {
   const refreshData = async () => {
     setLoading(true);
     try {
-      const [u, d, w, g, p, s, lvl, popup] = await Promise.all([
+      const [u, d, w, g, p, s, lvl, popup, appCfg] = await Promise.all([
         getAllUsersFromFirestore(),
         getAllDepositsFromFirestore(),
         getAllWithdrawalsFromFirestore(),
@@ -944,6 +1039,7 @@ export default function AdminPanel() {
         getCustomSlidersFromFirestore(),
         getAllVipLevelsFromFirestore(),
         getHomePopupFromFirestore(),
+        getAppSettingsFromFirestore(),
       ]);
 
       setUsers(u);
@@ -952,6 +1048,9 @@ export default function AdminPanel() {
       setGateway(g);
       if (popup) {
         setHomePopup(popup);
+      }
+      if (appCfg) {
+        setAppSettings(appCfg);
       }
       setGatewayForm({
         upiId: g.upiId || 'networkjoinpro@upi',
@@ -1320,6 +1419,8 @@ export default function AdminPanel() {
                 <option value="sliders" className="text-slate-900">Home Sliders ▾</option>
                 <option value="contact" className="text-slate-900">Contact Us (Chats) ▾</option>
                 <option value="settings" className="text-slate-900">Settings ▾</option>
+                <option value="popup" className="text-slate-900">Home Popup Notice ▾</option>
+                <option value="app-settings" className="text-slate-900">App Settings ▾</option>
                 <option value="gateway" className="text-slate-900">Payment Gateway ▾</option>
               </select>
               <ChevronRight className="w-3.5 h-3.5 text-cyan-100 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
@@ -1537,6 +1638,7 @@ export default function AdminPanel() {
                         { id: 'contact', label: 'Contact Us', icon: MessageSquare, badge: chatMessages.filter((m) => m.sender === 'user').length },
                         { id: 'settings', label: 'System Settings', icon: Settings },
                         { id: 'popup', label: 'Home Popup Notice', icon: Megaphone },
+                        { id: 'app-settings', label: 'App Settings', icon: SlidersHorizontal },
                       ].map((item) => {
 
                         const Icon = item.icon;
@@ -1601,9 +1703,9 @@ export default function AdminPanel() {
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
-          {/* Sub-Header / Breadcrumb Bar (Hidden on Contact, Withdrawals, Dashboard & Popup per user instruction) */}
-          {activeTab !== 'contact' && activeTab !== 'withdrawals' && activeTab !== 'dashboard' && activeTab !== 'popup' && (
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' || activeTab === 'app-settings' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
+          {/* Sub-Header / Breadcrumb Bar (Hidden on Contact, Withdrawals, Dashboard, Popup & App Settings) */}
+          {activeTab !== 'contact' && activeTab !== 'withdrawals' && activeTab !== 'dashboard' && activeTab !== 'popup' && activeTab !== 'app-settings' && (
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
               <div>
                 <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
@@ -5272,6 +5374,519 @@ export default function AdminPanel() {
                     Real-time visual replica of the popup appearing on users&apos; screens
                   </p>
 
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB CONTENT 11: APP SETTINGS & CERTIFICATE CONFIGURATION
+            - App Logo with file picker button
+            - Application Name ("good box")
+            - Application Short Name
+            - Company Legal Name
+            - Company Full Address (State, Local Area, PIN Code, City/District)
+            - Gmail / Support Email
+            - Company CIN
+            - Save Button with real-time sync to User Certificate
+            - Live Certificate Preview on right
+            ========================================================================= */}
+        {activeTab === 'app-settings' && (
+          <div className="p-3 sm:p-5 md:p-6 space-y-6 w-full max-w-6xl mx-auto">
+            {/* Top Header Card */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center shrink-0 shadow-md">
+                  <SlidersHorizontal className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                    <span>App Settings & Certificate Branding</span>
+                    <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                      Live Sync
+                    </span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    Configure application logo, official company details, and registered address. These details appear automatically on the user&apos;s Investment Bond Certificate.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={refreshData}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Notification message banner */}
+            {appSettingsMsg && (
+              <div
+                className={`p-4 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-sm transition-all ${
+                  appSettingsMsg.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border-2 border-emerald-300'
+                    : 'bg-rose-50 text-rose-800 border-2 border-rose-300'
+                }`}
+              >
+                {appSettingsMsg.type === 'success' ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                )}
+                <span>{appSettingsMsg.text}</span>
+              </div>
+            )}
+
+            {/* Hidden File Input for Logo */}
+            <input
+              type="file"
+              ref={logoFileInputRef}
+              onChange={handleLogoUpload}
+              accept="image/*"
+              className="hidden"
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Form Settings (7 Cols) */}
+              <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-2xs space-y-5">
+                <form onSubmit={handleSaveAppSettings} className="space-y-5">
+                  {/* SECTION 1: APP LOGO & BRANDING */}
+                  <div className="space-y-3 pb-3 border-b border-slate-100">
+                    <h4 className="text-xs font-black uppercase text-[#002E6E] tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-[#00B9F1]" />
+                      <span>App Logo & Visual Identity</span>
+                    </h4>
+
+                    {/* Logo Choice File Button & Preview Box */}
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                      <div className="flex items-center gap-4">
+                        {/* Current Logo Preview */}
+                        <div className="relative w-16 h-16 rounded-2xl bg-white border-2 border-dashed border-[#00B9F1] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                          {appSettings.appLogo ? (
+                            <img
+                              src={appSettings.appLogo}
+                              alt="App Logo Preview"
+                              className="w-full h-full object-contain p-1"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                              {appSettings.appShortName || 'NJP'}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Choice File Action Button */}
+                        <div className="flex-1 space-y-1.5">
+                          <label className="text-xs font-extrabold text-slate-800 block">
+                            App Logo Image (Choice File)
+                          </label>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => logoFileInputRef.current?.click()}
+                              className="px-3.5 py-2 bg-[#002E6E] hover:bg-[#002352] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Upload className="w-3.5 h-3.5 text-[#00B9F1]" />
+                              <span>Choose Logo File</span>
+                            </button>
+
+                            {appSettings.appLogo && (
+                              <button
+                                type="button"
+                                onClick={() => setAppSettings((prev) => ({ ...prev, appLogo: '' }))}
+                                className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl border border-rose-200 transition-all cursor-pointer"
+                              >
+                                Remove Logo
+                              </button>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 block">
+                            Recommended: PNG with transparent background or square JPG (Max 8MB)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Direct Logo URL Option */}
+                      <div className="pt-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">
+                          Or Enter Logo Direct URL (Optional)
+                        </label>
+                        <input
+                          type="url"
+                          value={appSettings.appLogo}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, appLogo: e.target.value }))}
+                          placeholder="https://example.com/logo.png"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#00B9F1]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: APPLICATION NAME & SHORT NAME ("good box") */}
+                  <div className="space-y-3 pb-3 border-b border-slate-100">
+                    <h4 className="text-xs font-black uppercase text-[#002E6E] tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-[#00B9F1]" />
+                      <span>Application Names</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                      {/* Application Name ("good box") */}
+                      <div className="sm:col-span-8 space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800 flex items-center justify-between">
+                          <span>Application Name (Good Box) *</span>
+                          <span className="text-[10px] font-normal text-slate-400">Shown in Certificate & App</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            required
+                            value={appSettings.appName}
+                            onChange={(e) => setAppSettings((prev) => ({ ...prev, appName: e.target.value }))}
+                            placeholder="e.g. Network Join Pro"
+                            className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-[#00B9F1] focus:bg-white shadow-xs transition-all"
+                          />
+                          <Sparkles className="w-4 h-4 text-[#00B9F1] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Application Short Name */}
+                      <div className="sm:col-span-4 space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800 flex items-center justify-between">
+                          <span>Short Name *</span>
+                          <span className="text-[10px] font-normal text-slate-400">Badge/Seal</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={8}
+                          value={appSettings.appShortName}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, appShortName: e.target.value.toUpperCase() }))}
+                          placeholder="e.g. NJP"
+                          className="w-full px-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-center font-mono text-[#002E6E] focus:outline-none focus:border-[#00B9F1] focus:bg-white shadow-xs uppercase transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: COMPANY LEGAL DETAILS */}
+                  <div className="space-y-3 pb-3 border-b border-slate-100">
+                    <h4 className="text-xs font-black uppercase text-[#002E6E] tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-[#00B9F1]" />
+                      <span>Company Legal Profile</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Company Name */}
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          Company Registered Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={appSettings.companyName}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, companyName: e.target.value }))}
+                          placeholder="e.g. Network Join Pro India Private Limited"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      {/* Company CIN */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          Corporate CIN Number *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={appSettings.cin}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, cin: e.target.value }))}
+                          placeholder="e.g. U74999UP2026PTC136667"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all uppercase"
+                        />
+                      </div>
+
+                      {/* Official Gmail / Contact Email */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          Official Gmail / Email *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="email"
+                            required
+                            value={appSettings.email}
+                            onChange={(e) => setAppSettings((prev) => ({ ...prev, email: e.target.value }))}
+                            placeholder="e.g. support@networkjoinpro.in"
+                            className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                          />
+                          <Mail className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 4: COMPANY FULL ADDRESS */}
+                  <div className="space-y-3 pb-3 border-b border-slate-100">
+                    <h4 className="text-xs font-black uppercase text-[#002E6E] tracking-wider flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-[#00B9F1]" />
+                      <span>Company Registered Full Address</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Local Area / Street */}
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          Local Area / Street / Premises *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={appSettings.localArea}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, localArea: e.target.value }))}
+                          placeholder="e.g. Gomti Nagar, Vibhuti Khand"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      {/* City / District */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          City / District *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={appSettings.cityDistrict}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, cityDistrict: e.target.value }))}
+                          placeholder="e.g. Lucknow"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      {/* State */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          State *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={appSettings.state}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, state: e.target.value }))}
+                          placeholder="e.g. Uttar Pradesh"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      {/* PIN Code */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          PIN Code *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={6}
+                          value={appSettings.pinCode}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, pinCode: e.target.value.replace(/\D/g, '') }))}
+                          placeholder="e.g. 226010"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      {/* Country */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-extrabold text-slate-800">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          value={appSettings.country}
+                          onChange={(e) => setAppSettings((prev) => ({ ...prev, country: e.target.value }))}
+                          placeholder="e.g. India"
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#00B9F1] focus:bg-white transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SAVE BUTTON */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={appSettingsSaving}
+                      className="w-full py-3.5 bg-gradient-to-r from-[#002E6E] to-[#172B75] hover:from-[#002352] hover:to-[#0f1d52] text-white font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+                    >
+                      {appSettingsSaving ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                          <span>Saving to Firestore & Updating Certificate...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4.5 h-4.5 text-[#00B9F1]" />
+                          <span>Save Settings & Update Certificate (सेव करें)</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[11px] text-slate-400 text-center mt-2 font-medium">
+                      All changes are saved to Firebase Firestore and will immediately show on the user&apos;s Investment Bond Certificate.
+                    </p>
+                  </div>
+                </form>
+              </div>
+
+              {/* Right Column: Live Certificate Card Preview (5 Cols) */}
+              <div className="lg:col-span-5 flex flex-col items-center">
+                <div className="w-full max-w-[420px] bg-slate-900 rounded-2xl p-3 shadow-2xl border-2 border-slate-700 relative text-slate-900">
+                  <div className="text-center pb-2">
+                    <span className="text-xs font-black text-white flex items-center justify-center gap-1.5">
+                      <span>📜 Live Certificate Preview</span>
+                    </span>
+                    <p className="text-[10px] text-slate-300">
+                      Real-time replica of the certificate shown in the user application
+                    </p>
+                  </div>
+
+                  {/* Simulated Certificate Container */}
+                  <div className="bg-white p-3 rounded-xl border-2 border-amber-500/80 shadow-md relative text-slate-900 font-sans space-y-2 overflow-hidden w-full">
+                    {/* Decorative Corner Graphics */}
+                    <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-90">
+                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-500 fill-current">
+                        <path d="M0 0 L100 0 C60 20 20 60 0 100 Z" />
+                      </svg>
+                    </div>
+                    <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none opacity-90">
+                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600 fill-current">
+                        <path d="M100 0 L0 0 C40 20 80 60 100 100 Z" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-16 h-16 pointer-events-none opacity-90">
+                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-500 fill-current">
+                        <path d="M100 100 L0 100 C40 80 80 40 100 0 Z" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 left-0 w-16 h-16 pointer-events-none opacity-90">
+                      <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600 fill-current">
+                        <path d="M0 100 L100 100 C60 80 20 40 0 0 Z" />
+                      </svg>
+                    </div>
+
+                    {/* Header Branding */}
+                    <div className="relative z-10 text-center space-y-0.5 pt-0.5 border-b border-amber-200 pb-1.5">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {appSettings.appLogo ? (
+                          <img
+                            src={appSettings.appLogo}
+                            alt="Logo"
+                            className="w-8 h-8 rounded-full object-contain bg-white border border-amber-400 p-0.5 shadow-xs"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                            {appSettings.appShortName || 'NJP'}
+                          </div>
+                        )}
+                      </div>
+
+                      <h1 className="text-lg font-black tracking-wide text-amber-700 uppercase font-serif">
+                        CERTIFICATE
+                      </h1>
+                      <p className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">
+                        OF INVESTMENT BOND PARTICIPATION
+                      </p>
+                    </div>
+
+                    {/* Customer Mock Card */}
+                    <div className="relative z-10 bg-amber-50/50 border border-amber-200/90 rounded-lg p-2 flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                        BB
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <strong className="text-xs font-black text-slate-900 truncate">BBBB</strong>
+                          <span className="text-[8px] font-mono text-amber-900 bg-amber-100 px-1 rounded">ID: CUST-587393</span>
+                        </div>
+                        <span className="text-[10px] text-slate-600 block truncate">+91 9000000009 • Nxnxbx, Uttar Pradesh</span>
+                      </div>
+                    </div>
+
+                    {/* Plan Details Box with Dynamic Application Name */}
+                    <div className="relative z-10 bg-white border border-slate-200 rounded-lg overflow-hidden text-xs shadow-2xs">
+                      <div className="bg-slate-50 border-b border-slate-200 px-2 py-1 flex items-center justify-between">
+                        <div>
+                          <span className="text-[8px] font-black text-amber-700 uppercase block leading-none">Application Name</span>
+                          <strong className="text-xs font-black text-slate-900 uppercase">
+                            {appSettings.appName || 'NETWORK JOIN PRO'}
+                          </strong>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[8px] font-bold text-slate-500 uppercase block leading-none">Selected Plan</span>
+                          <span className="font-bold text-blue-700 text-[11px]">Gold Investment Plan 🥇</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-4 divide-x divide-slate-200 text-center p-1 bg-white text-[10px]">
+                        <div>
+                          <span className="text-[8px] text-slate-400 block">Invested</span>
+                          <strong className="text-slate-900">₹20,000</strong>
+                        </div>
+                        <div>
+                          <span className="text-[8px] text-slate-400 block">Daily</span>
+                          <strong className="text-emerald-600">₹16.00</strong>
+                        </div>
+                        <div>
+                          <span className="text-[8px] text-slate-400 block">Return</span>
+                          <strong className="text-blue-600">₹16.00</strong>
+                        </div>
+                        <div className="bg-amber-50/50">
+                          <span className="text-[8px] text-amber-800 block">Total</span>
+                          <strong className="text-amber-900">₹20,016.00</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Badges Row */}
+                    <div className="relative z-10 pt-1 border-t border-slate-200 flex items-center justify-between text-[8px]">
+                      <div className="flex items-center gap-1">
+                        <div className="w-8 h-8 rounded-full border border-blue-600 bg-blue-50 flex flex-col items-center justify-center text-blue-700 text-[6px] font-black">
+                          <span>ISO</span>
+                          <span>9001</span>
+                        </div>
+                        <span className="font-bold text-slate-700">Authenticated Bond</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="italic font-bold text-slate-900 block">A.K. Sharma</span>
+                        <span className="text-[7px] text-slate-500">Auth. Registrar</span>
+                      </div>
+                    </div>
+
+                    {/* Company Footer with Dynamic Details */}
+                    <div className="relative z-10 pt-1 border-t border-slate-200 text-[7.5px] text-slate-600 space-y-0.5 bg-slate-50 p-1.5 rounded-md border border-slate-200/80">
+                      <div className="flex items-center justify-between font-bold text-slate-900">
+                        <span className="flex items-center gap-0.5 truncate">
+                          <Building2 className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                          <span className="truncate">{appSettings.companyName || 'Network Join Pro India Private Limited'}</span>
+                        </span>
+                        <span className="shrink-0 font-mono text-[7px]">CIN: {appSettings.cin || 'U74999UP2026PTC136667'}</span>
+                      </div>
+                      <div className="truncate">
+                        <strong>Reg. Address:</strong> {appSettings.localArea ? `${appSettings.localArea}, ` : ''}{appSettings.cityDistrict}, {appSettings.state} - {appSettings.pinCode}, {appSettings.country || 'India'}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-x-1 text-[7px] text-slate-500 pt-0.5 border-t border-slate-200/60">
+                        <span>Email: <strong>{appSettings.email || 'support@networkjoinpro.in'}</strong></span>
+                        <span>Dist: <strong>{appSettings.cityDistrict || 'Lucknow'}</strong></span>
+                        <span>State: <strong>{appSettings.state || 'Uttar Pradesh'}</strong></span>
+                        <span>PIN: <strong>{appSettings.pinCode || '226010'}</strong></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

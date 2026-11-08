@@ -124,3 +124,33 @@ export interface Customer {
   createdDate: string;
   kycStatus: 'verified' | 'pending';
 }
+
+export interface AppSettings {
+  appLogo: string;
+  appName: string;
+  appShortName: string;
+  companyName: string;
+  localArea: string;
+  cityDistrict: string;
+  state: string;
+  pinCode: string;
+  country: string;
+  email: string;
+  cin: string;
+  updatedAt?: string;
+}
+
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  appLogo: '',
+  appName: 'Network Join Pro',
+  appShortName: 'NJP',
+  companyName: 'Network Join Pro India Private Limited',
+  localArea: 'Gomti Nagar',
+  cityDistrict: 'Lucknow',
+  state: 'Uttar Pradesh',
+  pinCode: '226010',
+  country: 'India',
+  email: 'support@networkjoinpro.in',
+  cin: 'U74999UP2026PTC136667',
+};
+
