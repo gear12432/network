@@ -167,6 +167,12 @@ if (fs.existsSync(outDir)) {
   patchHtmlFile(rootAdminIndexFile, 1);
   console.log('[GitHub Pages Fix] Successfully patched root admin.html (depth 0) and root/admin/index.html (depth 1).');
 
+  // Ensure logo.png is available in root for GitHub Pages
+  if (fs.existsSync(path.join(projectRoot, 'public', 'logo.png'))) {
+    fs.copyFileSync(path.join(projectRoot, 'public', 'logo.png'), path.join(projectRoot, 'logo.png'));
+    console.log('[GitHub Pages Fix] Copied logo.png to root directory.');
+  }
+
   // Create .nojekyll in root
   fs.writeFileSync(path.join(projectRoot, '.nojekyll'), '');
   console.log('[GitHub Pages Fix] Created .nojekyll in root directory.');
