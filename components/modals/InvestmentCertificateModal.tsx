@@ -478,7 +478,7 @@ export default function InvestmentCertificateModal({
                       className="font-serif italic font-bold text-xs border-b pb-0.2 px-1"
                       style={{ color: '#002E6E', borderColor: 'rgba(0, 46, 110, 0.3)' }}
                     >
-                      {appSettings.registrarName || 'A.K. Sharma'}
+                      {appSettings.companyName || 'Network Join Pro'}
                     </div>
                     <span className="text-[8px] font-bold block" style={{ color: '#172B75' }}>
                       Auth. Registrar

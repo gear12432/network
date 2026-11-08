@@ -484,9 +484,8 @@ export default function PurchaseHistoryContent({
             </button>
           )}
         </div>
-      ) : viewMode === 'list' ? (
-        /* LIST VIEW */
-        <div className="space-y-4">
+      ) : (
+        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
           {filteredInvestments.map((inv) => {
             const progressPercent = Math.min(
               100,
@@ -503,279 +502,177 @@ export default function PurchaseHistoryContent({
             return (
               <div
                 key={inv.id}
-                className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#00B9F1]/10 shadow-sm hover:shadow-md transition-all space-y-4 overflow-hidden relative"
+                className="relative bg-white rounded-[2.5rem] border-2 border-[#D9E7F5] shadow-xl overflow-hidden flex flex-col"
               >
-                {/* Header: Plan Name, Status & Amount */}
-                <div className="flex items-start justify-between gap-3 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <PlanCategoryIconBadge planName={inv.planName} size="lg" />
-                    <div>
-                      <div className="flex flex-col">
-                        <h4 className="font-black text-[#172B75] text-sm sm:text-base leading-tight">
-                          {inv.planName}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
-                              isWithdrawalPending
-                                ? 'bg-black text-white border-black shadow-xs'
-                                : inv.status === 'completed'
-                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200 shadow-xs'
-                                : 'bg-[#E5F7FF] text-[#002E6E] border-[#00B9F1]/30 shadow-xs'
-                            }`}
-                          >
-                            {isWithdrawalPending
-                              ? 'Withdrawal Pending'
-                              : inv.status === 'completed'
-                              ? 'Completed'
-                              : 'Active Compounding'}
+                {/* 1. Top Sky Blue Accent Header */}
+                <div className="h-10 w-full bg-[#00B9F1]" />
+
+                {/* 2. Main Card Content Area */}
+                <div className="px-5 pb-6 -mt-4 relative z-10 space-y-4">
+                  {/* Internal Card (White) */}
+                  <div className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#D9E7F5]/50 shadow-sm space-y-5">
+                    
+                    {/* Header Row: Icon + Name + Amount */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <PlanCategoryIconBadge planName={inv.planName} size="lg" />
+                        <div className="space-y-1">
+                          <h4 className="font-black text-[#002E6E] text-base sm:text-lg leading-tight tracking-tight">
+                            {inv.planName}
+                          </h4>
+                          <div className="inline-block">
+                            <span className="bg-[#EAF5FF] text-[#00B9F1] text-[10px] font-black px-3.5 py-1.5 rounded-full uppercase border border-[#00B9F1]/20 shadow-xs">
+                              ACTIVE COMPOUNDING
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex flex-col items-end pt-1">
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">PURCHASE AMT</span>
+                        <span className="text-xl sm:text-2xl font-black text-[#002E6E] font-mono leading-none">
+                          ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Purchase Meta */}
+                    <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider pl-1.5">
+                      PURCHASED ON: <span className="text-slate-600">{inv.startDate}</span>
+                    </div>
+
+                    {/* Customer Sub-Card */}
+                    {inv.customerName && (
+                      <div className="bg-[#F2F8FC] p-3.5 rounded-2xl border border-[#D9E7F5] flex items-center justify-between group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {inv.customerPhoto ? (
+                            <img
+                              src={inv.customerPhoto}
+                              alt={inv.customerName}
+                              className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center font-black text-sm shadow-sm border-2 border-white">
+                              {inv.customerName[0]}
+                            </div>
+                          )}
+                          <div className="truncate">
+                            <span className="font-black text-[#172B75] block text-base truncate">
+                              {inv.customerName}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-bold">
+                              <Phone className="w-3 h-3 text-[#00B9F1]" />
+                              <span>+91 {inv.customerMobile}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="bg-[#EAF5FF] text-[#002E6E] text-[10px] font-black px-4 py-1.5 rounded-full border border-[#00B9F1]/20 uppercase shadow-xs">
+                          Customer Linked
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Return Statistics Area */}
+                    <div className="bg-[#F2F8FC] p-5 rounded-[1.5rem] border border-[#D9E7F5] space-y-4 shadow-2xs">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">DAILY RETURN</span>
+                          <span className="text-xl font-black text-[#00B9F1] font-mono block">
+                            +₹{(inv.dailyReturn || 0).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="space-y-1 pl-5 border-l border-[#D9E7F5]">
+                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">EXPECTED RETURN</span>
+                          <span className="text-xl font-black text-[#07865B] font-mono block">
+                            ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}
                           </span>
                         </div>
                       </div>
-                      <span className="text-[11px] text-slate-400 font-bold block mt-1.5 uppercase tracking-wider">
-                        Purchased on: {inv.startDate}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="text-right shrink-0">
-                    <span className="text-[10px] text-slate-400 uppercase font-black block tracking-tight">Purchase Amt</span>
-                    <span className="text-xl font-black text-[#172B75] font-mono">
-                      ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Linked Customer info if present - Rounded Container style */}
-                {inv.customerName && (
-                  <div className="bg-[#F2F8FC] p-3 rounded-2xl border border-[#00B9F1]/15 flex items-center justify-between text-xs group transition-colors hover:bg-white hover:border-[#00B9F1]/40">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {inv.customerPhoto ? (
-                        <img
-                          src={inv.customerPhoto}
-                          alt={inv.customerName}
-                          className="w-9 h-9 rounded-xl object-cover border border-[#00B9F1]/30 shadow-2xs group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center font-black text-sm shadow-2xs group-hover:scale-105 transition-transform">
-                          {inv.customerName[0]}
-                        </div>
-                      )}
-                      <div className="truncate">
-                        <span className="font-black text-[#172B75] block truncate text-sm">
-                          {inv.customerName}
-                        </span>
-                        {inv.customerMobile && (
-                          <span className="text-[11px] text-[#002E6E] font-bold flex items-center gap-1 opacity-70">
-                            <Phone className="w-2.5 h-2.5" />
-                            +91 {inv.customerMobile}
+                      {/* Progress Indicator */}
+                      <div className="pt-2 border-t border-[#D9E7F5]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tight">INVESTMENT PROGRESS</span>
+                          <span className="text-[12px] font-black text-[#002E6E]">
+                            Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
                           </span>
+                        </div>
+                        {/* Custom Styled Progress Bar */}
+                        <div className="w-full bg-[#D9E7F5] h-2.5 rounded-full overflow-hidden shadow-inner p-[1px]">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercent}%` }}
+                            transition={{ duration: 1.5, ease: 'easeOut' }}
+                            className="bg-[#00B9F1] h-full rounded-full shadow-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Duration Section */}
+                    <div className="pt-2 flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-[12px] font-black text-[#172B75] bg-[#F2F8FC] px-4 py-2 rounded-xl border border-[#D9E7F5] shadow-xs">
+                        <Calendar className="w-4 h-4 text-[#00B9F1]" />
+                        <span>Duration: {inv.totalDays || 30} Days</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Section (Award + Timer/Claim) */}
+                    <div className="flex items-center justify-between gap-4 pt-1">
+                      {/* Left: Certificate Square Button */}
+                      {onViewCertificate && (
+                        <button
+                          onClick={() => onViewCertificate(inv)}
+                          className="w-14 h-14 flex items-center justify-center bg-white text-[#00B9F1] rounded-2xl border-2 border-[#D9E7F5] transition-all cursor-pointer shadow-sm active:scale-90 hover:border-[#00B9F1]/50"
+                          title="View Official Certificate"
+                        >
+                          <Award className="w-7 h-7" />
+                        </button>
+                      )}
+
+                      {/* Right: Primary Action / Timer */}
+                      <div className="flex-1">
+                        {isWithdrawalPending ? (
+                          <button
+                            disabled
+                            className="w-full h-14 bg-black text-white font-black text-sm rounded-2xl border-2 border-black shadow-md flex items-center justify-center gap-2 cursor-not-allowed uppercase"
+                          >
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                            <span>विड्रॉल पेंडिंग</span>
+                          </button>
+                        ) : isApproved ? (
+                          <button
+                            disabled
+                            className="w-full h-14 bg-[#07865B] text-white font-black text-sm rounded-2xl shadow-md border-2 border-white flex items-center justify-center gap-2 cursor-not-allowed uppercase"
+                          >
+                            <CheckCircle2 className="w-5 h-5 text-white" />
+                            <span>APPROVED Payout</span>
+                          </button>
+                        ) : !isComplete ? (
+                          /* TIMER DESIGN: NAVY BOX WITH CYAN ACCENTS */
+                          <div className="w-full h-14 bg-[#002E6E] text-white font-mono font-black text-2xl rounded-2xl border-2 border-[#00B9F1]/40 flex items-center justify-center gap-4 shadow-xl relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            <Clock className="w-6 h-6 text-[#00B9F1] animate-pulse" />
+                            <span className="tracking-[0.12em] shadow-xs">{timerStr}</span>
+                          </div>
+                        ) : (
+                          /* CLAIM ACTION DESIGN */
+                          <button
+                            onClick={() => handleClaimAndWithdraw(inv)}
+                            disabled={claimingMap[inv.id]}
+                            className="w-full h-14 bg-gradient-to-r from-[#FF8904] to-[#ff5d00] hover:shadow-orange-500/40 active:scale-95 text-white font-black text-lg rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 uppercase tracking-tight border-2 border-white/20"
+                          >
+                            <CheckCircle2 className="w-6 h-6 text-white" />
+                            <span>{claimingMap[inv.id] ? 'WAIT...' : 'CLAIM NOW'}</span>
+                          </button>
                         )}
                       </div>
                     </div>
-                    <span className="text-[10px] bg-white text-[#002E6E] font-black px-3 py-1 rounded-xl border border-[#00B9F1]/30 shadow-xs shrink-0 uppercase tracking-tighter">
-                      Customer Linked
-                    </span>
-                  </div>
-                )}
-
-                {/* Return Projection Bar - Rounded Box */}
-                <div className="grid grid-cols-2 gap-3 bg-[#F2F8FC] p-3.5 rounded-2xl border border-[#00B9F1]/10 text-xs shadow-2xs">
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] text-slate-500 uppercase font-black block tracking-tight">Daily Return</span>
-                    <span className="text-base font-black text-[#00B9F1] font-mono">
-                      +₹{(inv.dailyReturn || 0).toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="text-right space-y-0.5 border-l border-[#00B9F1]/10 pl-3">
-                    <span className="text-[10px] text-slate-500 uppercase font-black block tracking-tight">Expected Return</span>
-                    <span className="text-base font-black text-emerald-600 font-mono">
-                      ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}
-                    </span>
-                  </div>
-
-                  <div className="col-span-2 pt-2 border-t border-[#00B9F1]/10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] text-slate-500 uppercase font-black tracking-tight">Investment Progress</span>
-                      <span className="font-black text-[#172B75] text-[11px]">
-                        Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
-                      </span>
-                    </div>
-                    {/* Progress Bar - Slim Blue */}
-                    <div className="w-full bg-[#00B9F1]/10 h-2 rounded-full overflow-hidden shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercent}%` }}
-                        transition={{ duration: 1, ease: 'easeOut' }}
-                        className="bg-gradient-to-r from-[#002E6E] to-[#00B9F1] h-full rounded-full"
-                      />
-                    </div>
                   </div>
                 </div>
 
-                {/* Timer & Claim Action Section */}
-                <div className="pt-2 flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-[#172B75]/60 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                    <Calendar className="w-3.5 h-3.5 text-[#00B9F1]" />
-                    <span>Duration: {inv.totalDays || 30} Days</span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 ml-auto">
-                    {onViewCertificate && (
-                      <button
-                        onClick={() => onViewCertificate(inv)}
-                        className="w-10 h-10 flex items-center justify-center bg-white hover:bg-[#F2F8FC] text-[#00B9F1] rounded-xl border border-[#00B9F1]/30 transition-all cursor-pointer shadow-xs active:scale-90"
-                        title="View Certificate"
-                      >
-                        <Award className="w-5 h-5" />
-                      </button>
-                    )}
-
-                    {isWithdrawalPending ? (
-                      <button
-                        disabled
-                        className="px-5 py-2.5 bg-black text-white font-black text-xs rounded-xl border border-black shadow-md flex items-center gap-2 cursor-not-allowed uppercase tracking-tighter"
-                      >
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                        <span>विड्रॉल पेंडिंग</span>
-                      </button>
-                    ) : isApproved ? (
-                      <button
-                        disabled
-                        className="px-5 py-2.5 bg-emerald-600 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-not-allowed uppercase tracking-tighter"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-white" />
-                        <span>Approved</span>
-                      </button>
-                    ) : !isComplete ? (
-                      /* DURATION NOT EXPIRED: SHOW TIMER ONLY */
-                      <div className="px-5 py-2.5 bg-[#002E6E] text-white font-mono font-black text-sm rounded-xl border border-[#002E6E] flex items-center gap-2.5 shadow-md">
-                        <Clock className="w-4 h-4 text-[#00B9F1] animate-pulse" />
-                        <span className="tracking-[0.1em]">{timerStr}</span>
-                      </div>
-                    ) : (
-                      /* DURATION EXPIRED: SHOW CLAIM BUTTON */
-                      <button
-                        onClick={() => handleClaimAndWithdraw(inv)}
-                        disabled={claimingMap[inv.id]}
-                        className="px-6 py-2.5 bg-gradient-to-r from-[#FF8904] to-[#ff5d00] hover:scale-105 active:scale-95 text-white font-black text-sm rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 uppercase tracking-tight"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-white" />
-                        <span>{claimingMap[inv.id] ? 'Processing...' : 'Claim Now'}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        /* GRID VIEW */
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filteredInvestments.map((inv) => {
-            const { isComplete, timerStr } = getInvestmentCountdown(inv, now);
-            const isWithdrawalPending =
-              inv.claimed ||
-              inv.withdrawalStatus === 'Pending' ||
-              inv.withdrawalStatus === 'Withdrawal Pending';
-            const isApproved = inv.withdrawalStatus === 'Approved';
-
-            return (
-              <div
-                key={inv.id}
-                className="bg-white rounded-[2rem] p-4 sm:p-5 border border-[#00B9F1]/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <PlanCategoryIconBadge planName={inv.planName} size="md" />
-                    <div className="min-w-0">
-                      <span
-                        className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${
-                          isWithdrawalPending
-                            ? 'bg-black text-white border-black'
-                            : 'bg-[#F2F8FC] text-[#002E6E] border-[#00B9F1]/20'
-                        }`}
-                      >
-                        {isWithdrawalPending ? 'Pending' : inv.status}
-                      </span>
-                      <h4 className="font-black text-[#172B75] text-sm mt-1 truncate">
-                        {inv.planName}
-                      </h4>
-                    </div>
-                  </div>
-                  <span className="text-base font-black text-[#172B75] font-mono shrink-0">
-                    ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
-                  </span>
-                </div>
-
-                {inv.customerName && (
-                  <div className="text-xs bg-[#F2F8FC] p-2.5 rounded-xl border border-[#00B9F1]/10">
-                    <span className="text-[10px] text-slate-400 block uppercase font-black mb-0.5 tracking-tight">Linked Customer</span>
-                    <span className="font-black text-[#172B75] text-sm">{inv.customerName}</span>
-                    {inv.customerMobile && (
-                      <span className="text-[10px] text-[#002E6E]/60 font-bold block mt-0.5">
-                        +91 {inv.customerMobile}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                <div className="pt-2 border-t border-[#00B9F1]/10 flex items-center justify-between text-[11px] font-mono">
-                  <div className="flex flex-col">
-                    <span className="text-slate-400 font-bold uppercase text-[9px]">Daily</span>
-                    <span className="text-[#00B9F1] font-black">+₹{(inv.dailyReturn || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex flex-col text-right">
-                    <span className="text-slate-400 font-bold uppercase text-[9px]">Return</span>
-                    <span className="text-emerald-600 font-black">₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</span>
-                  </div>
-                </div>
-
-                {/* Grid View Timer vs Claim button vs Black Pending button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    {onViewCertificate && (
-                      <button
-                        onClick={() => onViewCertificate(inv)}
-                        className="w-8 h-8 flex items-center justify-center bg-white hover:bg-[#F2F8FC] text-[#00B9F1] rounded-lg border border-[#00B9F1]/30 transition-all cursor-pointer shadow-xs active:scale-90"
-                        title="View Certificate"
-                      >
-                        <Award className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 ml-auto">
-                    {isWithdrawalPending ? (
-                      <button
-                        disabled
-                        className="px-3 py-1.5 bg-black text-white font-black text-[10px] rounded-lg border border-black shadow-xs flex items-center gap-1 cursor-not-allowed uppercase"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        <span>पेंडिंग</span>
-                      </button>
-                    ) : isApproved ? (
-                      <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 uppercase tracking-tighter">Approved</span>
-                    ) : !isComplete ? (
-                      /* DURATION NOT EXPIRED: TIMER ONLY */
-                      <div className="px-3 py-1.5 bg-[#002E6E] text-white font-mono font-black text-xs rounded-lg border border-[#002E6E] flex items-center gap-1.5 shadow-sm">
-                        <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
-                        <span className="tracking-tighter">{timerStr}</span>
-                      </div>
-                    ) : (
-                      /* DURATION EXPIRED: CLEAN / CLAIM NOW BUTTON */
-                      <button
-                        onClick={() => handleClaimAndWithdraw(inv)}
-                        disabled={claimingMap[inv.id]}
-                        className="px-4 py-1.5 bg-[#FF8904] hover:bg-[#ff5d00] active:scale-95 text-white font-black text-[10px] rounded-lg shadow-md transition-all cursor-pointer uppercase tracking-tight"
-                      >
-                        Claim Now
-                      </button>
-                    )}
-                  </div>
-                </div>
+                {/* Card Curved Footer Decoration */}
+                <div className="bg-[#002E6E] h-12 w-full mt-auto" style={{ clipPath: 'ellipse(70% 100% at 50% 100%)' }} />
               </div>
             );
           })}
