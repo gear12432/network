@@ -504,57 +504,57 @@ export default function PurchaseHistoryContent({
                 key={inv.id}
                 className="relative bg-white rounded-[2.5rem] border-2 border-[#D9E7F5] shadow-xl overflow-hidden flex flex-col"
               >
-                {/* 1. Top Sky Blue Accent Header - Balanced height */}
-                <div className="h-36 w-full bg-[#00B9F1]" />
+                {/* 1. Top Sky Blue Accent Header - Ultra-compact height */}
+                <div className="h-10 w-full bg-[#00B9F1]" />
 
                 {/* 2. Main Card Content Area */}
-                <div className="px-4 pb-3 -mt-28 relative z-10 space-y-2.5">
+                <div className="px-3 pb-1 -mt-4 relative z-10 space-y-1.5">
                   {/* Internal Plan Header */}
-                  <div className="p-3 space-y-3">
+                  <div className="p-1.5 space-y-1.5">
                     
                     {/* Header Row: Icon + Name + Amount */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <PlanCategoryIconBadge planName={inv.planName} size="lg" />
-                        <div className="space-y-0.5">
-                          <h4 className="font-black text-[#002E6E] text-sm sm:text-base leading-tight tracking-tight">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <PlanCategoryIconBadge planName={inv.planName} size="sm" />
+                        <div className="space-y-0">
+                          <h4 className="font-black text-[#002E6E] text-[10px] sm:text-xs leading-tight tracking-tight truncate max-w-[120px]">
                             {inv.planName}
                           </h4>
                           <div className="inline-block">
-                            <span className="bg-white/20 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase border border-white/30 backdrop-blur-sm shadow-xs">
-                              ACTIVE COMPOUNDING
+                            <span className="bg-white/40 text-[#002E6E] text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase border border-white/50 backdrop-blur-xs">
+                              ACTIVE
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-right flex flex-col items-end pt-1">
-                        <span className="text-[8px] text-white font-black uppercase tracking-tight opacity-90">PURCHASE AMT</span>
-                        <span className="text-lg sm:text-xl font-black text-[#002E6E] font-mono leading-none">
+                      <div className="text-right flex flex-col items-end pt-0.5">
+                        <span className="text-[6px] text-white font-black uppercase tracking-tight opacity-95">AMT</span>
+                        <span className="text-sm font-black text-[#002E6E] font-mono leading-none">
                           ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
 
-                    {/* NEW: Small Customer Details Box (Refined & Compact) */}
-                    <div className="bg-white/90 backdrop-blur-sm border border-[#D9E7F5] rounded-2xl p-2 flex items-center gap-2.5 shadow-sm">
+                    {/* NEW: Small Customer Details Box (Minimalist) */}
+                    <div className="bg-white/95 backdrop-blur-xs border border-[#D9E7F5] rounded-lg p-1 flex items-center gap-1.5 shadow-xs">
                       {/* Profile Photo */}
-                      <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-[#00B9F1] shrink-0 shadow-xs bg-slate-100">
+                      <div className="w-6 h-6 rounded-md overflow-hidden border-2 border-[#00B9F1] shrink-0 shadow-xs bg-slate-50">
                         {inv.customerPhoto ? (
                           <img src={inv.customerPhoto} alt={inv.customerName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#002E6E] font-black text-sm">
+                          <div className="w-full h-full flex items-center justify-center text-[#002E6E] font-black text-[8px]">
                             {inv.customerName?.[0] || 'C'}
                           </div>
                         )}
                       </div>
                       
-                      {/* Two-Line Details */}
+                      {/* Details on one line if possible or very compact two lines */}
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-black text-[#172B75] truncate leading-tight">
+                        <div className="text-[9px] font-black text-[#172B75] truncate leading-none">
                           {inv.customerName || 'Investor'}
                         </div>
-                        <div className="text-[9px] font-bold text-slate-500 flex items-center gap-1.5 flex-wrap mt-0.5">
+                        <div className="text-[7px] font-bold text-slate-500 flex items-center gap-1 flex-wrap mt-0.5">
                           <span className="text-[#002E6E] font-black">{inv.startDate}</span>
                           <span className="opacity-30">|</span>
                           <span>Exp: <strong className="text-[#07865B]">₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</strong></span>
@@ -566,23 +566,15 @@ export default function PurchaseHistoryContent({
                   </div>
                 </div>
 
-                {/* 3. Card Curved Footer Decoration - INTEGRATED ACTIONS */}
+                {/* 3. Card Curved Footer Decoration - ULTRA COMPACT */}
                 <div 
-                  className="bg-[#002E6E] h-20 w-full mt-auto relative flex items-end justify-between px-6 pb-5 overflow-hidden" 
+                  className="bg-[#002E6E] h-10 w-full mt-auto relative flex items-center justify-between px-5 overflow-hidden" 
                   style={{ clipPath: 'ellipse(100% 100% at 50% 100%)' }}
                 >
-                  {/* Decorative Glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-
                   {/* Left: Timer inside footer */}
-                  <div className="relative z-10 flex items-center gap-2">
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Clock className="w-4.5 h-4.5 text-[#00B9F1]" />
-                    </motion.div>
-                    <span className="text-white font-mono font-black text-lg tracking-wider drop-shadow-md">
+                  <div className="relative z-10 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-[#00B9F1]" />
+                    <span className="text-white font-mono font-black text-xs tracking-wide drop-shadow-md">
                       {timerStr}
                     </span>
                   </div>
@@ -592,10 +584,10 @@ export default function PurchaseHistoryContent({
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onViewCertificate(inv)}
-                      className="relative z-10 p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-[#00B9F1] transition-all border border-white/10 shadow-lg backdrop-blur-md"
+                      className="relative z-10 p-1 rounded-md bg-white/10 hover:bg-white/20 text-[#00B9F1] transition-all border border-white/10"
                       title="View Certificate"
                     >
-                      <Award className="w-6 h-6 stroke-[2.5]" />
+                      <Award className="w-4 h-4 stroke-[2]" />
                     </motion.button>
                   )}
                 </div>
