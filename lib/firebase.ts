@@ -494,16 +494,45 @@ export async function updateDepositStatusInFirestore(
 ): Promise<boolean> {
   try {
     const docRef = doc(db, 'deposits', depositId);
+    let record = depositRecord;
+
+    // If record not provided or missing fields, fetch from deposits collection
+    if (!record || !record.loginUid || !record.amount) {
+      try {
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          record = snap.data() as DepositRecord;
+        }
+      } catch (e) {
+        console.warn('Error fetching deposit details in updateDepositStatus:', e);
+      }
+    }
+
     await withTimeout(updateDoc(docRef, { status }), 4000);
 
     // If approved, automatically credit user wallet balance in Firestore!
-    if (status === 'Approved' && depositRecord?.loginUid && depositRecord?.amount) {
+    if (status === 'Approved' && record?.loginUid && record?.amount) {
       try {
-        const userDocRef = doc(db, 'users', depositRecord.loginUid);
+        const depositAmount = Number(record.amount) || 0;
+        const userDocRef = doc(db, 'users', record.loginUid);
         const userSnap = await getDoc(userDocRef);
+
         if (userSnap.exists()) {
-          const currentBal = userSnap.data().balance || 0;
-          await updateDoc(userDocRef, { balance: currentBal + depositRecord.amount });
+          const currentBal = Number(userSnap.data().balance) || 0;
+          const newBal = currentBal + depositAmount;
+          await updateDoc(userDocRef, { balance: newBal });
+          console.log(`Auto-credited ₹${depositAmount} to user ${record.loginUid}. New Balance: ₹${newBal}`);
+        } else {
+          // Fallback search by query if document key was different
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef, where('loginUid', '==', record.loginUid));
+          const querySnap = await getDocs(q);
+          querySnap.forEach(async (uDoc) => {
+            const currentBal = Number(uDoc.data().balance) || 0;
+            const newBal = currentBal + depositAmount;
+            await updateDoc(uDoc.ref, { balance: newBal });
+            console.log(`Auto-credited ₹${depositAmount} to user doc ${uDoc.id}. New Balance: ₹${newBal}`);
+          });
         }
       } catch (e) {
         console.warn('Error auto-crediting user balance on deposit approval:', e);

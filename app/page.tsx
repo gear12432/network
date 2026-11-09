@@ -59,6 +59,7 @@ import {
   findUserByDeviceId,
   VipLevelRecord,
   WithdrawalRecord,
+  DepositRecord,
   db,
 } from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
@@ -768,31 +769,29 @@ function InvestmentAppMain() {
     setActiveModal('confirm-invest');
   };
 
-  const handleDepositSuccess = (amount: number, method: string) => {
-    const newBal = userStats.walletBalance + amount;
+  const handleDepositSuccess = (
+    amount: number,
+    method: string,
+    depositRecord?: DepositRecord
+  ) => {
+    // As per user specification:
+    // When submit button is clicked, all data is saved with status 'Pending'.
+    // The amount is NOT credited to the wallet balance immediately.
+    // It will be automatically credited once Admin approves the deposit status in Admin Panel.
 
-    setUserStats((prev) => ({
-      ...prev,
-      walletBalance: newBal,
-    }));
-
-    if (currentUser?.loginUid) {
-      updateUserBalanceInFirestore(currentUser.loginUid, newBal);
-    }
-
-    const newTx: Transaction = {
-      id: `tx-${Date.now()}`,
+    const pendingTx: Transaction = {
+      id: depositRecord?.id || `tx-${Date.now()}`,
       type: 'deposit',
-      title: `Wallet Deposit via ${method}`,
+      title: `Wallet Deposit (Pending Verification)`,
       amount,
       timestamp: 'Just now',
-      status: 'completed',
-      paymentMethod: method,
-      referenceId: `DEP${Math.floor(100000 + Math.random() * 900000)}`,
+      status: 'processing',
+      paymentMethod: depositRecord?.utrNumber ? `UTR: ${depositRecord.utrNumber}` : method,
+      referenceId: depositRecord?.id || `DEP${Math.floor(100000 + Math.random() * 900000)}`,
     };
-    setTransactions((prev) => [newTx, ...prev]);
+    setTransactions((prev) => [pendingTx, ...prev]);
 
-    showToast(`₹${amount.toLocaleString('en-IN')} added to your wallet!`);
+    showToast(`Deposit request of ₹${amount.toLocaleString('en-IN')} submitted! Status: Pending Admin Approval.`);
   };
 
   const handleWithdrawSuccess = (
@@ -1091,8 +1090,8 @@ function InvestmentAppMain() {
           currentBalance={userStats.walletBalance}
           userStats={userStats}
           currentUser={currentUser}
-          onDepositSuccess={(amt, method) => {
-            handleDepositSuccess(amt, method);
+          onDepositSuccess={(amt, method, depRecord) => {
+            handleDepositSuccess(amt, method, depRecord);
             setActiveModal('none');
           }}
           onClose={() => setActiveModal('none')}

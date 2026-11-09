@@ -1234,11 +1234,25 @@ export default function AdminPanel() {
     setTimeout(() => setBalanceMsg(''), 2500);
   };
 
-  // Handle Deposit Status Change
+  // Handle Deposit Status Change (Approve credits user balance automatically)
   const handleDepositAction = async (dep: DepositRecord, newStatus: 'Approved' | 'Rejected') => {
     setDeposits((prev) =>
       prev.map((item) => (item.id === dep.id ? { ...item, status: newStatus } : item))
     );
+    if (newStatus === 'Approved') {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.loginUid === dep.loginUid || u.uid === dep.loginUid
+            ? { ...u, balance: (u.balance || 0) + dep.amount }
+            : u
+        )
+      );
+      if (selectedUser && (selectedUser.loginUid === dep.loginUid || selectedUser.uid === dep.loginUid)) {
+        setSelectedUser((prev) =>
+          prev ? { ...prev, balance: (prev.balance || 0) + dep.amount } : null
+        );
+      }
+    }
     await updateDepositStatusInFirestore(dep.id, newStatus, dep);
     refreshData();
   };

@@ -32,7 +32,7 @@ interface DepositContentProps {
   currentBalance: number;
   userStats?: UserStats;
   currentUser?: UserAccountData | null;
-  onDepositSuccess: (amount: number, method: string) => void;
+  onDepositSuccess: (amount: number, method: string, depositData?: DepositRecord) => void;
   onClose: () => void;
 }
 
@@ -264,7 +264,7 @@ export default function DepositContent({
       setSubmitSuccess(true);
       triggerConfetti();
 
-      onDepositSuccess(amountToDeposit, 'UPI_QR');
+      onDepositSuccess(amountToDeposit, 'UPI_QR', depositData);
 
       setTimeout(() => {
         setSubmitSuccess(false);
