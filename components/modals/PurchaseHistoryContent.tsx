@@ -144,6 +144,8 @@ interface PurchaseHistoryContentProps {
   onOpenPlans?: () => void;
   onRefreshInvestments?: () => void;
   onViewCertificate?: (inv: ActiveInvestment) => void;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
 }
 
 export default function PurchaseHistoryContent({
@@ -152,8 +154,20 @@ export default function PurchaseHistoryContent({
   onOpenPlans,
   onRefreshInvestments,
   onViewCertificate,
+  searchQuery: propSearchQuery,
+  onSearchChange: propOnSearchChange,
 }: PurchaseHistoryContentProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const activeSearch = propSearchQuery !== undefined ? propSearchQuery : internalSearchQuery;
+
+  const setSearchQuery = (val: string) => {
+    if (propOnSearchChange) {
+      propOnSearchChange(val);
+    } else {
+      setInternalSearchQuery(val);
+    }
+  };
+
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -308,7 +322,7 @@ export default function PurchaseHistoryContent({
       inv.withdrawalStatus === 'Approved'
     );
 
-    const q = searchQuery.toLowerCase().trim();
+    const q = activeSearch.toLowerCase().trim();
     const cleanDigits = q.replace(/\D/g, '');
 
     // Case 1: Search bar is EMPTY
@@ -409,12 +423,12 @@ export default function PurchaseHistoryContent({
         <FloatingInput
           label="Search purchases by plan, customer name, mobile or date..."
           type="text"
-          value={searchQuery}
+          value={activeSearch}
           onChange={(e) => setSearchQuery(e.target.value)}
           leftIcon={<Search className="w-4 h-4 text-blue-600" />}
           inputClassName="font-medium text-slate-900 text-xs sm:text-sm"
           rightElement={
-            searchQuery ? (
+            activeSearch ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
@@ -478,8 +492,8 @@ export default function PurchaseHistoryContent({
           <div>
             <h4 className="font-extrabold text-slate-900 text-sm">No Plan History Found</h4>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-              {searchQuery
-                ? `No purchases found matching "${searchQuery}".`
+              {activeSearch
+                ? `No purchases found matching "${activeSearch}".`
                 : 'Subscribe to new investment plans to view your history here.'}
             </p>
           </div>

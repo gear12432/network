@@ -11,6 +11,8 @@ interface SlideFullScreenModalProps {
   subtitle?: string;
   children: React.ReactNode;
   headerRight?: React.ReactNode;
+  headerCenter?: React.ReactNode;
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
   theme?: 'white' | 'gold' | 'navy';
   bodyClassName?: string;
 }
@@ -22,6 +24,8 @@ export default function SlideFullScreenModal({
   subtitle,
   children,
   headerRight,
+  headerCenter,
+  onScroll,
   theme = 'white',
   bodyClassName,
 }: SlideFullScreenModalProps) {
@@ -73,7 +77,7 @@ export default function SlideFullScreenModal({
                 : 'bg-[#faf6ee]/95 border-b-2 border-[#dfbe7e]'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 min-w-0 shrink-0">
               <button
                 onClick={onClose}
                 className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer ${
@@ -116,6 +120,12 @@ export default function SlideFullScreenModal({
               </div>
             </div>
 
+            {headerCenter && (
+              <div className="flex-1 min-w-0 px-1 sm:px-2 flex items-center justify-end">
+                {headerCenter}
+              </div>
+            )}
+
             <div className="flex items-center gap-2 shrink-0">
               {headerRight}
               <button
@@ -135,6 +145,7 @@ export default function SlideFullScreenModal({
 
           {/* Full Screen Scrollable Body */}
           <div
+            onScroll={onScroll}
             className={`flex-1 overflow-y-auto p-4 sm:p-5 max-w-2xl mx-auto w-full ${
               bodyClassName ||
               (isNavy ? 'bg-[#F2F8FC]' : isWhite ? 'bg-slate-50/60' : 'bg-[#faf6ee]')

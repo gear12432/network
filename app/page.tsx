@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import { Coins, Sparkles } from 'lucide-react';
+import { Coins, Sparkles, Search } from 'lucide-react';
 import {
   INITIAL_USER_STATS,
   INITIAL_PLANS,
@@ -218,6 +218,10 @@ function InvestmentAppMain() {
   const [certificatePlan, setCertificatePlan] = useState<InvestmentPlan | null>(null);
   const [certificateCustomer, setCertificateCustomer] = useState<Customer | null>(null);
   const [certificateInvestment, setCertificateInvestment] = useState<ActiveInvestment | null>(null);
+
+  // Plan History Scroll & Header Search State
+  const [isPlanHistoryScrolled, setIsPlanHistoryScrolled] = useState(false);
+  const [planHistorySearch, setPlanHistorySearch] = useState('');
 
   // Hydration & Client-side Initialization
   useEffect(() => {
@@ -1208,13 +1212,58 @@ function InvestmentAppMain() {
 
       <SlideFullScreenModal
         isOpen={activeModal === 'purchase-history'}
-        onClose={() => setActiveModal('none')}
+        onClose={() => {
+          setActiveModal('none');
+          setIsPlanHistoryScrolled(false);
+          setPlanHistorySearch('');
+        }}
         title="Plan History"
         theme="navy"
+        onScroll={(e) => {
+          const top = e.currentTarget.scrollTop;
+          // When user scrolls down past the summary card & tabs (~190px), show header search box
+          // When user scrolls back up and the tabs/search bar come into view, hide header search box
+          setIsPlanHistoryScrolled(top > 190);
+        }}
+        headerCenter={
+          isPlanHistoryScrolled ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: -2 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -2 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="w-44 xs:w-56 sm:w-64 max-w-full"
+            >
+              <div className="relative flex items-center w-full">
+                <Search className="w-3.5 h-3.5 text-[#002E6E] absolute left-2.5 pointer-events-none" />
+                <input
+                  type="text"
+                  value={planHistorySearch}
+                  onChange={(e) => setPlanHistorySearch(e.target.value)}
+                  placeholder="Search purchases / mobile..."
+                  className="w-full pl-8 pr-7 py-1 bg-[#F2F8FC] border border-[#D9E7F5] focus:border-[#00B9F1] focus:ring-1 focus:ring-[#00B9F1]/30 rounded-xl text-xs font-semibold text-[#172B75] placeholder-[#172B75]/40 outline-none transition-all shadow-2xs"
+                  autoFocus
+                />
+                {planHistorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setPlanHistorySearch('')}
+                    className="absolute right-2 text-xs text-[#172B75]/60 hover:text-[#002E6E] font-bold p-0.5 cursor-pointer"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          ) : null
+        }
       >
         <PurchaseHistoryContent
           activeInvestments={activeInvestments}
           currentUser={currentUser}
+          searchQuery={planHistorySearch}
+          onSearchChange={setPlanHistorySearch}
           onOpenPlans={() => {
             setActiveModal('none');
             setActiveTab('home');
