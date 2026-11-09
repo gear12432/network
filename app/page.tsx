@@ -1090,6 +1090,7 @@ function InvestmentAppMain() {
         <DepositContent
           currentBalance={userStats.walletBalance}
           userStats={userStats}
+          currentUser={currentUser}
           onDepositSuccess={(amt, method) => {
             handleDepositSuccess(amt, method);
             setActiveModal('none');

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Wallet,
   ArrowLeft,
@@ -13,6 +13,9 @@ import {
   FileImage,
   AlertCircle,
   Hash,
+  ExternalLink,
+  Check,
+  Smartphone,
 } from 'lucide-react';
 import { triggerConfetti } from '@/lib/confetti';
 import FloatingInput from '@/components/ui/FloatingInput';
@@ -22,18 +25,53 @@ import {
   DepositRecord,
   getGatewaySettingsFromFirestore,
   GatewaySettings,
+  UserAccountData,
 } from '@/lib/firebase';
 
 interface DepositContentProps {
   currentBalance: number;
   userStats?: UserStats;
+  currentUser?: UserAccountData | null;
   onDepositSuccess: (amount: number, method: string) => void;
   onClose: () => void;
+}
+
+// Compress client uploaded screenshot to a fast, clean JPEG DataURL (< 250KB)
+function compressScreenshot(file: File, maxWidth = 1000, quality = 0.75): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve((e.target?.result as string) || '');
+        }
+      };
+      img.onerror = () => resolve((e.target?.result as string) || '');
+      img.src = (e.target?.result as string) || '';
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function DepositContent({
   currentBalance,
   userStats,
+  currentUser,
   onDepositSuccess,
   onClose,
 }: DepositContentProps) {
@@ -42,16 +80,16 @@ export default function DepositContent({
 
   // Gateway Settings State
   const [gatewaySettings, setGatewaySettings] = useState<GatewaySettings>({
-    upiId: 'networkjoinpro@upi',
+    upiId: 'BHARATPE94979104081@yesbankltd',
     minDeposit: 100,
     minWithdrawal: 200,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadGateway() {
       try {
         const settings = await getGatewaySettingsFromFirestore();
-        if (settings) {
+        if (settings && settings.upiId) {
           setGatewaySettings(settings);
         }
       } catch (e) {
@@ -62,7 +100,7 @@ export default function DepositContent({
   }, []);
 
   // Amount State
-  const [selectedAmount, setSelectedAmount] = useState<number>(1000);
+  const [selectedAmount, setSelectedAmount] = useState<number>(800);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'upi_qr' | 'phonepe' | 'gpay' | 'paytm'>(
     'phonepe'
@@ -79,10 +117,23 @@ export default function DepositContent({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const presets = [500, 1000, 2500, 5000, 10000];
-  const upiId = gatewaySettings.upiId || 'networkjoinpro@upi';
+  const presets = [500, 800, 1000, 2500, 5000, 10000];
+  const upiId = gatewaySettings.upiId || 'BHARATPE94979104081@yesbankltd';
 
   const amountToDeposit = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
+
+  // Standard UPI URI format: includes exact payable amount in 'am' parameter
+  // When scanned by PhonePe, GPay, Paytm, BHIM, etc., the amount is automatically filled!
+  const upiPayload = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(
+    'Network Join Pro'
+  )}&am=${amountToDeposit.toFixed(2)}&cu=INR&tn=${encodeURIComponent(
+    `Recharge ${currentUser?.loginUid || userStats?.loginUid || 'Wallet'}`
+  )}`;
+
+  // Dynamic QR Code encoding the UPI payload with the connected amount
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(
+    upiPayload
+  )}`;
 
   // Handle proceed to payment screen
   const handleProceedToPayment = async () => {
@@ -90,7 +141,7 @@ export default function DepositContent({
     setErrorMessage('');
     try {
       const freshSettings = await getGatewaySettingsFromFirestore();
-      if (freshSettings) {
+      if (freshSettings && freshSettings.upiId) {
         setGatewaySettings(freshSettings);
       }
     } catch {
@@ -106,116 +157,165 @@ export default function DepositContent({
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  // Handle image file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image file selection with auto compression
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setErrorMessage('File size must be under 10MB');
+      if (file.size > 15 * 1024 * 1024) {
+        setErrorMessage('File size must be under 15MB');
         return;
       }
       setSelectedFile(file);
       setErrorMessage('');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+      try {
+        const compressed = await compressScreenshot(file);
+        setImagePreview(compressed);
+      } catch {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview((reader.result as string) || '');
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  // Handle final deposit submission (saving to Firebase Firestore)
+  // Handle direct UPI intent click on mobile devices
+  const handlePayViaApp = () => {
+    try {
+      window.location.href = upiPayload;
+    } catch {
+      // ignore
+    }
+  };
+
+  // Handle final deposit submission (saving to Firebase Firestore deposits collection)
   const handleSubmitPayment = async () => {
-    if (!utrNumber.trim()) {
-      setErrorMessage('कृपया यूटीआर नंबर / UTR Number दर्ज करें!');
+    const cleanUtr = utrNumber.trim();
+
+    if (!cleanUtr) {
+      setErrorMessage('Please enter the 12-digit UTR Number / Transaction Reference ID!');
       return;
     }
-    if (utrNumber.trim().length < 6) {
-      setErrorMessage('कृपया मान्य यूटीआर नंबर (कम से कम 6-12 अंक) दर्ज करें!');
+    if (cleanUtr.length < 6) {
+      setErrorMessage('Please enter a valid UTR Number (at least 6-12 digits)!');
+      return;
+    }
+    if (!imagePreview && !selectedFile) {
+      setErrorMessage('Please upload your payment screenshot proof!');
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage('');
 
-    const formattedDateTime = new Date().toLocaleString('en-IN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-    });
-
-    const depositData: DepositRecord = {
-      id: `DEP_${Date.now()}`,
-      loginUid: userStats?.loginUid || 'GK37643',
-      userName: userStats?.userName || 'User',
-      mobile: userStats?.mobile || '',
-      amount: amountToDeposit,
-      utrNumber: utrNumber.trim(),
-      imageUrl: imagePreview || '',
-      dateTime: formattedDateTime,
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save to Firebase Firestore
-    await saveDepositToFirestore(depositData);
-
-    // Save locally in localStorage for backup
     try {
-      const existing = JSON.parse(localStorage.getItem('user_deposits') || '[]');
-      localStorage.setItem('user_deposits', JSON.stringify([depositData, ...existing]));
-    } catch {
-      // fallback
+      // Ensure image is compressed
+      let finalImageUrl = imagePreview;
+      if (!finalImageUrl && selectedFile) {
+        finalImageUrl = await compressScreenshot(selectedFile);
+      }
+
+      const formattedDateTime = new Date().toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+
+      const customerId =
+        currentUser?.loginUid ||
+        userStats?.loginUid ||
+        'GK' + Math.floor(10000 + Math.random() * 90000);
+      const customerName =
+        currentUser?.fullName || userStats?.userName || 'Customer';
+      const customerMobile = currentUser?.mobile || userStats?.mobile || '';
+
+      const depositData: DepositRecord = {
+        id: `DEP_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`,
+        loginUid: customerId,
+        userName: customerName,
+        mobile: customerMobile,
+        amount: amountToDeposit,
+        utrNumber: cleanUtr,
+        imageUrl: finalImageUrl || '',
+        dateTime: formattedDateTime,
+        status: 'Pending',
+        createdAt: new Date().toISOString(),
+      };
+
+      // 1. Save to Firebase Firestore deposits collection
+      await saveDepositToFirestore(depositData);
+
+      // 2. Save locally in localStorage for backup
+      try {
+        const existing = JSON.parse(localStorage.getItem('user_deposits') || '[]');
+        localStorage.setItem('user_deposits', JSON.stringify([depositData, ...existing]));
+      } catch {
+        // fallback
+      }
+
+      setIsSubmitting(false);
+      setSubmitSuccess(true);
+      triggerConfetti();
+
+      onDepositSuccess(amountToDeposit, 'UPI_QR');
+
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        onClose();
+      }, 2200);
+    } catch (err) {
+      console.error('Error submitting deposit:', err);
+      setIsSubmitting(false);
+      setErrorMessage('Failed to submit deposit. Please check connection and try again.');
     }
-
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
-    triggerConfetti();
-
-    onDepositSuccess(amountToDeposit, 'UPI_QR');
-
-    setTimeout(() => {
-      setSubmitSuccess(false);
-      onClose();
-    }, 2000);
   };
 
   return (
-    <div className="space-y-4 text-slate-900">
+    <div className="space-y-4 text-[#172B75]">
       {/* Current Balance Banner */}
-      <div className="bg-[#002E6E] text-white rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
+      <div className="bg-[#002E6E] text-white rounded-2xl p-3.5 flex items-center justify-between shadow-xs border border-[#D9E7F5]/30">
         <div>
-          <span className="text-[11px] text-[#00B9F1] block">Current Balance</span>
+          <span className="text-[11px] text-[#00B9F1] block font-semibold">Current Balance</span>
           <span className="text-xl font-black text-white font-mono">
             ₹{currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[#00B9F1] block">Gateway</span>
-          <span className="text-xs font-bold text-[#002E6E] bg-white px-2 py-0.5 rounded-md">
+          <span className="text-[10px] text-[#00B9F1] block font-semibold">Gateway</span>
+          <span className="text-xs font-bold text-[#002E6E] bg-white px-2.5 py-0.5 rounded-md shadow-2xs">
             Fast UPI 2.0
           </span>
         </div>
       </div>
 
       {step === 'amount' ? (
-        /* ================= STEP 1: AMOUNT & METHOD SELECTION ================= */
+        /* ================= STEP 1: AMOUNT & METHOD SELECTION (ENGLISH ONLY) ================= */
         <div className="space-y-4">
           {/* Preset Amounts */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
-            <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
-              Select Deposit Amount (INR)
-            </label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          <div className="bg-white rounded-2xl p-4 border border-[#D9E7F5] shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-black text-[#172B75] uppercase tracking-wider block">
+                Select Deposit Amount (INR)
+              </label>
+              <span className="text-[10.5px] font-bold text-[#172B75]/70 bg-[#EAF5FF] px-2 py-0.5 rounded border border-[#D9E7F5]">
+                Min: ₹100
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {presets.map((amt) => {
                 const isSelected = selectedAmount === amt && !customAmount;
                 return (
                   <button
                     key={amt}
+                    type="button"
                     onClick={() => {
                       setSelectedAmount(amt);
                       setCustomAmount('');
@@ -223,7 +323,7 @@ export default function DepositContent({
                     className={`py-2 px-1 text-center rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-[#002E6E] text-white border-[#002E6E] shadow-xs'
-                        : 'bg-white text-slate-900 border-[#172B75]/40 hover:bg-slate-50'
+                        : 'bg-[#F2F8FC] text-[#172B75] border-[#D9E7F5] hover:bg-[#EAF5FF]'
                     }`}
                   >
                     ₹{amt.toLocaleString('en-IN')}
@@ -243,22 +343,22 @@ export default function DepositContent({
                   setSelectedAmount(0);
                 }}
                 leftPrefix="₹"
-                inputClassName="font-mono font-bold text-slate-900 text-sm bg-white"
+                inputClassName="font-mono font-bold text-[#172B75] text-sm bg-white"
               />
             </div>
           </div>
 
           {/* Payment Gateway Options */}
-          <div className="bg-white rounded-2xl p-4 border border-[#172B75]/40 shadow-xs space-y-2.5">
+          <div className="bg-white rounded-2xl p-4 border border-[#D9E7F5] shadow-2xs space-y-2.5">
             <label className="text-xs font-black text-[#172B75] uppercase tracking-wider block">
               Select Payment Method
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { id: 'phonepe', name: 'PhonePe UPI', badge: 'Fastest' },
-                { id: 'gpay', name: 'Google Pay', badge: 'Auto' },
-                { id: 'paytm', name: 'Paytm UPI', badge: 'Instant' },
-                { id: 'upi_qr', name: 'Instant QR Scan', badge: 'All Apps' },
+                { id: 'phonepe', name: 'PhonePe UPI', badge: 'Auto-Fill' },
+                { id: 'gpay', name: 'Google Pay', badge: 'Instant' },
+                { id: 'paytm', name: 'Paytm UPI', badge: 'Fast' },
+                { id: 'upi_qr', name: 'Dynamic QR Scan', badge: 'All Apps' },
               ].map((m) => {
                 const isSelected = paymentMethod === m.id;
                 return (
@@ -267,8 +367,8 @@ export default function DepositContent({
                     onClick={() => setPaymentMethod(m.id as any)}
                     className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-[#F2F8FC] border-[#002E6E] ring-1 ring-[#00B9F1]/30 shadow-xs'
-                        : 'bg-white border-[#172B75]/40 hover:bg-slate-50'
+                        ? 'bg-[#EAF5FF] border-[#002E6E] ring-1 ring-[#00B9F1]/40 shadow-xs'
+                        : 'bg-white border-[#D9E7F5] hover:bg-[#F2F8FC]'
                     }`}
                   >
                     <div>
@@ -289,19 +389,20 @@ export default function DepositContent({
           </div>
 
           {/* Zero Fee Guarantee Note */}
-          <div className="bg-[#F2F8FC] text-[#172B75] rounded-xl p-3 text-xs flex items-center gap-2 border border-[#00B9F1]/40">
+          <div className="bg-[#EAF5FF] text-[#172B75] rounded-xl p-3 text-xs flex items-center gap-2 border border-[#D9E7F5]">
             <ShieldCheck className="w-4 h-4 text-[#002E6E] shrink-0" />
             <span className="font-medium">100% Secure Payment • 0% Deposit Fee • Instant Auto-Credit</span>
           </div>
 
           {/* Pay Button */}
           <button
+            type="button"
             onClick={handleProceedToPayment}
             disabled={amountToDeposit < 100}
-            className={`w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer ${
+            className={`w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer ${
               amountToDeposit >= 100
-                ? 'bg-[#002E6E] hover:bg-[#001f4e] text-white shadow-[#002E6E]/30'
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                ? 'bg-[#002E6E] hover:bg-[#00204d] text-white border border-[#00B9F1]/40'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed border border-slate-300'
             }`}
           >
             <Zap className="w-4 h-4 text-[#00B9F1]" />
@@ -309,93 +410,121 @@ export default function DepositContent({
           </button>
         </div>
       ) : (
-        /* ================= STEP 2: PAYMENT SCREEN (QR + UTR + FILE PICKER) ================= */
+        /* ================= STEP 2: PAYMENT SCREEN (ENGLISH ONLY - ZERO HINDI) ================= */
         <div className="space-y-4">
           {/* Header & Back Button */}
           <div className="flex items-center justify-between">
             <button
+              type="button"
               onClick={() => setStep('amount')}
-              className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-blue-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#002E6E] hover:text-[#00B9F1] bg-[#EAF5FF] border border-[#D9E7F5] px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>राशि बदलें (Change Amount)</span>
+              <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Change Amount</span>
             </button>
-            <span className="text-xs font-bold text-slate-500">Step 2 of 2</span>
+            <span className="text-xs font-bold text-[#172B75]/60">Step 2 of 2</span>
           </div>
 
-          {/* Payable Amount Display Card */}
-          <div className="bg-gradient-to-b from-white to-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center shadow-xs space-y-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-              Payable Amount (भुगतान राशि)
+          {/* Payable Amount Display Card with Dynamic Connected Amount QR Code */}
+          <div className="bg-white border border-[#D9E7F5] rounded-2xl p-4 text-center shadow-2xs space-y-3">
+            <span className="text-xs font-black text-[#172B75]/70 uppercase tracking-wider block">
+              PAYABLE AMOUNT
             </span>
-            <div className="text-3xl font-black text-blue-700 font-mono">
-              ₹{amountToDeposit.toLocaleString('en-IN')}
+
+            {/* Payable Amount Highlight Box matching user red arrow */}
+            <div className="inline-block px-6 py-1.5 rounded-xl bg-[#F2F8FC] border-2 border-[#00B9F1] shadow-2xs">
+              <span className="text-3xl sm:text-4xl font-black text-[#002E6E] font-mono tracking-tight">
+                ₹{amountToDeposit.toLocaleString('en-IN')}
+              </span>
             </div>
 
-            {/* QR Code */}
+            {/* Dynamic QR Code Container with Auto-Amount Binding */}
             <div className="pt-2 flex flex-col items-center justify-center">
-              <div className="p-2.5 bg-white rounded-2xl border-2 border-slate-200 shadow-md inline-block relative">
+              <div className="p-3 bg-white rounded-2xl border-2 border-[#D9E7F5] shadow-md inline-block relative group">
                 <img
-                  src={
-                    gatewaySettings.qrCodeUrl ||
-                    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-                      `upi://pay?pa=${upiId}&pn=NetworkJoinPro&am=${amountToDeposit}&cu=INR`
-                    )}`
-                  }
-                  alt="UPI Payment QR Code"
+                  src={qrCodeUrl}
+                  alt={`UPI Payment QR Code for ₹${amountToDeposit}`}
                   className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-xl"
                   onError={(e) => {
-                    if (gatewaySettings.qrCodeUrl) {
-                      (e.currentTarget as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-                        `upi://pay?pa=${upiId}&pn=NetworkJoinPro&am=${amountToDeposit}&cu=INR`
-                      )}`;
-                    } else {
-                      (e.currentTarget as HTMLElement).style.display = 'none';
-                    }
+                    // Fallback to quickchart QR
+                    (e.currentTarget as HTMLImageElement).src = `https://quickchart.io/qr?size=260&text=${encodeURIComponent(
+                      upiPayload
+                    )}`;
                   }}
                 />
+
+                {/* Center Badge indicating connected amount */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-10 h-10 rounded-full bg-white shadow-md border-2 border-[#00B9F1] flex items-center justify-center p-1">
+                    <span className="text-[11px] font-black text-[#002E6E] font-mono">₹</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount Connected Status Pill */}
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#07865B] text-[11px] font-bold">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Amount ₹{amountToDeposit.toLocaleString('en-IN')} Auto-Connected to QR</span>
               </div>
 
               {/* UPI ID Copy Bar */}
-              <div className="mt-3 flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
-                <span className="text-xs font-mono font-bold text-slate-900">{upiId}</span>
+              <div className="mt-2.5 flex items-center gap-2 bg-[#F2F8FC] px-3.5 py-2 rounded-xl border border-[#D9E7F5] max-w-full">
+                <span className="text-xs font-mono font-bold text-[#002E6E] truncate select-all">
+                  {upiId}
+                </span>
                 <button
+                  type="button"
                   onClick={handleCopyUpi}
-                  className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-[#00B9F1] hover:text-[#002E6E] flex items-center gap-1 cursor-pointer shrink-0 transition-colors ml-1"
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className="w-3.5 h-3.5" />
                   <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
                 </button>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                Scan using PhonePe, GPay, Paytm or any UPI App
+
+              <p className="text-[11px] text-[#172B75]/70 mt-1.5 font-medium">
+                Scan using PhonePe, Google Pay, Paytm, or any UPI App
               </p>
+
+              {/* Mobile Direct UPI Intent Pay Button */}
+              <button
+                type="button"
+                onClick={handlePayViaApp}
+                className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#EAF5FF] hover:bg-[#D9E7F5] border border-[#00B9F1]/60 text-[#002E6E] text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-[#00B9F1]" />
+                <span>Tap to Open UPI App (Pay ₹{amountToDeposit.toLocaleString('en-IN')})</span>
+              </button>
             </div>
           </div>
 
-          {/* UTR Number Input & Choice File Upload Container */}
-          <div className="bg-gradient-to-b from-white to-slate-50 rounded-2xl p-4 border-2 border-slate-200 shadow-2xs space-y-3.5">
+          {/* UTR Number Input & Proof Screenshot Upload Container (English Only) */}
+          <div className="bg-white rounded-2xl p-4 border border-[#D9E7F5] shadow-2xs space-y-3.5">
             {/* UTR Input */}
             <div>
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">
-                UTR Number / Txn Ref ID (उतर नंबर)*
+              <label className="text-xs font-black text-[#172B75] uppercase tracking-wider block mb-1.5">
+                UTR NUMBER / TXN REF ID *
               </label>
               <div className="relative">
                 <input
                   type="text"
+                  required
                   value={utrNumber}
                   onChange={(e) => setUtrNumber(e.target.value)}
-                  placeholder="Enter 12-digit UTR No. (उदा: 429381029384)"
-                  className="w-full pl-9 pr-3 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  placeholder="Enter 12-digit UTR No. (e.g. 429381029384)"
+                  className="w-full pl-9 pr-3 py-2.5 bg-[#F2F8FC] border border-[#D9E7F5] rounded-xl text-xs font-mono font-bold text-[#002E6E] placeholder-[#172B75]/40 focus:outline-none focus:border-[#00B9F1] focus:ring-2 focus:ring-[#00B9F1]/20 transition-all"
                 />
-                <Hash className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <Hash className="w-4 h-4 text-[#002E6E]/60 absolute left-3 top-3" />
               </div>
+              <span className="text-[10px] text-[#172B75]/60 font-medium block mt-1 pl-1">
+                Found in your UPI app transaction receipt (12 digits numeric)
+              </span>
             </div>
 
-            {/* Choice File Button */}
+            {/* Choice File / Upload Screenshot */}
             <div>
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">
-                Payment Screenshot (चॉइस फाइल)*
+              <label className="text-xs font-black text-[#172B75] uppercase tracking-wider block mb-1.5">
+                PAYMENT SCREENSHOT *
               </label>
               <input
                 type="file"
@@ -409,37 +538,41 @@ export default function DepositContent({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-4 py-2 bg-[#00B9F1] hover:bg-[#009bc7] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 border border-[#002E6E]/20"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>चॉइस फाइल (Choice File)</span>
+                  <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Choose File</span>
                 </button>
 
-                <span className="text-xs font-medium text-slate-600 truncate">
-                  {selectedFile ? selectedFile.name : 'कोई फ़ाइल चुनी नहीं गई'}
+                <span className="text-xs font-medium text-[#172B75]/80 truncate">
+                  {selectedFile ? selectedFile.name : 'No file chosen'}
                 </span>
               </div>
 
               {/* Image Preview if selected */}
               {imagePreview && (
-                <div className="mt-2.5 p-2 bg-white rounded-xl border border-slate-200 flex items-center gap-3">
+                <div className="mt-2.5 p-2 bg-[#F2F8FC] rounded-xl border border-[#D9E7F5] flex items-center gap-3">
                   <img
                     src={imagePreview}
                     alt="Payment Screenshot Preview"
-                    className="w-12 h-12 object-cover rounded-lg border"
+                    className="w-12 h-12 object-cover rounded-lg border border-[#D9E7F5] bg-white"
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-slate-900 truncate block">
+                    <span className="text-xs font-bold text-[#002E6E] truncate block">
                       {selectedFile?.name || 'Screenshot Attached'}
                     </span>
-                    <span className="text-[10px] text-emerald-600 font-bold">Image Attached ✓</span>
+                    <span className="text-[10.5px] text-[#07865B] font-bold flex items-center gap-1">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                      Proof Attached Successfully
+                    </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       setSelectedFile(null);
                       setImagePreview('');
                     }}
-                    className="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 cursor-pointer"
+                    className="text-xs text-rose-600 hover:text-rose-800 font-bold px-2 py-1 cursor-pointer"
                   >
                     Remove
                   </button>
@@ -448,33 +581,37 @@ export default function DepositContent({
             </div>
           </div>
 
-          {/* Error Alert */}
+          {/* Error Alert in English */}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-semibold flex items-center gap-2">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Button (English Only) */}
           <div>
             {submitSuccess ? (
-              <div className="w-full py-4 bg-emerald-600 text-white font-black rounded-xl flex items-center justify-center gap-2 shadow-md">
-                <CheckCircle2 className="w-5 h-5" />
-                <span>सबमिट हो गया! स्थिति: पेंडिंग (Pending)</span>
+              <div className="w-full py-4 bg-[#07865B] text-white font-black rounded-xl flex items-center justify-center gap-2 shadow-md">
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                <span>Payment Submitted Successfully! Status: Pending Approval</span>
               </div>
             ) : (
               <button
+                type="button"
                 onClick={handleSubmitPayment}
                 disabled={isSubmitting}
-                className="w-full py-4 bg-[#002E6E] hover:bg-[#001f4e] active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 bg-[#002E6E] hover:bg-[#00204d] active:scale-98 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer border border-[#00B9F1]/40"
               >
                 {isSubmitting ? (
-                  <span>सबमिट हो रहा है...</span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Submitting Payment...</span>
+                  </span>
                 ) : (
                   <>
                     <Zap className="w-4 h-4 text-[#00B9F1]" />
-                    <span>Submit Payment (सबमिट करें)</span>
+                    <span>Submit Payment</span>
                   </>
                 )}
               </button>
@@ -485,4 +622,3 @@ export default function DepositContent({
     </div>
   );
 }
-
