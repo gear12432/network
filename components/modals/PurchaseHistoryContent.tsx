@@ -20,8 +20,12 @@ import {
   CreditCard,
   UserCheck,
   Award,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  MapPin,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ActiveInvestment } from '@/types/investment';
 import FloatingInput from '@/components/ui/FloatingInput';
 import {
@@ -162,6 +166,11 @@ export default function PurchaseHistoryContent({
   // Real-time ticker state for timer counting down every 1 second
   const [now, setNow] = useState<number>(Date.now());
   const [claimingMap, setClaimingMap] = useState<Record<string, boolean>>({});
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -485,7 +494,7 @@ export default function PurchaseHistoryContent({
           )}
         </div>
       ) : (
-        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+        <div className="space-y-3">
           {filteredInvestments.map((inv) => {
             const progressPercent = Math.min(
               100,
@@ -498,99 +507,258 @@ export default function PurchaseHistoryContent({
               inv.withdrawalStatus === 'Pending' ||
               inv.withdrawalStatus === 'Withdrawal Pending';
             const isApproved = inv.withdrawalStatus === 'Approved';
+            const isExpanded = Boolean(expandedIds[inv.id]);
 
             return (
               <div
                 key={inv.id}
-                className="relative bg-white rounded-[2.5rem] border-2 border-[#D9E7F5] shadow-xl overflow-hidden flex flex-col"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-[#00B9F1]/50 shadow-2xs hover:shadow-sm transition-all overflow-hidden"
               >
-                {/* 1. Top Sky Blue Accent Header - Ultra-compact height */}
-                <div className="h-10 w-full bg-[#00B9F1]" />
-
-                {/* 2. Main Card Content Area */}
-                <div className="px-3 pb-1 -mt-4 relative z-10 space-y-1.5">
-                  {/* Internal Plan Header */}
-                  <div className="p-1.5 space-y-1.5">
-                    
-                    {/* Header Row: Icon + Name + Amount */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <PlanCategoryIconBadge planName={inv.planName} size="sm" />
-                        <div className="space-y-0">
-                          <h4 className="font-black text-[#002E6E] text-[10px] sm:text-xs leading-tight tracking-tight truncate max-w-[120px]">
-                            {inv.planName}
-                          </h4>
-                          <div className="inline-block">
-                            <span className="bg-white/40 text-[#002E6E] text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase border border-white/50 backdrop-blur-xs">
-                              ACTIVE
-                            </span>
-                          </div>
+                {/* 1. COMPACT LIST ROW (Matches marked height) */}
+                <div
+                  onClick={() => toggleExpand(inv.id)}
+                  className="p-2.5 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none bg-white hover:bg-slate-50/60 transition-colors"
+                >
+                  {/* Left: Customer Photo + Customer Name + Plan Name */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {/* Customer Profile Picture */}
+                    <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#00B9F1] shrink-0 shadow-xs bg-slate-100 flex items-center justify-center">
+                      {inv.customerPhoto ? (
+                        <img
+                          src={inv.customerPhoto}
+                          alt={inv.customerName || 'Customer'}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-tr from-[#002E6E] to-[#00B9F1] text-white flex items-center justify-center font-black text-xs font-serif">
+                          {inv.customerName?.[0] || 'C'}
                         </div>
-                      </div>
+                      )}
+                    </div>
 
-                      <div className="text-right flex flex-col items-end pt-0.5">
-                        <span className="text-[6px] text-white font-black uppercase tracking-tight opacity-95">AMT</span>
-                        <span className="text-sm font-black text-[#002E6E] font-mono leading-none">
-                          ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
+                    {/* Customer Name & Plan Name */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-black text-[#172B75] text-xs sm:text-sm leading-tight truncate">
+                          {inv.customerName || 'Investor'}
+                        </span>
+                        <span className="text-[8px] font-black px-1.5 py-0.2 rounded-full bg-[#EAF5FF] text-[#00B9F1] border border-[#00B9F1]/30 uppercase">
+                          Active
                         </span>
                       </div>
-                    </div>
-
-                    {/* NEW: Small Customer Details Box (Minimalist) */}
-                    <div className="bg-white/95 backdrop-blur-xs border border-[#D9E7F5] rounded-lg p-1 flex items-center gap-1.5 shadow-xs">
-                      {/* Profile Photo */}
-                      <div className="w-6 h-6 rounded-md overflow-hidden border-2 border-[#00B9F1] shrink-0 shadow-xs bg-slate-50">
-                        {inv.customerPhoto ? (
-                          <img src={inv.customerPhoto} alt={inv.customerName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#002E6E] font-black text-[8px]">
-                            {inv.customerName?.[0] || 'C'}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Details on one line if possible or very compact two lines */}
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[9px] font-black text-[#172B75] truncate leading-none">
-                          {inv.customerName || 'Investor'}
-                        </div>
-                        <div className="text-[7px] font-bold text-slate-500 flex items-center gap-1 flex-wrap mt-0.5">
-                          <span className="text-[#002E6E] font-black">{inv.startDate}</span>
-                          <span className="opacity-30">|</span>
-                          <span>Exp: <strong className="text-[#07865B]">₹{(inv.totalReturn || 0).toLocaleString('en-IN')}</strong></span>
-                          <span className="opacity-30">|</span>
-                          <span>Daily: <strong className="text-[#172B75]">₹{(inv.dailyReturn || 0).toFixed(2)}</strong></span>
-                        </div>
+                      <div className="text-[11px] sm:text-xs text-slate-500 font-bold truncate mt-0.5 flex items-center gap-1">
+                        <PlanCategoryIconBadge planName={inv.planName} size="sm" />
+                        <span className="truncate">{inv.planName}</span>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* 3. Card Curved Footer Decoration - ULTRA COMPACT */}
-                <div 
-                  className="bg-[#002E6E] h-10 w-full mt-auto relative flex items-center justify-between px-5 overflow-hidden" 
-                  style={{ clipPath: 'ellipse(100% 100% at 50% 100%)' }}
-                >
-                  {/* Left: Timer inside footer */}
-                  <div className="relative z-10 flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-[#00B9F1]" />
-                    <span className="text-white font-mono font-black text-xs tracking-wide drop-shadow-md">
-                      {timerStr}
-                    </span>
-                  </div>
+                  {/* Right: Plan Amount + Timer + View Icon + Dropdown Toggle */}
+                  <div
+                    className="flex items-center gap-1.5 sm:gap-2.5 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Plan Amount */}
+                    <div className="text-right">
+                      <span className="text-[8px] sm:text-[9px] text-slate-400 font-extrabold uppercase block leading-none">
+                        Amount
+                      </span>
+                      <span className="text-xs sm:text-base font-black text-[#002E6E] font-mono leading-tight">
+                        ₹{(inv.investedAmount || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
 
-                  {/* Right: View Certificate Button inside footer */}
-                  {onViewCertificate && (
+                    {/* Timer */}
+                    <div className="flex items-center gap-1 bg-[#002E6E] text-white px-2 py-1 rounded-xl text-[10px] sm:text-xs font-mono font-bold shrink-0 shadow-xs">
+                      <Clock className="w-3 h-3 text-[#00B9F1] animate-pulse" />
+                      <span>{timerStr}</span>
+                    </div>
+
+                    {/* Blue View Icon (Click to view certificate with smooth animation) */}
+                    {onViewCertificate && (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.05 }}
+                        onClick={() => onViewCertificate(inv)}
+                        className="w-8 h-8 rounded-xl bg-[#EAF5FF] hover:bg-[#00B9F1] text-[#00B9F1] hover:text-white border border-[#00B9F1]/30 flex items-center justify-center transition-colors cursor-pointer shadow-xs shrink-0"
+                        title="View Official Certificate"
+                      >
+                        <Award className="w-4 h-4 stroke-[2.2]" />
+                      </motion.button>
+                    )}
+
+                    {/* Drop Down Icon (Expands full details & enlarges box) */}
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => onViewCertificate(inv)}
-                      className="relative z-10 p-1 rounded-md bg-white/10 hover:bg-white/20 text-[#00B9F1] transition-all border border-white/10"
-                      title="View Certificate"
+                      onClick={() => toggleExpand(inv.id)}
+                      className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                      title={isExpanded ? 'Collapse Details' : 'Show Full Details'}
                     >
-                      <Award className="w-4 h-4 stroke-[2]" />
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-300 ${
+                          isExpanded ? 'rotate-180 text-[#002E6E]' : ''
+                        }`}
+                      />
                     </motion.button>
-                  )}
+                  </div>
                 </div>
+
+                {/* 2. DROPDOWN EXPANDED DETAILS (Smooth Animation & Enlarged Box) */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.28, ease: 'easeInOut' }}
+                      className="overflow-hidden border-t border-slate-100 bg-[#F9FBFE] p-3 sm:p-4 space-y-3"
+                    >
+                      {/* Plan Metrics Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none mb-1">
+                            Purchased Date
+                          </span>
+                          <span className="font-extrabold text-slate-800 text-xs">
+                            {inv.startDate}
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none mb-1">
+                            Plan Duration
+                          </span>
+                          <span className="font-extrabold text-[#002E6E] text-xs">
+                            {inv.totalDays || 30} Days
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none mb-1">
+                            Daily Return
+                          </span>
+                          <span className="font-black text-[#00B9F1] font-mono text-xs">
+                            +₹{(inv.dailyReturn || 0).toFixed(2)}/d
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                          <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none mb-1">
+                            Total Expected
+                          </span>
+                          <span className="font-black text-[#07865B] font-mono text-xs">
+                            ₹{(inv.totalReturn || 0).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Investment Compounding Progress Bar */}
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-slate-500 uppercase text-[9px] font-extrabold">
+                            Compounding Progress
+                          </span>
+                          <span className="text-[#002E6E] font-black">
+                            Day {inv.daysCompleted || 1} of {inv.totalDays || 30}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-[1px]">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercent}%` }}
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                            className="bg-[#00B9F1] h-full rounded-full"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Customer & Settlement Information Box */}
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs text-xs space-y-2">
+                        <span className="text-[10px] text-[#002E6E] font-black uppercase tracking-wider block">
+                          Customer Profile & Details
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
+                          <div className="flex items-center gap-2">
+                            <User className="w-3.5 h-3.5 text-[#00B9F1] shrink-0" />
+                            <span className="font-extrabold text-slate-800 truncate">
+                              Name: {inv.customerName || 'Investor'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-3.5 h-3.5 text-[#00B9F1] shrink-0" />
+                            <span className="font-mono font-bold text-slate-800">
+                              +91 {inv.customerMobile || 'Not Linked'}
+                            </span>
+                          </div>
+
+                          {inv.customerId && (
+                            <div className="flex items-center gap-2">
+                              <UserCheck className="w-3.5 h-3.5 text-[#00B9F1] shrink-0" />
+                              <span className="text-slate-600">
+                                Customer ID: <strong className="text-slate-800">{inv.customerId}</strong>
+                              </span>
+                            </div>
+                          )}
+
+                          {inv.bankName && (
+                            <div className="flex items-center gap-2 sm:col-span-2">
+                              <Building2 className="w-3.5 h-3.5 text-[#00B9F1] shrink-0" />
+                              <span className="truncate">
+                                Bank: <strong className="text-slate-800">{inv.bankName}</strong> • A/C: {inv.accountNumber} ({inv.ifscCode})
+                              </span>
+                            </div>
+                          )}
+
+                          {inv.customerAddress && (
+                            <div className="flex items-center gap-2 sm:col-span-2">
+                              <MapPin className="w-3.5 h-3.5 text-[#00B9F1] shrink-0" />
+                              <span className="truncate text-slate-600 text-[11px]">
+                                Address: {inv.customerAddress}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Bar inside Expanded Details */}
+                      <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                        {onViewCertificate && (
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.02 }}
+                            onClick={() => onViewCertificate(inv)}
+                            className="px-4 py-2 rounded-xl bg-[#002E6E] hover:bg-[#002352] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                          >
+                            <Award className="w-4 h-4 text-[#00B9F1]" />
+                            <span>View Official Bond Certificate</span>
+                          </motion.button>
+                        )}
+
+                        {isWithdrawalPending ? (
+                          <span className="text-xs font-black px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                            <span>विड्रॉल पेंडिंग</span>
+                          </span>
+                        ) : isApproved ? (
+                          <span className="text-xs font-black px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>Payout Approved</span>
+                          </span>
+                        ) : isComplete ? (
+                          <button
+                            onClick={() => handleClaimAndWithdraw(inv)}
+                            disabled={claimingMap[inv.id]}
+                            className="px-4 py-2 bg-gradient-to-r from-[#FF8904] to-[#ff5d00] text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50 uppercase"
+                          >
+                            {claimingMap[inv.id] ? 'Processing...' : 'CLAIM NOW'}
+                          </button>
+                        ) : null}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
