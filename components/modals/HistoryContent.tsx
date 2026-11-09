@@ -12,6 +12,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import HelpdeskChatModal from '@/components/modals/HelpdeskChatModal';
+import TransactionDetailsModal from '@/components/modals/TransactionDetailsModal';
 
 interface HistoryContentProps {
   transactions: Transaction[];
@@ -22,6 +23,7 @@ export default function HistoryContent({ transactions, userStats }: HistoryConte
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const filtered = transactions.filter((tx) => {
     const matchesSearch =
@@ -90,13 +92,14 @@ export default function HistoryContent({ transactions, userStats }: HistoryConte
             return (
               <div
                 key={tx.id}
-                className="bg-[#FFFFFF] rounded-2xl p-4 border border-[#D0E4F5] shadow-xs space-y-2.5 hover:border-[#00B9F1] hover:shadow-md transition-all"
+                onClick={() => setSelectedTx(tx)}
+                className="bg-[#FFFFFF] rounded-2xl p-4 border border-[#D9E7F5] shadow-xs space-y-2.5 hover:border-[#00B9F1] hover:shadow-md transition-all cursor-pointer group"
               >
                 {/* Top Section: Icon, Title, Date, Amount & Status */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${
                         isCredit
                           ? 'bg-[#E5F9F6] text-[#059669] border-[#A7F3D0]'
                           : 'bg-[#F0F5FA] text-[#002E6E] border-[#D0E4F5]'
@@ -110,7 +113,7 @@ export default function HistoryContent({ transactions, userStats }: HistoryConte
                     </div>
 
                     <div className="truncate min-w-0">
-                      <span className="text-xs sm:text-sm font-extrabold text-[#172B75] block truncate">
+                      <span className="text-xs sm:text-sm font-extrabold text-[#172B75] block truncate group-hover:text-[#002E6E]">
                         {tx.title}
                       </span>
                       <span className="text-[11px] text-[#172B75]/70 block font-medium">
@@ -144,14 +147,17 @@ export default function HistoryContent({ transactions, userStats }: HistoryConte
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00B9F1] shrink-0 animate-pulse" />
                     <span className="text-[11px] sm:text-xs font-bold text-[#172B75] truncate">
-                      Please contact customer care
+                      Tap card to view full receipt
                     </span>
                   </div>
 
                   {/* Customer Care Icon Button - Opens Chat Screen */}
                   <button
                     type="button"
-                    onClick={() => setIsChatOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsChatOpen(true);
+                    }}
                     title="Open Customer Care Chat"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
                   >
@@ -170,6 +176,15 @@ export default function HistoryContent({ transactions, userStats }: HistoryConte
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         userStats={userStats}
+      />
+
+      {/* Transaction Details Modal (PhonePe / UPI style with smooth right-to-left slide animation) */}
+      <TransactionDetailsModal
+        isOpen={!!selectedTx}
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
+        userStats={userStats}
+        onOpenSupport={() => setIsChatOpen(true)}
       />
     </div>
   );

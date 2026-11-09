@@ -69,6 +69,19 @@ export interface Transaction {
   status: 'completed' | 'processing' | 'failed';
   paymentMethod?: string;
   referenceId: string;
+  utrNumber?: string;
+  transactionId?: string;
+  paidTo?: string;
+  paidBy?: string;
+  debitedFrom?: string;
+  creditedTo?: string;
+  senderName?: string;
+  receiverName?: string;
+  bankName?: string;
+  accountNumber?: string;
+  imageUrl?: string;
+  dateTime?: string;
+  note?: string;
 }
 
 export interface UserStats {

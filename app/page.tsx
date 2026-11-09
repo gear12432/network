@@ -556,9 +556,17 @@ function InvestmentAppMain() {
               title: `Wallet Deposit (INR ${d.amount})`,
               amount: Number(d.amount) || 0,
               timestamp: d.dateTime || d.createdAt || 'Recent',
+              dateTime: d.dateTime || d.createdAt || 'Recent',
               status: d.status === 'Approved' ? 'completed' : d.status === 'Rejected' ? 'failed' : 'processing',
-              paymentMethod: d.utrNumber ? `UTR: ${d.utrNumber}` : 'UPI',
+              paymentMethod: d.utrNumber ? `UTR: ${d.utrNumber}` : 'UPI Fast Transfer',
               referenceId: String(d.id),
+              transactionId: String(d.id),
+              utrNumber: d.utrNumber || '',
+              imageUrl: d.imageUrl || '',
+              paidBy: d.userName || 'Account Holder',
+              debitedFrom: 'UPI / Bank Transfer',
+              creditedTo: 'Network Join Pro Wallet',
+              receiverName: 'Network Join Pro',
             });
           }
         });
@@ -577,9 +585,18 @@ function InvestmentAppMain() {
               title: w.planName ? `Payout for ${w.planName}` : `Bank/UPI Withdrawal`,
               amount: Number(w.amount) || 0,
               timestamp: w.dateTime || w.createdAt || 'Recent',
+              dateTime: w.dateTime || w.createdAt || 'Recent',
               status: w.status === 'Approved' ? 'completed' : w.status === 'Rejected' ? 'failed' : 'processing',
-              paymentMethod: w.bankDetails || 'UPI Settlement',
+              paymentMethod: w.bankDetails || 'Bank Settlement (IMPS)',
               referenceId: String(w.id),
+              transactionId: String(w.id),
+              utrNumber: w.utrNumber || w.referenceId || String(w.id),
+              paidBy: 'Network Join Pro',
+              debitedFrom: 'Available Wallet Balance',
+              creditedTo: w.bankName ? `${w.bankName} (•••${w.accountNumber?.slice(-4) || 'A/C'})` : (w.bankDetails || 'Bank Account'),
+              receiverName: w.bankHolderName || w.customerName || w.userName || 'Customer',
+              bankName: w.bankName,
+              accountNumber: w.accountNumber,
             });
           }
         });

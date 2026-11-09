@@ -14,12 +14,14 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { UserStats, Transaction } from '@/types/investment';
+import TransactionDetailsModal from '@/components/modals/TransactionDetailsModal';
 
 interface WalletScreenProps {
   stats: UserStats;
   transactions: Transaction[];
   onOpenDeposit: () => void;
   onOpenWithdraw: () => void;
+  onOpenSupport?: () => void;
 }
 
 export default function WalletScreen({
@@ -27,8 +29,10 @@ export default function WalletScreen({
   transactions,
   onOpenDeposit,
   onOpenWithdraw,
+  onOpenSupport,
 }: WalletScreenProps) {
   const [filter, setFilter] = useState<'all' | 'deposit' | 'withdrawal' | 'roi_credit'>('all');
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const filteredTransactions = transactions.filter((tx) => {
     if (filter === 'all') return true;
@@ -136,11 +140,12 @@ export default function WalletScreen({
               return (
                 <div
                   key={tx.id}
-                  className="py-3 bg-transparent border-b border-slate-200/80 flex items-center justify-between gap-3 transition-colors hover:bg-slate-50/50 px-1"
+                  onClick={() => setSelectedTx(tx)}
+                  className="py-3 bg-transparent border-b border-[#D9E7F5] flex items-center justify-between gap-3 transition-colors hover:bg-[#EAF5FF]/60 active:bg-[#EAF5FF] px-1.5 rounded-xl cursor-pointer group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                         isCredit
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
                           : 'bg-rose-50 text-rose-700 border border-rose-200/60'
@@ -154,10 +159,10 @@ export default function WalletScreen({
                     </div>
 
                     <div className="truncate min-w-0">
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate">
+                      <span className="font-bold text-xs sm:text-sm text-[#172B75] block truncate group-hover:text-[#002E6E]">
                         {tx.title}
                       </span>
-                      <span className="text-[10.5px] text-slate-500 block font-medium">
+                      <span className="text-[10.5px] text-[#172B75]/60 block font-medium">
                         {tx.timestamp} • Ref: {tx.referenceId}
                       </span>
                     </div>
@@ -166,7 +171,7 @@ export default function WalletScreen({
                   <div className="text-right shrink-0">
                     <span
                       className={`text-xs sm:text-sm font-black block font-mono ${
-                        isCredit ? 'text-emerald-700' : 'text-slate-900'
+                        isCredit ? 'text-emerald-700' : 'text-[#172B75]'
                       }`}
                     >
                       {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
@@ -185,12 +190,21 @@ export default function WalletScreen({
               );
             })
           ) : (
-            <div className="py-8 text-center text-slate-500 text-xs font-semibold">
+            <div className="py-8 text-center text-[#172B75]/60 text-xs font-semibold">
               No transactions found for this filter.
             </div>
           )}
         </div>
       </div>
+
+      {/* Transaction Details Modal (PhonePe / UPI style with smooth right-to-left slide animation) */}
+      <TransactionDetailsModal
+        isOpen={!!selectedTx}
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
+        userStats={stats}
+        onOpenSupport={onOpenSupport}
+      />
     </div>
   );
 }
