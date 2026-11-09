@@ -122,6 +122,14 @@ export interface UserAccountData {
   createdAt?: string;
   photoUrl?: string;
   deviceId?: string;
+  bankDetails?: {
+    bankHolderName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    upiId?: string;
+    updatedAt?: string;
+  };
 }
 
 // Generate/retrieve persistent Device ID for current browser/device

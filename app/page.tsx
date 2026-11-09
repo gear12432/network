@@ -58,6 +58,7 @@ import {
   getOrCreateDeviceId,
   findUserByDeviceId,
   VipLevelRecord,
+  WithdrawalRecord,
   db,
 } from '@/lib/firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
@@ -794,7 +795,11 @@ function InvestmentAppMain() {
     showToast(`₹${amount.toLocaleString('en-IN')} added to your wallet!`);
   };
 
-  const handleWithdrawSuccess = (amount: number, target: string) => {
+  const handleWithdrawSuccess = (
+    amount: number,
+    target: string,
+    withdrawalRecord?: WithdrawalRecord
+  ) => {
     if (amount > userStats.walletBalance) {
       showToast('Withdrawal amount exceeds balance');
       return;
@@ -813,18 +818,18 @@ function InvestmentAppMain() {
     }
 
     const newTx: Transaction = {
-      id: `tx-${Date.now()}`,
+      id: withdrawalRecord?.id || `tx-${Date.now()}`,
       type: 'withdrawal',
       title: `Instant Payout to ${target}`,
       amount,
       timestamp: 'Just now',
       status: 'completed',
       paymentMethod: target,
-      referenceId: `WTH${Math.floor(100000 + Math.random() * 900000)}`,
+      referenceId: withdrawalRecord?.id || `WTH${Math.floor(100000 + Math.random() * 900000)}`,
     };
     setTransactions((prev) => [newTx, ...prev]);
 
-    showToast(`₹${amount.toLocaleString('en-IN')} withdrawn successfully!`);
+    showToast(`₹${amount.toLocaleString('en-IN')} debited & withdrawal requested!`);
   };
 
   const handleClaimDailyRoi = () => {
@@ -1096,15 +1101,16 @@ function InvestmentAppMain() {
       <SlideFullScreenModal
         isOpen={activeModal === 'withdraw'}
         onClose={() => setActiveModal('none')}
-        title="Withdraw Payout"
+        title="Withdrawal"
         theme="navy"
       >
         <WithdrawContent
           userStats={userStats}
-          onWithdrawSuccess={(amt, target) => {
-            handleWithdrawSuccess(amt, target);
-            setActiveModal('none');
+          currentUser={currentUser}
+          onWithdrawSuccess={(amt, target, wdRecord) => {
+            handleWithdrawSuccess(amt, target, wdRecord);
           }}
+          onClose={() => setActiveModal('none')}
         />
       </SlideFullScreenModal>
 
