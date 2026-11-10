@@ -668,6 +668,113 @@ function InvestmentAppMain() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // 6. Automatic Daily VIP Commission Accrual & Rate Sync for Active Plans
+  useEffect(() => {
+    if (!activeInvestments || activeInvestments.length === 0) return;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    let totalNewlyAccrued = 0;
+    let hasChanges = false;
+    let totalDailyCommSum = 0;
+
+    const updatedList = activeInvestments.map((inv) => {
+      if (inv.status !== 'active') return inv;
+
+      // Determine VIP level and daily commission rate based on admin settings
+      const userLvl = currentUser?.vipLevel ?? userStats.vipLevel ?? inv.vipLevel ?? 1;
+      const vipCfg = vipLevels.find((l) => l.levelNumber === userLvl);
+
+      let rate = inv.vipCommissionRate || 2.5;
+      let dailyComm = inv.dailyCommission;
+
+      if (vipCfg) {
+        if (vipCfg.dailyPercentage && vipCfg.dailyPercentage > 0) {
+          rate = vipCfg.dailyPercentage;
+          dailyComm = Math.round(((inv.investedAmount * rate) / 100) * 100) / 100;
+        } else if (vipCfg.commissionAmount && vipCfg.commissionAmount > 0) {
+          dailyComm = vipCfg.commissionAmount;
+          rate = inv.investedAmount > 0 ? Math.round(((dailyComm / inv.investedAmount) * 100) * 100) / 100 : 2.5;
+        }
+      }
+
+      if (!dailyComm || dailyComm <= 0) {
+        dailyComm = Math.round(((inv.investedAmount * rate) / 100) * 100) / 100;
+      }
+
+      totalDailyCommSum += dailyComm;
+
+      // Calculate elapsed days since purchase date
+      const purchaseTime = inv.purchasedAt ? new Date(inv.purchasedAt).getTime() : Date.now();
+      const now = Date.now();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const elapsedDays = Math.min(inv.totalDays || 30, Math.max(1, Math.floor((now - purchaseTime) / msPerDay) + 1));
+      const prevCompleted = inv.daysCompleted || 1;
+
+      if (elapsedDays > prevCompleted) {
+        const newlyAccruedDays = elapsedDays - prevCompleted;
+        const addedComm = Math.round(newlyAccruedDays * dailyComm * 100) / 100;
+        totalNewlyAccrued += addedComm;
+        hasChanges = true;
+
+        const isFinished = elapsedDays >= (inv.totalDays || 30);
+        const updatedInv: ActiveInvestment = {
+          ...inv,
+          vipLevel: userLvl,
+          vipCommissionRate: rate,
+          dailyCommission: dailyComm,
+          daysCompleted: elapsedDays,
+          status: isFinished ? 'completed' : 'active',
+          totalCommissionEarned: Math.round(((inv.totalCommissionEarned || dailyComm) + addedComm) * 100) / 100,
+          lastAccrualDate: todayStr,
+        };
+        saveInvestmentToFirestore(updatedInv);
+        return updatedInv;
+      }
+
+      // Sync updated VIP rate if Admin changed VIP level in Admin Panel
+      if (inv.dailyCommission !== dailyComm || inv.vipCommissionRate !== rate || inv.vipLevel !== userLvl) {
+        hasChanges = true;
+        const updatedInv: ActiveInvestment = {
+          ...inv,
+          vipLevel: userLvl,
+          vipCommissionRate: rate,
+          dailyCommission: dailyComm,
+        };
+        saveInvestmentToFirestore(updatedInv);
+        return updatedInv;
+      }
+
+      return inv;
+    });
+
+    if (hasChanges) {
+      setActiveInvestments(updatedList);
+    }
+
+    if (totalNewlyAccrued > 0) {
+      const newUnclaimed = Math.round(((userStats.unclaimedRoi || 0) + totalNewlyAccrued) * 100) / 100;
+      const newTotal = Math.round(((userStats.totalEarned || 0) + totalNewlyAccrued) * 100) / 100;
+      setUserStats((prev) => ({
+        ...prev,
+        unclaimedRoi: newUnclaimed,
+        totalEarned: newTotal,
+        totalDailyCommission: Math.round(totalDailyCommSum * 100) / 100,
+      }));
+      if (currentUser?.loginUid) {
+        updateUserEarningsInFirestore(currentUser.loginUid, {
+          unclaimedRoi: newUnclaimed,
+          totalEarned: newTotal,
+          totalDailyCommission: Math.round(totalDailyCommSum * 100) / 100,
+        });
+      }
+    } else if (userStats.totalDailyCommission !== Math.round(totalDailyCommSum * 100) / 100) {
+      setUserStats((prev) => ({
+        ...prev,
+        totalDailyCommission: Math.round(totalDailyCommSum * 100) / 100,
+      }));
+    }
+  }, [activeInvestments.length, vipLevels, currentUser?.vipLevel, userStats.vipLevel]);
+
   const handleConfirmInvest = (plan: InvestmentPlan, linkedCustomer?: Customer) => {
     if (userStats.walletBalance < plan.amount) {
       showToast('Insufficient wallet balance. Please add funds.');
@@ -694,22 +801,30 @@ function InvestmentAppMain() {
     }
 
     // Determine Commission according to user VIP Level
+    // (plan amount ₹5000, Commission 10% ₹5, 30 day) => ₹5 user ko par day 30 day milta rahega (total ₹150)
     const activeLevelConfig = vipLevels.find((l) => l.levelNumber === calculatedLevel);
-    let commissionEarned = 0;
+    let vipRate = 2.5;
+    let dailyCommission = 0;
+
     if (activeLevelConfig) {
       if (activeLevelConfig.dailyPercentage && activeLevelConfig.dailyPercentage > 0) {
-        commissionEarned = (planCost * activeLevelConfig.dailyPercentage) / 100;
+        vipRate = activeLevelConfig.dailyPercentage;
+        dailyCommission = (planCost * activeLevelConfig.dailyPercentage) / 100;
       } else if (activeLevelConfig.commissionAmount && activeLevelConfig.commissionAmount > 0) {
-        commissionEarned = activeLevelConfig.commissionAmount;
+        dailyCommission = activeLevelConfig.commissionAmount;
+        vipRate = planCost > 0 ? (dailyCommission / planCost) * 100 : 2.5;
       }
     } else {
       // Default baseline percentage
-      commissionEarned = (planCost * 2.5) / 100;
+      vipRate = 2.5;
+      dailyCommission = (planCost * 2.5) / 100;
     }
-    commissionEarned = Math.round(commissionEarned * 100) / 100;
+    dailyCommission = Math.round(dailyCommission * 100) / 100;
+    vipRate = Math.round(vipRate * 100) / 100;
 
-    const newUnclaimed = (userStats.unclaimedRoi || 0) + commissionEarned;
-    const newTotalEarned = (userStats.totalEarned || 0) + commissionEarned;
+    // Day 1 daily commission is accounted into EARNED box immediately
+    const newUnclaimed = Math.round(((userStats.unclaimedRoi || 0) + dailyCommission) * 100) / 100;
+    const newTotalEarned = Math.round(((userStats.totalEarned || 0) + dailyCommission) * 100) / 100;
 
     setUserStats((prev) => ({
       ...prev,
@@ -719,6 +834,7 @@ function InvestmentAppMain() {
       unclaimedRoi: newUnclaimed,
       totalEarned: newTotalEarned,
       vipLevel: calculatedLevel,
+      dailyCommissionRate: vipRate,
       totalCustomerInvested: newTotalCustomerInvested,
     }));
 
@@ -728,10 +844,12 @@ function InvestmentAppMain() {
         unclaimedRoi: newUnclaimed,
         totalEarned: newTotalEarned,
         vipLevel: calculatedLevel,
+        dailyCommissionRate: vipRate,
         totalCustomerInvested: newTotalCustomerInvested,
       });
     }
 
+    const todayStr = new Date().toISOString().split('T')[0];
     const newInvestment: ActiveInvestment = {
       id: `act-${Date.now()}`,
       planId: plan.id,
@@ -754,6 +872,11 @@ function InvestmentAppMain() {
       bankHolderName: linkedCustomer?.bankHolderName || '',
       loginUid: currentUser?.loginUid || 'GK',
       purchasedAt: new Date().toISOString(),
+      vipLevel: calculatedLevel,
+      vipCommissionRate: vipRate,
+      dailyCommission: dailyCommission,
+      totalCommissionEarned: dailyCommission,
+      lastAccrualDate: todayStr,
     };
     setActiveInvestments((prev) => [newInvestment, ...prev]);
     saveInvestmentToFirestore(newInvestment);
@@ -855,8 +978,8 @@ function InvestmentAppMain() {
   const handleClaimDailyRoi = () => {
     if ((userStats.unclaimedRoi || 0) <= 0) return;
 
-    const claimed = userStats.unclaimedRoi;
-    const newBal = userStats.walletBalance + claimed;
+    const claimed = Math.round(userStats.unclaimedRoi * 100) / 100;
+    const newBal = Math.round((userStats.walletBalance + claimed) * 100) / 100;
 
     setUserStats((prev) => ({
       ...prev,
@@ -871,19 +994,36 @@ function InvestmentAppMain() {
       });
     }
 
+    const todayStr = new Date().toISOString();
+    // Update active investments with last claim timestamp
+    setActiveInvestments((prev) =>
+      prev.map((inv) =>
+        inv.status === 'active'
+          ? {
+              ...inv,
+              lastClaimDate: todayStr,
+            }
+          : inv
+      )
+    );
+
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
       type: 'roi_credit',
-      title: 'VIP Commission Payout Credited',
+      title: 'Daily VIP Commission Claimed',
       amount: claimed,
       timestamp: 'Just now',
       status: 'completed',
       referenceId: `ROI${Math.floor(100000 + Math.random() * 900000)}`,
+      paidBy: 'Network Join Pro VIP Pool',
+      debitedFrom: 'VIP Commission Account',
+      creditedTo: 'Wallet Balance',
+      receiverName: userStats.userName || 'Account Holder',
     };
     setTransactions((prev) => [newTx, ...prev]);
 
     triggerConfetti();
-    showToast(`₹${claimed.toFixed(2)} commission earnings successfully claimed into wallet!`);
+    showToast(`₹${claimed.toFixed(2)} Daily VIP Commission claimed directly to your wallet!`);
   };
 
   const handleSaveCustomer = (newCustomer: Customer) => {
@@ -954,6 +1094,7 @@ function InvestmentAppMain() {
             customers={customers}
             onOpenPlans={() => setActiveTab('home')}
             onOpenDeposit={() => setActiveModal('deposit')}
+            vipLevels={vipLevels}
           />
         );
       case 'earnings':

@@ -667,6 +667,26 @@ export default function PurchaseHistoryContent({
                         </div>
                       </div>
 
+                      {/* VIP Commission Per Day Breakdown */}
+                      <div className="bg-[#EAF5FF] p-3 rounded-xl border border-[#D9E7F5] shadow-2xs space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#002E6E] font-black uppercase text-[10px] tracking-wider flex items-center gap-1">
+                            <span>👑</span>
+                            <span>VIP Commission (Per Day)</span>
+                          </span>
+                          <span className="text-[#07865B] font-black font-mono">
+                            +₹{(inv.dailyCommission || 0).toFixed(2)}/day
+                            {inv.vipCommissionRate ? ` (${inv.vipCommissionRate}%)` : ''}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-[#172B75] font-semibold">
+                          <span>Accumulated Commission ({inv.daysCompleted || 1}/{inv.totalDays || 30} days):</span>
+                          <span className="font-mono font-black text-[#002E6E]">
+                            ₹{((inv.dailyCommission || 0) * (inv.daysCompleted || 1)).toFixed(2)} / ₹{((inv.dailyCommission || 0) * (inv.totalDays || 30)).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
                       {/* Investment Compounding Progress Bar */}
                       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
                         <div className="flex items-center justify-between text-xs font-bold">

@@ -56,6 +56,11 @@ export interface ActiveInvestment {
   claimed?: boolean;
   withdrawalStatus?: 'Pending' | 'Approved' | 'Rejected' | string;
   withdrawalId?: string;
+  vipLevel?: number;
+  vipCommissionRate?: number;
+  dailyCommission?: number;
+  totalCommissionEarned?: number;
+  lastAccrualDate?: string;
 }
 
 export type TransactionType = 'deposit' | 'withdrawal' | 'investment' | 'roi_credit' | 'referral_bonus';
@@ -102,6 +107,8 @@ export interface UserStats {
   photoUrl?: string;
   vipLevel?: number;
   totalCustomerInvested?: number;
+  dailyCommissionRate?: number;
+  totalDailyCommission?: number;
 }
 
 export interface ReferralMember {

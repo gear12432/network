@@ -31,6 +31,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { UserStats, ReferralMember, ActiveInvestment, Customer } from '@/types/investment';
+import { VipLevelRecord } from '@/lib/firebase';
 import { triggerConfetti } from '@/lib/confetti';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dashboard3DCard } from '@/components/ui/Dashboard3DIcons';
@@ -42,6 +43,7 @@ interface NetworkScreenProps {
   customers?: Customer[];
   onOpenPlans?: () => void;
   onOpenDeposit?: () => void;
+  vipLevels?: VipLevelRecord[];
 }
 
 type TabType = 'VIP LEVEL' | 'BUY RULES' | 'MY REWARDS' | 'MY PURCHASES';
@@ -343,6 +345,7 @@ export default function NetworkScreen({
   customers = [],
   onOpenPlans,
   onOpenDeposit,
+  vipLevels = [],
 }: NetworkScreenProps) {
   const [activeModalTab, setActiveModalTab] = useState<TabType | null>(null);
   const [selectedVipTier, setSelectedVipTier] = useState<VipTierInfo | null>(VIP_TIERS[0]);
@@ -840,12 +843,15 @@ export default function NetworkScreen({
                       Explore All 10 VIP Privilege Tiers
                     </h4>
                     {VIP_TIERS.map((v) => {
-                      const isCurrent = v.level === 1;
+                      const liveLvl = vipLevels.find((l) => l.levelNumber === v.level);
+                      const rebateRate = liveLvl?.dailyPercentage ? `${liveLvl.dailyPercentage}%` : v.rebate;
+                      const spendTarget = liveLvl?.minAmount ? `₹${liveLvl.minAmount.toLocaleString('en-IN')}` : v.spend;
+                      const isCurrent = (stats.vipLevel || 1) === v.level;
                       const isSelected = selectedVipTier?.level === v.level;
                       return (
                         <div
                           key={v.level}
-                          onClick={() => setSelectedVipTier(v)}
+                          onClick={() => setSelectedVipTier({ ...v, rebate: rebateRate, spend: spendTarget })}
                           className={`p-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 border ${
                             isSelected
                               ? 'bg-[#EAF5FF] border-[#002E6E] shadow-sm ring-1 ring-[#002E6E]'
@@ -869,7 +875,7 @@ export default function NetworkScreen({
                                 {v.subtitle}
                               </span>
                               <span className="text-[10px] text-[#172B75]/70 block truncate">
-                                Target: <strong className="text-[#002E6E]">{v.spend}</strong> • Limit: {v.limit}
+                                Target: <strong className="text-[#002E6E]">{spendTarget}</strong> • Limit: {v.limit}
                               </span>
                               <p className="text-[9.5px] text-[#002E6E] font-medium italic mt-0.5 line-clamp-1">
                                 ✦ {v.perk}
@@ -883,10 +889,10 @@ export default function NetworkScreen({
                                 ? 'bg-[#002E6E] text-white'
                                 : 'bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5]'
                             }`}>
-                              {v.rebate}
+                              {rebateRate}
                             </span>
-                            <span className="text-[9px] text-[#172B75]/60 mt-1 block">
-                              Rebate
+                            <span className="text-[9px] text-[#172B75]/60 mt-1 block font-semibold">
+                              Daily Rate
                             </span>
                           </div>
                         </div>

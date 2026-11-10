@@ -429,6 +429,8 @@ export async function updateUserEarningsInFirestore(
     totalEarned?: number;
     vipLevel?: number;
     totalCustomerInvested?: number;
+    dailyCommissionRate?: number;
+    totalDailyCommission?: number;
   }
 ): Promise<boolean> {
   try {

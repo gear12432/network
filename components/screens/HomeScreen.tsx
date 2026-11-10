@@ -390,22 +390,9 @@ export default function HomeScreen({
               </div>
 
               <button
-                onClick={async () => {
+                onClick={() => {
                   onClaimDailyRoi();
-                  const withdrawRecord = {
-                    id: `wth-daily-${Date.now()}`,
-                    loginUid: stats.loginUid || 'GK35648',
-                    userName: stats.userName || 'User',
-                    mobile: stats.mobile || '9876543210',
-                    amount: stats.unclaimedRoi || 248.5,
-                    bankDetails: 'skjiyaul@okhdfcbank linked',
-                    dateTime: new Date().toLocaleString('en-IN'),
-                    status: 'Pending' as const,
-                    createdAt: new Date().toISOString(),
-                    planName: 'Daily ROI Return Claim',
-                  };
-                  await saveWithdrawalToFirestore(withdrawRecord);
-                  setClaimToast(`Daily Return claim saved to Firebase (Status: Pending)!`);
+                  setClaimToast(`Daily VIP Commission successfully claimed into your wallet!`);
                   setTimeout(() => setClaimToast(null), 4000);
                 }}
                 style={{ backgroundColor: '#FF8904' }}
