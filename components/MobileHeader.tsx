@@ -18,6 +18,7 @@ interface MobileHeaderProps {
   onOpenFullKyc?: () => void;
   onOpenAdmin?: () => void;
   onOpenVipBonus?: () => void;
+  onOpenWallet?: () => void;
 }
 
 export default function MobileHeader({
@@ -30,6 +31,7 @@ export default function MobileHeader({
   onOpenProfile,
   onOpenNotifications,
   onOpenVipBonus,
+  onOpenWallet,
 }: MobileHeaderProps) {
   const [profilePhoto, setProfilePhoto] = React.useState<string | null>(null);
 
@@ -80,18 +82,26 @@ export default function MobileHeader({
 
       {/* Right: Wallet icon, VIP Bonus button, Notifications */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* Wallet icon */}
-        <div className="flex items-center bg-[#F2F8FC] border border-[#D0E4F5] rounded-full px-2 py-1 text-[#172B75] shadow-2xs">
-          <Wallet className="w-4.5 h-4.5 text-[#002E6E] stroke-[2.2]" />
-        </div>
+        {/* Wallet icon -> Opens Wallet Screen */}
+        <button
+          type="button"
+          onClick={onOpenWallet || onOpenDeposit}
+          className="flex items-center justify-center w-8.5 h-8.5 sm:w-9 sm:h-9 bg-[#F2F8FC] hover:bg-[#E5F3FC] active:scale-95 border border-[#D0E4F5] rounded-full text-[#002E6E] hover:text-[#00B9F1] transition-all shadow-2xs shrink-0 cursor-pointer"
+          title="Open Wallet"
+          aria-label="Open Wallet"
+        >
+          <Wallet className="w-4.5 h-4.5 stroke-[2.2]" />
+        </button>
 
         {/* VIP Bonus button */}
         <button
+          type="button"
           onClick={onOpenVipBonus}
-          className="flex items-center gap-1 bg-[#FFC928] hover:bg-[#e6b424] text-[#002E6E] font-black px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
+          className="flex items-center justify-center w-8.5 h-8.5 sm:w-9 sm:h-9 bg-gradient-to-b from-[#FFE066] to-[#FFC928] hover:brightness-105 active:scale-95 border border-[#D49B00]/60 text-[#002E6E] font-black rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
           title="VIP Bonus"
+          aria-label="VIP Bonus"
         >
-          <Crown className="w-4 h-4" />
+          <Crown className="w-4.5 h-4.5 fill-[#002E6E]/15 stroke-[2.3]" />
         </button>
         <button
           onClick={onOpenAddCustomer}

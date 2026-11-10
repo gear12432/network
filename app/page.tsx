@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Coins, Sparkles, Search } from 'lucide-react';
 import {
   INITIAL_USER_STATS,
@@ -1171,6 +1171,8 @@ function InvestmentAppMain() {
               onOpenAddCustomer={() => setActiveModal('add-customer')}
               onOpenCustomerList={() => setActiveModal('customer-list')}
               onOpenAdmin={() => setIsAdminRoute(true)}
+              onOpenVipBonus={() => setActiveModal('vip-bonus')}
+              onOpenWallet={() => setActiveTab('wallet')}
             />
             <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F2F8FC]">
               {renderScreenContent(false)}
@@ -1192,6 +1194,7 @@ function InvestmentAppMain() {
             onOpenNotifications={() => setActiveModal('notifications')}
             onOpenFullKyc={() => setActiveModal('full-kyc')}
             onOpenVipBonus={() => setActiveModal('vip-bonus')}
+            onOpenWallet={() => setActiveTab('wallet')}
             onOpenAdmin={() => setIsAdminRoute(true)}
           />
           <main className="flex-1 px-3.5 pt-3">
@@ -1417,14 +1420,23 @@ function InvestmentAppMain() {
         />
       </SlideFullScreenModal>
 
-      <SlideFullScreenModal
-        isOpen={activeModal === 'vip-bonus'}
-        onClose={() => setActiveModal('none')}
-        title="VIP Bonus"
-        theme="navy"
-      >
-        <UserVipBonusScreen stats={userStats} onClose={() => setActiveModal('none')} />
-      </SlideFullScreenModal>
+      {/* Full-Screen VIP Bonus Screen (No Header, No Toolbar, No Bottom Nav) */}
+      <AnimatePresence>
+        {activeModal === 'vip-bonus' && (
+          <UserVipBonusScreen
+            stats={userStats}
+            onClose={() => setActiveModal('none')}
+            onBonusClaimed={(claimedAmt, newTx) => {
+              setUserStats((prev) => ({
+                ...prev,
+                walletBalance: prev.walletBalance + claimedAmt,
+                totalEarned: prev.totalEarned + claimedAmt,
+              }));
+              setTransactions((prev) => [newTx, ...prev]);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
 
       {/* Official Government Investment Certificate Modal */}

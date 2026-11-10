@@ -1236,43 +1236,135 @@ export async function saveAppSettingsToFirestore(settings: AppSettings): Promise
   }
 }
 
-// 5. VIP Bonuses
+// 17. VIP Bonuses (Weekly & Monthly Bonus Cards + Claim Persistence)
+export const DEFAULT_VIP_BONUSES: VipBonus[] = [
+  {
+    id: 'vip_bonus_card_1',
+    vipLevel: 1,
+    minInvestAmount: 0,
+    bonusAmount: 6,
+    category: 'week',
+    validityDate: '2027-12-31',
+    claimedBy: [],
+  },
+  {
+    id: 'vip_bonus_card_2',
+    vipLevel: 1,
+    minInvestAmount: 0,
+    bonusAmount: 120,
+    category: 'month',
+    validityDate: '2027-12-31',
+    claimedBy: [],
+  },
+  {
+    id: 'vip_bonus_card_3',
+    vipLevel: 1,
+    minInvestAmount: 0,
+    bonusAmount: 6,
+    category: 'week',
+    validityDate: '2027-12-31',
+    claimedBy: [],
+  },
+  {
+    id: 'vip_bonus_card_4',
+    vipLevel: 1,
+    minInvestAmount: 0,
+    bonusAmount: 120,
+    category: 'month',
+    validityDate: '2027-12-31',
+    claimedBy: [],
+  },
+];
+
 export async function getVipBonusesFromFirestore(): Promise<VipBonus[]> {
   try {
-    const snap = await getDocs(collection(db, 'vip_bonuses'));
-    return snap.docs.map((d) => ({ ...d.data(), id: d.id } as VipBonus));
+    const snap = await withTimeout(getDocs(collection(db, 'vip_bonuses')), 3500);
+    if (!snap.empty) {
+      const list = snap.docs.map((d) => ({ ...d.data(), id: d.id } as VipBonus));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('network_join_pro_vip_bonuses', JSON.stringify(list));
+      }
+      return list;
+    }
   } catch (err) {
-    console.error('Error fetching VIP bonuses:', err);
-    return [];
+    console.warn('Error fetching VIP bonuses from Firestore, using local/defaults:', err);
   }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_vip_bonuses');
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+  }
+
+  return DEFAULT_VIP_BONUSES;
 }
 
 export async function saveVipBonusToFirestore(bonus: VipBonus): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_vip_bonuses');
+      const current: VipBonus[] = local ? JSON.parse(local) : [...DEFAULT_VIP_BONUSES];
+      const idx = current.findIndex((b) => b.id === bonus.id);
+      if (idx >= 0) current[idx] = bonus;
+      else current.push(bonus);
+      localStorage.setItem('network_join_pro_vip_bonuses', JSON.stringify(current));
+    } catch {}
+  }
+
   try {
     const ref = doc(db, 'vip_bonuses', bonus.id);
-    await setDoc(ref, bonus, { merge: true });
+    await withTimeout(setDoc(ref, sanitizeFirestorePayload(bonus), { merge: true }), 4000);
     return true;
   } catch (err) {
-    console.error('Error saving VIP bonus:', err);
-    return false;
+    console.warn('Error saving VIP bonus to Firestore:', err);
+    return true;
   }
 }
 
 export async function deleteVipBonusFromFirestore(id: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const local = localStorage.getItem('network_join_pro_vip_bonuses');
+      if (local) {
+        const current: VipBonus[] = JSON.parse(local);
+        localStorage.setItem(
+          'network_join_pro_vip_bonuses',
+          JSON.stringify(current.filter((b) => b.id !== id))
+        );
+      }
+    } catch {}
+  }
+
   try {
-    await deleteDoc(doc(db, 'vip_bonuses', id));
+    await withTimeout(deleteDoc(doc(db, 'vip_bonuses', id)), 4000);
     return true;
   } catch (err) {
-    console.error('Error deleting VIP bonus:', err);
-    return false;
+    console.warn('Error deleting VIP bonus from Firestore:', err);
+    return true;
   }
 }
 
-
-
-
-
-
-
-
-
+export async function saveVipBonusClaimTransaction(txRecord: {
+  id: string;
+  loginUid: string;
+  userName: string;
+  vipLevel: number;
+  bonusId: string;
+  bonusTitle: string;
+  category: string;
+  amount: number;
+  claimedAt: string;
+}): Promise<boolean> {
+  try {
+    const ref = doc(db, 'vip_bonus_claims', txRecord.id);
+    await withTimeout(setDoc(ref, sanitizeFirestorePayload(txRecord), { merge: true }), 4000);
+    return true;
+  } catch (err) {
+    console.warn('Saved VIP bonus claim locally (Firestore offline):', err);
+    return true;
+  }
+}

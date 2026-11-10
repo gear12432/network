@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Search, Bell, Plus, ArrowUpRight, Crown, LayoutGrid, Smartphone, UserPlus, Users, Maximize2, Settings } from 'lucide-react';
+import { Search, Bell, Plus, ArrowUpRight, Crown, LayoutGrid, Smartphone, UserPlus, Users, Maximize2, Settings, Wallet } from 'lucide-react';
 import { UserStats } from '@/types/investment';
 import { INITIAL_USER_STATS } from '@/data/initialData';
 
@@ -21,6 +21,8 @@ interface DesktopHeaderProps {
   onOpenCustomerList?: () => void;
   onToggleMobileLayout?: () => void;
   onOpenAdmin?: () => void;
+  onOpenVipBonus?: () => void;
+  onOpenWallet?: () => void;
 }
 
 export default function DesktopHeader({
@@ -36,6 +38,8 @@ export default function DesktopHeader({
   onOpenCustomerList,
   onToggleMobileLayout,
   onOpenAdmin: _onOpenAdmin,
+  onOpenVipBonus,
+  onOpenWallet,
 }: DesktopHeaderProps) {
   const currentStats = stats || userStats || INITIAL_USER_STATS;
 
@@ -76,7 +80,7 @@ export default function DesktopHeader({
           </div>
         </div>
 
-        {/* Right: Buy Premium + Fullscreen + Settings + Notifications + Avatar */}
+        {/* Right: VIP Bonus + Wallet Icon + Fullscreen + Settings + Notifications + Avatar */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Mobile View Switcher button for desktop users */}
           {onToggleMobileLayout && (
@@ -90,23 +94,26 @@ export default function DesktopHeader({
             </button>
           )}
 
-          {/* Buy Premium Button */}
+          {/* Wallet Icon Button -> Opens Wallet Screen */}
           <button
-            onClick={onOpenProfile}
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white text-xs font-black shadow-xs border border-[#00B9F1]/40 transition-all cursor-pointer"
-            title="Buy VIP Premium Upgrade"
+            type="button"
+            onClick={onOpenWallet || _onOpenDeposit}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F2F8FC] hover:bg-[#E5F3FC] active:scale-95 border border-[#D0E4F5] flex items-center justify-center text-[#002E6E] hover:text-[#00B9F1] transition-all shadow-2xs cursor-pointer"
+            title="Open Wallet"
           >
-            <Crown className="w-3.5 h-3.5 text-[#00B9F1]" />
-            <span>Buy Premium</span>
+            <Wallet className="w-4 h-4 stroke-[2.2]" />
           </button>
 
-          {/* Wallet Balance Chip */}
-          <div className="flex items-center gap-2 bg-[#F2F8FC] border border-[#D0E4F5] rounded-xl px-3 py-1.5 shadow-2xs">
-            <span className="text-[10px] font-bold text-[#172B75]/70 uppercase tracking-wider">Balance:</span>
-            <span className="text-xs sm:text-sm font-extrabold text-[#002E6E] font-mono">
-              ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
-            </span>
-          </div>
+          {/* VIP Bonus Button */}
+          <button
+            type="button"
+            onClick={onOpenVipBonus || onOpenProfile}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-b from-[#FFE066] to-[#FFC928] hover:brightness-105 active:scale-95 text-[#002E6E] text-xs font-black shadow-xs border border-[#D49B00]/60 transition-all cursor-pointer"
+            title="Open VIP Bonus Screen"
+          >
+            <Crown className="w-3.5 h-3.5 fill-[#002E6E]/15 stroke-[2.4]" />
+            <span className="hidden md:inline">VIP Bonus</span>
+          </button>
 
           {/* Fullscreen Toggle */}
           <button
