@@ -24,7 +24,11 @@ export default function MobileHeader({
   stats,
   userStats,
   activeTab = 'home',
+  onOpenDeposit,
+  onOpenHistory,
+  onOpenAddCustomer,
   onOpenProfile,
+  onOpenNotifications,
   onOpenVipBonus,
 }: MobileHeaderProps) {
   const [profilePhoto, setProfilePhoto] = React.useState<string | null>(null);

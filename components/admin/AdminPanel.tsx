@@ -5427,14 +5427,8 @@ export default function AdminPanel() {
                       Live Sync
                     </span>
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Configure application logo, official company details, and registered address. These details appear automatically on the user&apos;s Investment Bond Certificate.
-                  </p>
                 </div>
               </div>
-        {activeTab === 'vip-bonus' && (
-          <VipBonusManagement />
-        )}
 
               <div className="flex items-center gap-2">
                 <button
@@ -6018,6 +6012,9 @@ export default function AdminPanel() {
               </div>
             </div>
           </div>
+        )}
+        {activeTab === 'vip-bonus' && (
+          <VipBonusManagement />
         )}
       </main>
 
