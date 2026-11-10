@@ -168,6 +168,7 @@ export interface VipBonus {
   bonusAmount: number;
   category: 'week' | 'month' | 'vipLevelOffer';
   validityDate: string;
+  iconUrl?: string;
   createdAt?: string;
   durationDays?: number; // e.g., 7 for Weekly, 30 for Monthly
   claimedBy?: string[]; // Array of User IDs who claimed it

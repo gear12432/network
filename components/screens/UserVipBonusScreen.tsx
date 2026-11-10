@@ -21,6 +21,262 @@ interface UserVipBonusScreenProps {
   onBonusClaimed?: (amount: number, tx: Transaction) => void;
 }
 
+// High-definition 3D Category Icon Component for each Bonus Row
+function BonusCategory3DIcon({
+  category,
+  iconUrl,
+  idx,
+}: {
+  category: 'week' | 'month' | 'vipLevelOffer';
+  iconUrl?: string;
+  idx: number;
+}) {
+  if (iconUrl) {
+    return (
+      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-b from-[#EAF6FF] to-[#D4EBFF] border border-[#91CFFF] flex items-center justify-center shrink-0 overflow-hidden shadow-[0_2px_6px_rgba(0,110,215,0.18)]">
+        <img
+          src={iconUrl}
+          alt={category}
+          className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-xs"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-b from-[#EAF6FF] to-[#D4EBFF] border border-[#91CFFF] flex items-center justify-center shrink-0 relative shadow-[0_2px_6px_rgba(0,110,215,0.18),inset_0_1px_2px_rgba(255,255,255,0.9)]">
+      {category === 'week' && (
+        /* High-Quality 3D Royal Blue Gift Box with Glossy Golden Ribbon & Sparkles */
+        <svg
+          viewBox="0 0 64 64"
+          className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 drop-shadow-[0_2px_3px_rgba(0,46,110,0.3)]"
+        >
+          <defs>
+            <linearGradient id={`giftBoxBlue3D_${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#38A1FF" />
+              <stop offset="50%" stopColor="#0066E6" />
+              <stop offset="100%" stopColor="#00368C" />
+            </linearGradient>
+            <linearGradient id={`giftLidBlue3D_${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#5BB4FF" />
+              <stop offset="100%" stopColor="#0055CC" />
+            </linearGradient>
+            <linearGradient id={`giftRibbonGold3D_${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FFF59D" />
+              <stop offset="45%" stopColor="#FFC928" />
+              <stop offset="100%" stopColor="#B86B00" />
+            </linearGradient>
+          </defs>
+          {/* Golden Sparkle Stars */}
+          <path d="M8 16 L9.8 12 L11.6 16 L15.6 17.8 L11.6 19.6 L9.8 23.6 L8 19.6 L4 17.8 Z" fill="#FFC928" />
+          <path d="M54 12 L55.4 9 L56.8 12 L59.8 13.4 L56.8 14.8 L55.4 17.8 L54 14.8 L51 13.4 Z" fill="#FFC928" />
+          <path d="M55 43 L56.3 40.2 L57.6 43 L60.4 44.3 L57.6 45.6 L56.3 48.4 L55 45.6 L52.2 44.3 Z" fill="#FFC928" />
+          <circle cx="9" cy="45" r="2.2" fill="#FFC928" />
+
+          {/* Lower 3D Gift Box Body */}
+          <rect
+            x="13"
+            y="27"
+            width="38"
+            height="27"
+            rx="4.5"
+            fill={`url(#giftBoxBlue3D_${idx})`}
+            stroke="#002B66"
+            strokeWidth="1.3"
+          />
+          {/* Glossy Highlight on Box */}
+          <rect x="15" y="29" width="12" height="22" rx="2" fill="white" fillOpacity="0.14" />
+
+          {/* Upper 3D Gift Box Lid */}
+          <rect
+            x="10"
+            y="19"
+            width="44"
+            height="9.5"
+            rx="3.5"
+            fill={`url(#giftLidBlue3D_${idx})`}
+            stroke="#002B66"
+            strokeWidth="1.3"
+          />
+          <rect x="12" y="20.5" width="40" height="2.5" rx="1.2" fill="white" fillOpacity="0.35" />
+
+          {/* Golden Vertical & Horizontal Ribbons */}
+          <rect
+            x="28"
+            y="19"
+            width="8"
+            height="35"
+            fill={`url(#giftRibbonGold3D_${idx})`}
+            stroke="#8C5000"
+            strokeWidth="0.7"
+          />
+          <rect
+            x="13"
+            y="36"
+            width="38"
+            height="6.5"
+            fill={`url(#giftRibbonGold3D_${idx})`}
+            stroke="#8C5000"
+            strokeWidth="0.7"
+          />
+
+          {/* 3D Golden Bow Loops */}
+          <path
+            d="M32 19 C21 8, 12 13, 17 19.5 C20 22.5, 27 20.5, 32 19 Z"
+            fill={`url(#giftRibbonGold3D_${idx})`}
+            stroke="#8C5000"
+            strokeWidth="1.1"
+          />
+          <path
+            d="M32 19 C43 8, 52 13, 47 19.5 C44 22.5, 37 20.5, 32 19 Z"
+            fill={`url(#giftRibbonGold3D_${idx})`}
+            stroke="#8C5000"
+            strokeWidth="1.1"
+          />
+          <circle cx="32" cy="18.5" r="3.8" fill="#FFF176" stroke="#8C5000" strokeWidth="1.1" />
+        </svg>
+      )}
+
+      {category === 'month' && (
+        /* High-Quality 3D Glossy Blue Calendar with Golden Rings & Lower-Right Clock */
+        <svg
+          viewBox="0 0 64 64"
+          className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 drop-shadow-[0_2px_3px_rgba(0,46,110,0.28)]"
+        >
+          <defs>
+            <linearGradient id={`calHeader3D_${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#2998FF" />
+              <stop offset="100%" stopColor="#004FC4" />
+            </linearGradient>
+            <linearGradient id={`calRingGold_${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FFF176" />
+              <stop offset="100%" stopColor="#D48800" />
+            </linearGradient>
+          </defs>
+          {/* Calendar Base Sheet */}
+          <rect
+            x="9"
+            y="13"
+            width="39"
+            height="37"
+            rx="7.5"
+            fill="#FFFFFF"
+            stroke="#005CE6"
+            strokeWidth="2.3"
+          />
+          {/* Calendar Top Blue Header */}
+          <path
+            d="M9 20.5 C9 16 12.5 13 16.5 13 L40.5 13 C44.5 13 48 16 48 20.5 L48 25 L9 25 Z"
+            fill={`url(#calHeader3D_${idx})`}
+          />
+          {/* Glossy Header Strip */}
+          <rect x="13" y="15" width="31" height="2.5" rx="1.2" fill="white" fillOpacity="0.35" />
+
+          {/* Golden Binder Rings */}
+          <rect
+            x="17.5"
+            y="8.5"
+            width="5"
+            height="9"
+            rx="2.5"
+            fill={`url(#calRingGold_${idx})`}
+            stroke="#7A4400"
+            strokeWidth="0.9"
+          />
+          <rect
+            x="34.5"
+            y="8.5"
+            width="5"
+            height="9"
+            rx="2.5"
+            fill={`url(#calRingGold_${idx})`}
+            stroke="#7A4400"
+            strokeWidth="0.9"
+          />
+
+          {/* Calendar Date Grid */}
+          <rect x="15" y="29.5" width="5.5" height="4.8" rx="1.2" fill="#1E78FF" />
+          <rect x="23.5" y="29.5" width="5.5" height="4.8" rx="1.2" fill="#1E78FF" />
+          <rect x="32" y="29.5" width="5.5" height="4.8" rx="1.2" fill="#FFC928" />
+          <rect x="15" y="37.5" width="5.5" height="4.8" rx="1.2" fill="#1E78FF" />
+          <rect x="23.5" y="37.5" width="5.5" height="4.8" rx="1.2" fill="#1E78FF" />
+
+          {/* 3D Clock Badge on Bottom-Right */}
+          <circle
+            cx="45"
+            cy="44.5"
+            r="11.5"
+            fill="#E8F4FF"
+            stroke="#004FC4"
+            strokeWidth="2.6"
+          />
+          <circle cx="45" cy="44.5" r="8.5" fill="#FFFFFF" />
+          <path
+            d="M45 39.5 L45 44.5 L48.8 46.5"
+            stroke="#002E6E"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="45" cy="44.5" r="1.4" fill="#FFC928" />
+        </svg>
+      )}
+
+      {category === 'vipLevelOffer' && (
+        /* High-Quality 3D Golden VIP Crown & Royal Diamond Trophy Icon */
+        <svg
+          viewBox="0 0 64 64"
+          className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 drop-shadow-[0_2px_3px_rgba(184,121,8,0.4)]"
+        >
+          <defs>
+            <linearGradient id={`vipShieldBlue_${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0052D4" />
+              <stop offset="100%" stopColor="#001F54" />
+            </linearGradient>
+            <linearGradient id={`vipCrownOfferGold_${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FFF59D" />
+              <stop offset="50%" stopColor="#FFC928" />
+              <stop offset="100%" stopColor="#B86B00" />
+            </linearGradient>
+          </defs>
+          {/* Sparkles */}
+          <path d="M10 15 L11.5 11.5 L13 15 L16.5 16.5 L13 18 L11.5 21.5 L10 18 L6.5 16.5 Z" fill="#FFC928" />
+          <path d="M53 14 L54.5 10.5 L56 14 L59.5 15.5 L56 17 L54.5 20.5 L53 17 L49.5 15.5 Z" fill="#FFC928" />
+
+          {/* Royal Hexagonal Medallion Base */}
+          <path
+            d="M32 7 L52 17 L52 39 C52 48 42 54 32 57 C22 54 12 48 12 39 L12 17 Z"
+            fill={`url(#vipShieldBlue_${idx})`}
+            stroke="#FFC928"
+            strokeWidth="2.4"
+          />
+          {/* Inner 3D Golden Crown */}
+          <path
+            d="M19 41 L16 24 L25.5 31.5 L32 19 L38.5 31.5 L48 24 L45 41 Z"
+            fill={`url(#vipCrownOfferGold_${idx})`}
+            stroke="#7A4400"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          <rect
+            x="19"
+            y="42.5"
+            width="26"
+            height="4.5"
+            rx="2"
+            fill={`url(#vipCrownOfferGold_${idx})`}
+            stroke="#7A4400"
+            strokeWidth="1.2"
+          />
+          <circle cx="16" cy="21.5" r="2.3" fill="#FFF59D" />
+          <circle cx="32" cy="16.5" r="2.8" fill="#00FF00" stroke="#7A4400" strokeWidth="0.9" />
+          <circle cx="48" cy="21.5" r="2.3" fill="#FFF59D" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
 export default function UserVipBonusScreen({
   stats,
   onClose,
@@ -177,7 +433,7 @@ export default function UserVipBonusScreen({
     }
 
     if (!targetMs || isNaN(targetMs)) {
-      return `${durationDays}d`;
+      return `${durationDays}d left`;
     }
 
     const diffMs = Math.max(0, targetMs - now);
@@ -359,7 +615,7 @@ export default function UserVipBonusScreen({
             </div>
           </div>
 
-          {/* 2. TOP VIP LEVEL BADGE (Dark Navy Pill with Gold Border & Golden Text/Crown as in reference image) */}
+          {/* 2. TOP VIP LEVEL BADGE (Dark Navy Pill with Gold Border & Golden Text/Crown) */}
           <div className="w-full flex flex-col items-center shrink-0 mt-1.5 sm:mt-2 mb-1 z-10">
             <div
               className="relative px-6 sm:px-7 py-1.5 sm:py-2 rounded-full border-[2.5px] border-[#FFC928] flex items-center justify-center gap-2.5 shadow-[0_5px_14px_rgba(0,46,110,0.35),0_0_0_2px_rgba(255,201,40,0.25)]"
@@ -420,10 +676,10 @@ export default function UserVipBonusScreen({
             </div>
           </div>
 
-          {/* 3. FRAMED MAIN BONUS BOX (Matches uploaded screenshot 20261110_144324_9a3fb1f8.jpg) */}
+          {/* 3. FRAMED MAIN BONUS BOX */}
           <div className="w-full px-3.5 sm:px-5 flex-1 flex flex-col justify-center min-h-0 my-1">
             <div
-              className="relative w-full flex-1 max-h-[450px] rounded-[24px] border-[1.8px] border-[#0D2B6B] px-3 sm:px-4 py-2.5 flex flex-col justify-between overflow-hidden shadow-[0_10px_28px_rgba(0,68,170,0.16),inset_0_0_18px_rgba(255,255,255,0.9)]"
+              className="relative w-full flex-1 max-h-[465px] rounded-[24px] border-[1.8px] border-[#0D2B6B] px-2.5 sm:px-4 py-2.5 flex flex-col justify-between overflow-hidden shadow-[0_10px_28px_rgba(0,68,170,0.16),inset_0_0_18px_rgba(255,255,255,0.9)]"
               style={{
                 background:
                   'linear-gradient(180deg, #F7FBFF 0%, #FFFFFF 38%, #EDF6FF 78%, #E0F0FF 100%)',
@@ -454,14 +710,12 @@ export default function UserVipBonusScreen({
                       <stop offset="100%" stopColor="#00D2FF" />
                     </linearGradient>
                   </defs>
-                  {/* Center Diamond & Loop */}
                   <path
                     d="M250 82 L261 64 L250 48 L239 64 Z"
                     stroke="url(#boxTopOrnamentGrad)"
                     strokeWidth="6.5"
                     fill="#E6F5FF"
                   />
-                  {/* Left Symmetrical Scroll */}
                   <path
                     d="M250 58 C205 20, 140 20, 95 48 C58 70, 18 62, 20 34 C22 14, 48 12, 58 28 C64 40, 50 52, 38 44"
                     stroke="url(#boxTopOrnamentGrad)"
@@ -474,7 +728,6 @@ export default function UserVipBonusScreen({
                     strokeWidth="6"
                     strokeLinecap="round"
                   />
-                  {/* Right Symmetrical Scroll */}
                   <path
                     d="M250 58 C295 20, 360 20, 405 48 C442 70, 482 62, 480 34 C478 14, 452 12, 442 28 C436 40, 450 52, 462 44"
                     stroke="url(#boxTopOrnamentGrad)"
@@ -490,7 +743,7 @@ export default function UserVipBonusScreen({
                 </svg>
               </div>
 
-              {/* Compact Small-Height Bonus Cards List Inside the Box */}
+              {/* Compact Small-Height Bonus Cards List Inside the Box (with distinct High-Quality Category Icon on Left) */}
               <div className="relative z-10 w-full flex-1 overflow-y-auto flex flex-col justify-center gap-2 sm:gap-2.5 py-1 px-0.5">
                 {eligibleBonuses.length === 0 ? (
                   <div className="bg-white/95 border border-[#91CFFF] rounded-2xl p-4 text-center shadow-2xs space-y-1.5 my-auto">
@@ -509,14 +762,13 @@ export default function UserVipBonusScreen({
                   </div>
                 ) : (
                   eligibleBonuses.map((bonus, idx) => {
-                    const isMonthly =
-                      bonus.category === 'month' || bonus.category === 'vipLevelOffer';
-                    const title =
-                      bonus.category === 'vipLevelOffer'
-                        ? `VIP ${bonus.vipLevel} Bonus`
-                        : isMonthly
-                        ? 'monthly bonus'
-                        : 'weekly bonus';
+                    const isMonthly = bonus.category === 'month';
+                    const isVipOffer = bonus.category === 'vipLevelOffer';
+                    const title = isVipOffer
+                      ? `VIP ${bonus.vipLevel} Bonus`
+                      : isMonthly
+                      ? 'Monthly Bonus'
+                      : 'Weekly Bonus';
 
                     const isClaimed =
                       (bonus.claimedBy || []).includes(userId) ||
@@ -527,24 +779,32 @@ export default function UserVipBonusScreen({
                     return (
                       <div
                         key={bonus.id || idx}
-                        className="w-full h-[46px] sm:h-[50px] bg-gradient-to-r from-[#FFFFFF] via-[#F9FCFF] to-[#FFFFFF] border-[1.5px] border-[#9AC8F5] rounded-[14px] px-3 sm:px-3.5 flex items-center justify-between shadow-[0_3px_8px_rgba(0,110,215,0.1),inset_0_1px_0_rgba(255,255,255,0.95)] transition-all shrink-0"
+                        className="w-full h-[52px] sm:h-[56px] bg-gradient-to-r from-[#FFFFFF] via-[#F9FCFF] to-[#FFFFFF] border-[1.5px] border-[#9AC8F5] rounded-[16px] px-2.5 sm:px-3.5 flex items-center justify-between shadow-[0_3px_8px_rgba(0,110,215,0.1),inset_0_1px_0_rgba(255,255,255,0.95)] transition-all shrink-0"
                       >
-                        {/* Left: Compact Bonus Title + 7-Day Validity Tag */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-extrabold text-[#12265E] text-[13px] sm:text-[15px] tracking-tight capitalize truncate">
-                            {title}
-                          </span>
-                          <span
-                            className="text-[9px] sm:text-[10px] font-bold text-[#0052B4] bg-[#E8F4FF] border border-[#91CFFF]/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shrink-0"
-                            title="Auto-deletes after validity ends"
-                          >
-                            <Clock className="w-2.5 h-2.5 text-[#00B9F1]" />
-                            {remainingText}
-                          </span>
+                        {/* Left: High-Quality 3D Category Icon (Marked Spot) + Title + Validity Tag */}
+                        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                          <BonusCategory3DIcon
+                            category={bonus.category || 'week'}
+                            iconUrl={bonus.iconUrl}
+                            idx={idx}
+                          />
+
+                          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-wrap">
+                            <span className="font-extrabold text-[#12265E] text-[13px] sm:text-[15px] tracking-tight truncate">
+                              {title}
+                            </span>
+                            <span
+                              className="text-[9px] sm:text-[10px] font-bold text-[#0052B4] bg-[#E8F4FF] border border-[#91CFFF]/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shrink-0"
+                              title="Auto-deletes after validity ends"
+                            >
+                              <Clock className="w-2.5 h-2.5 text-[#00B9F1]" />
+                              {remainingText}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Right: Bold Golden Amount + Glossy Dark Navy Claim Button */}
-                        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                           <span
                             className="font-black text-base sm:text-lg tracking-tight"
                             style={{
@@ -559,7 +819,7 @@ export default function UserVipBonusScreen({
                             type="button"
                             disabled={isClaimed || isProcessing}
                             onClick={(e) => handleClaimBonus(bonus, e)}
-                            className={`min-w-[74px] sm:min-w-[82px] h-[31px] sm:h-[34px] px-3.5 rounded-full font-extrabold text-xs sm:text-sm text-white flex items-center justify-center transition-all border ${
+                            className={`min-w-[72px] sm:min-w-[82px] h-[31px] sm:h-[34px] px-3 sm:px-3.5 rounded-full font-extrabold text-xs sm:text-sm text-white flex items-center justify-center transition-all border ${
                               isClaimed
                                 ? 'bg-[#8FA3B8] border-[#B0C2D4] opacity-60 blur-[0.6px] cursor-not-allowed shadow-none select-none'
                                 : 'bg-gradient-to-b from-[#073A8C] via-[#032461] to-[#021740] hover:brightness-110 active:scale-95 border-[#0099F7] shadow-[0_2px_7px_rgba(0,46,110,0.4),inset_0_1px_2px_rgba(0,210,255,0.45)] cursor-pointer'
@@ -590,7 +850,6 @@ export default function UserVipBonusScreen({
                       <stop offset="100%" stopColor="#00C6FF" />
                     </linearGradient>
                   </defs>
-                  {/* Center Peak & Double Loop */}
                   <path
                     d="M250 14 L263 34 L250 52 L237 34 Z"
                     stroke="url(#boxBottomOrnamentGrad)"
@@ -609,7 +868,6 @@ export default function UserVipBonusScreen({
                     strokeWidth="8.5"
                     strokeLinecap="round"
                   />
-                  {/* Left Symmetrical Scroll */}
                   <path
                     d="M237 36 C192 68, 136 68, 92 44 C54 22, 18 30, 20 58 C22 78, 48 82, 58 64 C64 52, 50 42, 38 48"
                     stroke="url(#boxBottomOrnamentGrad)"
@@ -622,7 +880,6 @@ export default function UserVipBonusScreen({
                     strokeWidth="5.5"
                     strokeLinecap="round"
                   />
-                  {/* Right Symmetrical Scroll */}
                   <path
                     d="M263 36 C308 68, 364 68, 408 44 C446 22, 482 30, 480 58 C478 78, 452 82, 442 64 C436 52, 450 42, 462 48"
                     stroke="url(#boxBottomOrnamentGrad)"
