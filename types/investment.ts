@@ -161,6 +161,16 @@ export interface AppSettings {
   updatedAt?: string;
 }
 
+export interface VipBonus {
+  id: string;
+  vipLevel: number;
+  minInvestAmount: number;
+  bonusAmount: number;
+  category: 'week' | 'month' | 'vipLevelOffer';
+  validityDate: string;
+  claimedBy?: string[]; // Array of User IDs who claimed it
+}
+
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   appLogo: '',
   appName: 'Network Join Pro',

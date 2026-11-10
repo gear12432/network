@@ -31,6 +31,7 @@ import NetworkScreen from '@/components/screens/NetworkScreen';
 import EarningsScreen from '@/components/screens/EarningsScreen';
 import WalletScreen from '@/components/screens/WalletScreen';
 import ProfileScreen from '@/components/screens/ProfileScreen';
+import UserVipBonusScreen from '@/components/screens/UserVipBonusScreen';
 import AuthScreen from '@/components/screens/AuthScreen';
 import SlideFullScreenModal from '@/components/modals/SlideFullScreenModal';
 import PlanDetailContent from '@/components/modals/PlanDetailContent';
@@ -208,6 +209,7 @@ function InvestmentAppMain() {
     | 'add-customer'
     | 'customer-list'
     | 'purchase-history'
+    | 'vip-bonus'
   >('none');
   const [selectedPlanForDetail, setSelectedPlanForDetail] = useState<InvestmentPlan | null>(null);
   const [selectedCustomerForConfirm, setSelectedCustomerForConfirm] = useState<Customer | null>(null);
@@ -1189,6 +1191,7 @@ function InvestmentAppMain() {
             onOpenProfile={() => setActiveTab('profile')}
             onOpenNotifications={() => setActiveModal('notifications')}
             onOpenFullKyc={() => setActiveModal('full-kyc')}
+            onOpenVipBonus={() => setActiveModal('vip-bonus')}
             onOpenAdmin={() => setIsAdminRoute(true)}
           />
           <main className="flex-1 px-3.5 pt-3">
@@ -1412,6 +1415,15 @@ function InvestmentAppMain() {
           onRefreshInvestments={() => {}}
           onViewCertificate={handleViewCertificate}
         />
+      </SlideFullScreenModal>
+
+      <SlideFullScreenModal
+        isOpen={activeModal === 'vip-bonus'}
+        onClose={() => setActiveModal('none')}
+        title="VIP Bonus"
+        theme="navy"
+      >
+        <UserVipBonusScreen stats={userStats} onClose={() => setActiveModal('none')} />
       </SlideFullScreenModal>
 
 

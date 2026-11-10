@@ -17,17 +17,15 @@ interface MobileHeaderProps {
   onOpenNotifications?: () => void;
   onOpenFullKyc?: () => void;
   onOpenAdmin?: () => void;
+  onOpenVipBonus?: () => void;
 }
 
 export default function MobileHeader({
   stats,
   userStats,
   activeTab = 'home',
-  onOpenDeposit,
-  onOpenHistory,
-  onOpenAddCustomer,
   onOpenProfile,
-  onOpenNotifications,
+  onOpenVipBonus,
 }: MobileHeaderProps) {
   const [profilePhoto, setProfilePhoto] = React.useState<string | null>(null);
 
@@ -76,24 +74,21 @@ export default function MobileHeader({
         </div>
       </div>
 
-      {/* Right: Wallet pill, + Customer button, History, Notification Bell */}
+      {/* Right: Wallet icon, VIP Bonus button, Notifications */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* Wallet pill */}
-        <div className="flex items-center bg-[#F2F8FC] border border-[#D0E4F5] rounded-full px-2.5 py-1 text-[#172B75] shadow-2xs">
-          <Wallet className="w-4.5 h-4.5 text-[#002E6E] mr-1.5 shrink-0 stroke-[2.2]" />
-          <span className="text-xs sm:text-sm font-black text-[#172B75] mr-1.5 font-mono">
-            ₹{(currentStats?.walletBalance ?? 0).toLocaleString('en-IN')}
-          </span>
-          <button
-            onClick={onOpenDeposit}
-            className="w-5 h-5 rounded-full bg-[#002E6E] hover:bg-[#00204d] text-white flex items-center justify-center hover:brightness-110 transition-all shadow-xs active:scale-90 shrink-0 cursor-pointer border border-[#00B9F1]/40"
-            title="Add Money"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[3]" />
-          </button>
+        {/* Wallet icon */}
+        <div className="flex items-center bg-[#F2F8FC] border border-[#D0E4F5] rounded-full px-2 py-1 text-[#172B75] shadow-2xs">
+          <Wallet className="w-4.5 h-4.5 text-[#002E6E] stroke-[2.2]" />
         </div>
 
-        {/* + Customer button */}
+        {/* VIP Bonus button */}
+        <button
+          onClick={onOpenVipBonus}
+          className="flex items-center gap-1 bg-[#FFC928] hover:bg-[#e6b424] text-[#002E6E] font-black px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"
+          title="VIP Bonus"
+        >
+          <Crown className="w-4 h-4" />
+        </button>
         <button
           onClick={onOpenAddCustomer}
           className="flex items-center gap-1 bg-[#002E6E] hover:bg-[#00204d] active:scale-95 text-white border border-[#00B9F1]/50 text-xs font-bold px-2.5 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer"

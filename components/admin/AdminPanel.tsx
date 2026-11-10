@@ -93,6 +93,7 @@ import {
 import { AppSettings, DEFAULT_APP_SETTINGS } from '@/types/investment';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { INITIAL_PLANS } from '@/data/initialData';
+import VipBonusManagement from './VipBonusManagement';
 
 
 export default function AdminPanel() {
@@ -109,6 +110,7 @@ export default function AdminPanel() {
     | 'settings'
     | 'popup'
     | 'app-settings'
+    | 'vip-bonus'
   >('dashboard');
 
   // App Settings & Certificate Configuration State
@@ -1655,6 +1657,7 @@ export default function AdminPanel() {
                         { id: 'settings', label: 'System Settings', icon: Settings },
                         { id: 'popup', label: 'Home Popup Notice', icon: Megaphone },
                         { id: 'app-settings', label: 'App Settings', icon: SlidersHorizontal },
+                        { id: 'vip-bonus', label: 'VIP Bonus Settings', icon: Crown },
                       ].map((item) => {
 
                         const Icon = item.icon;
@@ -1719,9 +1722,9 @@ export default function AdminPanel() {
         {/* -----------------------------------------------------------------------
             RIGHT MAIN VIEWPORT (With Sub-Header Breadcrumbs & FAB ADMIN Card Layout)
             ----------------------------------------------------------------------- */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' || activeTab === 'app-settings' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'settings' || activeTab === 'withdrawals' || activeTab === 'contact' || activeTab === 'app-settings' || activeTab === 'vip-bonus' ? 'p-0 sm:p-3 md:p-6 space-y-2 sm:space-y-4' : 'p-4 md:p-6 space-y-5'} w-full`}>
           {/* Sub-Header / Breadcrumb Bar (Hidden on Contact, Withdrawals, Dashboard, Popup & App Settings) */}
-          {activeTab !== 'contact' && activeTab !== 'withdrawals' && activeTab !== 'dashboard' && activeTab !== 'popup' && activeTab !== 'app-settings' && (
+          {activeTab !== 'contact' && activeTab !== 'withdrawals' && activeTab !== 'dashboard' && activeTab !== 'popup' && activeTab !== 'app-settings' && activeTab !== 'vip-bonus' && (
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
               <div>
                 <h2 className="text-xl font-black text-slate-800 tracking-tight capitalize flex items-center gap-2">
@@ -1733,6 +1736,7 @@ export default function AdminPanel() {
                     {activeTab === 'sliders' && 'Home Screen Sliders'}
                     {activeTab === 'settings' && 'System Settings'}
                     {activeTab === 'gateway' && 'Payment Gateway Settings'}
+                    {activeTab === 'vip-bonus' && 'VIP Bonus Management'}
                   </span>
                   <span className="text-xs font-normal text-slate-400">Control panel</span>
                 </h2>
@@ -5428,6 +5432,9 @@ export default function AdminPanel() {
                   </p>
                 </div>
               </div>
+        {activeTab === 'vip-bonus' && (
+          <VipBonusManagement />
+        )}
 
               <div className="flex items-center gap-2">
                 <button

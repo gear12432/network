@@ -15,7 +15,7 @@ import {
   Firestore,
 } from 'firebase/firestore';
 import firebaseConfig from '@/firebase-applet-config.json';
-import { AppSettings, DEFAULT_APP_SETTINGS } from '@/types/investment';
+import { AppSettings, DEFAULT_APP_SETTINGS, VipBonus } from '@/types/investment';
 
 export const EXACT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDiJz5mrUCIzfPipdk31jHXsIg3z6XqXco",
@@ -1235,6 +1235,39 @@ export async function saveAppSettingsToFirestore(settings: AppSettings): Promise
     return { success: false, error: err instanceof Error ? err.message : 'Saved locally only' };
   }
 }
+
+// 5. VIP Bonuses
+export async function getVipBonusesFromFirestore(): Promise<VipBonus[]> {
+  try {
+    const snap = await getDocs(collection(db, 'vip_bonuses'));
+    return snap.docs.map((d) => ({ ...d.data(), id: d.id } as VipBonus));
+  } catch (err) {
+    console.error('Error fetching VIP bonuses:', err);
+    return [];
+  }
+}
+
+export async function saveVipBonusToFirestore(bonus: VipBonus): Promise<boolean> {
+  try {
+    const ref = doc(db, 'vip_bonuses', bonus.id);
+    await setDoc(ref, bonus, { merge: true });
+    return true;
+  } catch (err) {
+    console.error('Error saving VIP bonus:', err);
+    return false;
+  }
+}
+
+export async function deleteVipBonusFromFirestore(id: string): Promise<boolean> {
+  try {
+    await deleteDoc(doc(db, 'vip_bonuses', id));
+    return true;
+  } catch (err) {
+    console.error('Error deleting VIP bonus:', err);
+    return false;
+  }
+}
+
 
 
 
