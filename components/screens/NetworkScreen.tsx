@@ -753,14 +753,14 @@ export default function NetworkScreen({
               stiffness: 260,
               mass: 0.85,
             }}
-            className="fixed inset-0 z-50 bg-gradient-to-b from-[#fdfbf6] via-[#faf5e9] to-[#f4ecd9] flex flex-col w-full h-full overflow-hidden shadow-2xl text-slate-900"
+            className="fixed inset-0 z-50 bg-[#F2F8FC] flex flex-col w-full h-full overflow-hidden shadow-2xl text-[#172B75]"
           >
-            {/* Top Navigation Bar with Back Button and Close (borderless) */}
-            <header className="sticky top-0 z-20 bg-gradient-to-r from-[#fffdf9] via-[#fdf7ec] to-[#fbf1db] px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 shadow-xs">
+            {/* Top Navigation Bar with Back Button and Close */}
+            <header className="sticky top-0 z-20 bg-white/95 border-b border-[#D9E7F5] backdrop-blur-md px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 shadow-xs">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                 <button
                   onClick={() => setActiveModalTab(null)}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-90 text-[#55361e] flex items-center justify-center transition-all shadow-2xs shrink-0"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#EAF5FF] hover:bg-[#D9E7F5] active:scale-90 text-[#002E6E] border border-[#D9E7F5] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer"
                   title="Go Back"
                   aria-label="Go Back"
                 >
@@ -768,17 +768,17 @@ export default function NetworkScreen({
                 </button>
 
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#f5e4bd] to-[#edd199] text-[#5c3710] flex items-center justify-center shadow-2xs shrink-0">
-                    {activeModalTab === 'BUY RULES' && <HelpCircle className="w-4 h-4 text-[#D0872E]" />}
-                    {activeModalTab === 'MY REWARDS' && <Gift className="w-4 h-4 text-[#D0872E]" />}
-                    {activeModalTab === 'MY PURCHASES' && <Coins className="w-4 h-4 text-[#D0872E]" />}
-                    {activeModalTab === 'VIP LEVEL' && <Crown className="w-4 h-4 text-[#D0872E]" />}
+                  <div className="w-8 h-8 rounded-xl bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] flex items-center justify-center shadow-2xs shrink-0">
+                    {activeModalTab === 'BUY RULES' && <HelpCircle className="w-4 h-4 text-[#002E6E]" />}
+                    {activeModalTab === 'MY REWARDS' && <Gift className="w-4 h-4 text-[#002E6E]" />}
+                    {activeModalTab === 'MY PURCHASES' && <Coins className="w-4 h-4 text-[#002E6E]" />}
+                    {activeModalTab === 'VIP LEVEL' && <Crown className="w-4 h-4 text-[#002E6E]" />}
                   </div>
                   <div className="min-w-0 leading-tight">
-                    <h3 className="font-serif font-black text-sm sm:text-base text-[#46280b] tracking-wide truncate">
+                    <h3 className="font-sans font-black text-sm sm:text-base text-[#002E6E] tracking-tight truncate">
                       {activeModalTab}
                     </h3>
-                    <p className="text-[10px] sm:text-[11px] text-[#86592a] font-medium truncate">
+                    <p className="text-[10px] sm:text-[11px] text-[#172B75]/70 font-medium truncate">
                       {activeModalTab === 'BUY RULES' && 'Commission policy & leaderboard rules'}
                       {activeModalTab === 'MY REWARDS' && 'Referral bonuses, team rebates & claiming'}
                       {activeModalTab === 'MY PURCHASES' && 'Your subscribed plans & daily returns'}
@@ -790,7 +790,7 @@ export default function NetworkScreen({
 
               <button
                 onClick={() => setActiveModalTab(null)}
-                className="w-8 h-8 rounded-full bg-[#f8eedb] hover:bg-[#ebd9bc] active:scale-95 text-[#55361e] flex items-center justify-center transition-colors shadow-2xs shrink-0"
+                className="w-8 h-8 rounded-full bg-[#EAF5FF] hover:bg-[#D9E7F5] active:scale-95 text-[#002E6E] border border-[#D9E7F5] flex items-center justify-center transition-colors shadow-2xs shrink-0 cursor-pointer"
                 title="Close"
                 aria-label="Close"
               >
@@ -799,44 +799,44 @@ export default function NetworkScreen({
             </header>
 
             {/* Full-Screen Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-xl mx-auto w-full space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-xl mx-auto w-full space-y-4 bg-[#F2F8FC]">
               {/* =========================================================================
-                  1. VIP LEVEL FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  1. VIP LEVEL FULL-SCREEN CONTENT
                   ========================================================================= */}
               {activeModalTab === 'VIP LEVEL' && (
                 <div className="space-y-4 text-xs leading-relaxed">
                   {/* Current Active Status Card */}
-                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-4 rounded-2xl flex items-center justify-between shadow-xs">
+                  <div className="bg-gradient-to-r from-[#002E6E] via-[#003B8C] to-[#002E6E] text-white p-4.5 rounded-2xl flex items-center justify-between shadow-md border border-[#D9E7F5]">
                     <div className="flex items-center gap-3">
                       <VipBadgeIcon level={selectedVipTier?.level || 1} className="w-14 h-14 shrink-0 drop-shadow-xs" />
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold text-[#7d521d] uppercase block">
+                          <span className="text-[10px] font-bold text-[#FFC928] uppercase block tracking-wider">
                             {selectedVipTier?.level === 1 ? 'Current Status' : 'Selected Tier'}
                           </span>
                           {selectedVipTier?.level === 1 && (
-                            <span className="bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full">
+                            <span className="bg-[#07865B] text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">
                               ACTIVE
                             </span>
                           )}
                         </div>
-                        <h4 className="text-base font-black text-[#46280b]">
+                        <h4 className="text-base font-black text-white">
                           {selectedVipTier?.title} • {selectedVipTier?.subtitle}
                         </h4>
-                        <p className="text-[11px] text-[#714b1c] font-semibold mt-0.5">
-                          Daily Rebate: <strong>{selectedVipTier?.rebate}</strong> • Spend Target: <strong>{selectedVipTier?.spend}</strong>
+                        <p className="text-[11px] text-[#EAF5FF] font-semibold mt-0.5">
+                          Daily Rebate: <strong className="text-[#FFC928]">{selectedVipTier?.rebate}</strong> • Spend Target: <strong className="text-white">{selectedVipTier?.spend}</strong>
                         </p>
-                        <p className="text-[10px] text-[#8c5a29] mt-0.5">
-                          Withdrawal Limit: <strong>{selectedVipTier?.limit}</strong>
+                        <p className="text-[10px] text-[#EAF5FF]/80 mt-0.5">
+                          Withdrawal Limit: <strong className="text-white">{selectedVipTier?.limit}</strong>
                         </p>
                       </div>
                     </div>
-                    <Crown className="w-7 h-7 text-[#D0872E] fill-[#D0872E] shrink-0" />
+                    <Crown className="w-7 h-7 text-[#FFC928] fill-[#FFC928] shrink-0" />
                   </div>
 
-                  {/* List of All 10 VIP Tiers (borderless) */}
+                  {/* List of All 10 VIP Tiers */}
                   <div className="space-y-2.5">
-                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                    <h4 className="font-black text-xs text-[#172B75] uppercase tracking-wider px-1">
                       Explore All 10 VIP Privilege Tiers
                     </h4>
                     {VIP_TIERS.map((v) => {
@@ -846,42 +846,46 @@ export default function NetworkScreen({
                         <div
                           key={v.level}
                           onClick={() => setSelectedVipTier(v)}
-                          className={`p-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                          className={`p-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 border ${
                             isSelected
-                              ? 'bg-[#fffbf0] shadow-md ring-2 ring-[#D0872E]/50'
-                              : 'bg-white shadow-2xs hover:bg-[#fffcf7]'
+                              ? 'bg-[#EAF5FF] border-[#002E6E] shadow-sm ring-1 ring-[#002E6E]'
+                              : 'bg-white border-[#D9E7F5] hover:border-[#00B9F1]/50 shadow-2xs hover:bg-[#F2F8FC]/50'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <VipBadgeIcon level={v.level} className="w-11 h-11 shrink-0 drop-shadow-xs" />
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-serif font-black text-slate-900 text-sm">
+                                <span className="font-black text-[#002E6E] text-sm">
                                   {v.title}
                                 </span>
                                 {isCurrent && (
-                                  <span className="bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full">
+                                  <span className="bg-[#07865B] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full">
                                     CURRENT
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10.5px] text-[#86592a] font-bold block truncate">
+                              <span className="text-[10.5px] text-[#172B75] font-bold block truncate">
                                 {v.subtitle}
                               </span>
-                              <span className="text-[10px] text-slate-500 block truncate">
-                                Target: <strong className="text-slate-800">{v.spend}</strong> • Limit: {v.limit}
+                              <span className="text-[10px] text-[#172B75]/70 block truncate">
+                                Target: <strong className="text-[#002E6E]">{v.spend}</strong> • Limit: {v.limit}
                               </span>
-                              <p className="text-[9.5px] text-[#7d511f] font-medium italic mt-0.5 line-clamp-1">
+                              <p className="text-[9.5px] text-[#002E6E] font-medium italic mt-0.5 line-clamp-1">
                                 ✦ {v.perk}
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="font-black text-[#D0872E] bg-[#faecd4] px-2.5 py-1 rounded-full text-xs font-mono block shadow-2xs">
+                            <span className={`font-black px-2.5 py-1 rounded-full text-xs font-mono block shadow-2xs ${
+                              isSelected
+                                ? 'bg-[#002E6E] text-white'
+                                : 'bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5]'
+                            }`}>
                               {v.rebate}
                             </span>
-                            <span className="text-[9px] text-slate-400 mt-1 block">
+                            <span className="text-[9px] text-[#172B75]/60 mt-1 block">
                               Rebate
                             </span>
                           </div>
@@ -893,108 +897,108 @@ export default function NetworkScreen({
               )}
 
               {/* =========================================================================
-                  2. BUY RULES FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  2. BUY RULES FULL-SCREEN CONTENT
                   ========================================================================= */}
               {activeModalTab === 'BUY RULES' && (
-                <div className="space-y-3.5 text-xs leading-relaxed text-slate-700">
+                <div className="space-y-3.5 text-xs leading-relaxed text-[#172B75]">
                   {/* Hero Commission Header Card */}
-                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-4 rounded-2xl shadow-xs space-y-2 text-[#46280b]">
+                  <div className="bg-gradient-to-r from-[#002E6E] via-[#003B8C] to-[#002E6E] p-4.5 rounded-2xl shadow-md space-y-2 text-white border border-[#D9E7F5]">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#D0872E]" />
-                      <h4 className="font-serif font-black text-sm uppercase tracking-wide">
+                      <Sparkles className="w-4 h-4 text-[#FFC928]" />
+                      <h4 className="font-sans font-black text-sm uppercase tracking-wide text-white">
                         3-Tier Passive Commission Structure
                       </h4>
                     </div>
-                    <p className="text-[11px] text-[#6d451b] font-medium leading-relaxed">
+                    <p className="text-[11px] text-[#EAF5FF] font-medium leading-relaxed">
                       Earn automated direct and multi-level bonuses every time a member in your personal referral tree purchases a plan.
                     </p>
                     <div className="grid grid-cols-3 gap-2 pt-1">
-                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
-                        <span className="text-[9px] font-bold text-[#86592a] block">Level 1 Direct</span>
-                        <span className="text-base font-black text-[#46280b] font-mono">10%</span>
-                        <span className="text-[8.5px] text-emerald-700 block font-bold">Instant Payout</span>
+                      <div className="bg-white/10 backdrop-blur-xs rounded-xl p-2.5 text-center border border-white/20 shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#EAF5FF] block">Level 1 Direct</span>
+                        <span className="text-base sm:text-lg font-black text-white font-mono">10%</span>
+                        <span className="text-[8.5px] text-[#FFC928] block font-bold">Instant Payout</span>
                       </div>
-                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
-                        <span className="text-[9px] font-bold text-[#86592a] block">Level 2 Network</span>
-                        <span className="text-base font-black text-[#46280b] font-mono">5%</span>
-                        <span className="text-[8.5px] text-emerald-700 block font-bold">Automatic</span>
+                      <div className="bg-white/10 backdrop-blur-xs rounded-xl p-2.5 text-center border border-white/20 shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#EAF5FF] block">Level 2 Network</span>
+                        <span className="text-base sm:text-lg font-black text-white font-mono">5%</span>
+                        <span className="text-[8.5px] text-[#FFC928] block font-bold">Automatic</span>
                       </div>
-                      <div className="bg-white/90 rounded-xl p-2 text-center shadow-2xs">
-                        <span className="text-[9px] font-bold text-[#86592a] block">Level 3 Team</span>
-                        <span className="text-base font-black text-[#46280b] font-mono">2%</span>
-                        <span className="text-[8.5px] text-emerald-700 block font-bold">Perpetual</span>
+                      <div className="bg-white/10 backdrop-blur-xs rounded-xl p-2.5 text-center border border-white/20 shadow-2xs">
+                        <span className="text-[9px] font-bold text-[#EAF5FF] block">Level 3 Team</span>
+                        <span className="text-base sm:text-lg font-black text-white font-mono">2%</span>
+                        <span className="text-[8.5px] text-[#FFC928] block font-bold">Perpetual</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Section 1: Detailed Level 1 Rules */}
-                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#503010]">
-                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                  <div className="p-4 bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#002E6E]">
+                      <div className="w-6 h-6 rounded-full bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] font-black flex items-center justify-center text-xs">
                         1
                       </div>
-                      <h5 className="font-black text-xs">Level 1 (Direct Friends) — 10% Cash Commission</h5>
+                      <h5 className="font-black text-xs sm:text-sm text-[#002E6E]">Level 1 (Direct Friends) — 10% Cash Commission</h5>
                     </div>
-                    <p className="text-slate-600 text-[11px]">
-                      Share your personal invite code or link. When your direct contact registers and joins any VIP investment plan, you receive <strong className="text-slate-900">10% of their investment amount</strong> credited immediately into your wallet.
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
+                      Share your personal invite code or link. When your direct contact registers and joins any VIP investment plan, you receive <strong className="text-[#002E6E]">10% of their investment amount</strong> credited immediately into your wallet.
                     </p>
-                    <div className="bg-[#fef9ee] p-2.5 rounded-xl text-[10.5px] text-[#6d451b] shadow-2xs">
-                      <strong>Example:</strong> Friend invests ₹10,000 in a plan → You immediately get <strong>₹1,000 cash</strong> in your wallet.
+                    <div className="bg-[#EAF5FF] border border-[#D9E7F5] p-2.5 rounded-xl text-[10.5px] text-[#172B75] shadow-2xs">
+                      <strong>Example:</strong> Friend invests ₹10,000 in a plan → You immediately get <strong className="text-[#07865B]">₹1,000 cash</strong> in your wallet.
                     </div>
                   </div>
 
                   {/* Section 2: Level 2 & 3 Rules */}
-                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#503010]">
-                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                  <div className="p-4 bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#002E6E]">
+                      <div className="w-6 h-6 rounded-full bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] font-black flex items-center justify-center text-xs">
                         2
                       </div>
-                      <h5 className="font-black text-xs">Level 2 (5%) & Level 3 (2%) Indirect Rewards</h5>
+                      <h5 className="font-black text-xs sm:text-sm text-[#002E6E]">Level 2 (5%) & Level 3 (2%) Indirect Rewards</h5>
                     </div>
-                    <p className="text-slate-600 text-[11px]">
-                      Your income does not stop at your direct friends. Whenever your friends invite their own contacts, you receive <strong className="text-slate-900">5% commission on Level 2</strong> and <strong className="text-slate-900">2% on Level 3</strong> without any limit on the number of members.
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
+                      Your income does not stop at your direct friends. Whenever your friends invite their own contacts, you receive <strong className="text-[#002E6E]">5% commission on Level 2</strong> and <strong className="text-[#002E6E]">2% on Level 3</strong> without any limit on the number of members.
                     </p>
                   </div>
 
                   {/* Section 3: Leaderboard Points System */}
-                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#503010]">
-                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                  <div className="p-4 bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#002E6E]">
+                      <div className="w-6 h-6 rounded-full bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] font-black flex items-center justify-center text-xs">
                         3
                       </div>
-                      <h5 className="font-black text-xs">Leaderboard Points Calculation</h5>
+                      <h5 className="font-black text-xs sm:text-sm text-[#002E6E]">Leaderboard Points Calculation</h5>
                     </div>
-                    <p className="text-slate-600 text-[11px]">
-                      • Every <strong className="text-slate-900">₹1 invested</strong> in a plan by you or your referral network generates <strong className="text-slate-900">1 Point</strong> on the leaderboard.
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
+                      • Every <strong className="text-[#002E6E]">₹1 invested</strong> in a plan by you or your referral network generates <strong className="text-[#07865B]">1 Point</strong> on the leaderboard.
                     </p>
-                    <p className="text-slate-600 text-[11px]">
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
                       • The leaderboard updates in real-time every 30 minutes, allowing you to climb the podium ranks.
                     </p>
                   </div>
 
                   {/* Section 4: Weekly Settlement */}
-                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#503010]">
-                      <div className="w-5 h-5 rounded-full bg-[#f8eedb] text-[#86592a] font-bold flex items-center justify-center text-[10px]">
+                  <div className="p-4 bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#002E6E]">
+                      <div className="w-6 h-6 rounded-full bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] font-black flex items-center justify-center text-xs">
                         4
                       </div>
-                      <h5 className="font-black text-xs">Weekly Sunday Settlement & Cash Payout</h5>
+                      <h5 className="font-black text-xs sm:text-sm text-[#002E6E]">Weekly Sunday Settlement & Cash Payout</h5>
                     </div>
-                    <p className="text-slate-600 text-[11px]">
-                      • Settlement takes place every Sunday night at <strong className="text-slate-900">23:59:59</strong>.
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
+                      • Settlement takes place every Sunday night at <strong className="text-[#002E6E]">23:59:59</strong>.
                     </p>
-                    <p className="text-slate-600 text-[11px]">
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
                       • The Top 10 champions receive direct bonus cash prizes (up to ₹3,000) deposited directly into their wallet, withdrawable immediately.
                     </p>
                   </div>
 
                   {/* Section 5: Payouts & Fair Play */}
-                  <div className="p-4 bg-white rounded-2xl shadow-2xs space-y-2">
-                    <div className="flex items-center gap-2 text-[#503010]">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <h5 className="font-black text-xs">Instant Withdrawal & Fair Play Policy</h5>
+                  <div className="p-4 bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#002E6E]">
+                      <ShieldCheck className="w-5 h-5 text-[#07865B]" />
+                      <h5 className="font-black text-xs sm:text-sm text-[#002E6E]">Instant Withdrawal & Fair Play Policy</h5>
                     </div>
-                    <p className="text-slate-600 text-[11px]">
+                    <p className="text-[#172B75] text-[11px] leading-relaxed">
                       All commission earnings are completely unencumbered. You can withdraw directly to UPI or Bank transfer 24/7 with zero platform fees once KYC is active.
                     </p>
                   </div>
@@ -1002,17 +1006,17 @@ export default function NetworkScreen({
               )}
 
               {/* =========================================================================
-                  3. MY REWARDS FULL-SCREEN CONTENT (BORDERLESS BOXES)
+                  3. MY REWARDS FULL-SCREEN CONTENT
                   ========================================================================= */}
               {activeModalTab === 'MY REWARDS' && (
                 <div className="space-y-4 text-xs">
                   {/* Hero Balance Card */}
-                  <div className="bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] p-5 rounded-2xl text-center space-y-1.5 shadow-xs">
-                    <span className="text-[10.5px] font-bold text-[#7d521d] uppercase tracking-wider block">
+                  <div className="bg-gradient-to-r from-[#002E6E] via-[#003B8C] to-[#002E6E] p-5 rounded-2xl text-center space-y-1.5 shadow-md border border-[#D9E7F5] text-white">
+                    <span className="text-[10px] font-bold text-[#FFC928] uppercase tracking-wider block">
                       Total Referral Rewards Earned
                     </span>
-                    <h3 className="text-3xl font-black text-[#46280b] font-mono">₹14,200</h3>
-                    <p className="text-[11px] text-[#7d521d] font-semibold">
+                    <h3 className="text-3xl font-black text-white font-mono">₹14,200</h3>
+                    <p className="text-[11px] text-[#EAF5FF] font-medium">
                       Credited to wallet & available for instant withdrawal
                     </p>
                     <div className="pt-2">
@@ -1021,7 +1025,7 @@ export default function NetworkScreen({
                           triggerConfetti();
                           setActiveModalTab(null);
                         }}
-                        className="w-full py-2.5 bg-[#D0872E] hover:bg-[#b87324] text-white font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 bg-gradient-to-r from-[#07865B] to-[#066e4a] hover:brightness-110 text-white font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Gift className="w-4 h-4 text-white/90" />
                         <span>Claim All Rewards to Wallet</span>
@@ -1030,12 +1034,12 @@ export default function NetworkScreen({
                   </div>
 
                   {/* Quick Share Code Box */}
-                  <div className="bg-white p-3.5 rounded-2xl shadow-2xs space-y-2">
-                    <span className="text-[10px] font-bold text-[#86592a] uppercase tracking-wider block">
+                  <div className="bg-white p-3.5 rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <span className="text-[10px] font-bold text-[#172B75] uppercase tracking-wider block">
                       Your Referral Invite Code
                     </span>
-                    <div className="flex items-center justify-between bg-[#fbf6ec] rounded-xl px-3 py-2 shadow-2xs">
-                      <span className="font-mono font-black text-base text-[#46280b] tracking-widest">
+                    <div className="flex items-center justify-between bg-[#EAF5FF] border border-[#D9E7F5] rounded-xl px-3.5 py-2 shadow-2xs">
+                      <span className="font-mono font-black text-base text-[#002E6E] tracking-widest">
                         VIP8899
                       </span>
                       <button
@@ -1044,7 +1048,7 @@ export default function NetworkScreen({
                           setCopiedCode(true);
                           setTimeout(() => setCopiedCode(false), 2000);
                         }}
-                        className="flex items-center gap-1 text-xs font-bold px-3 py-1 bg-[#D0872E] hover:bg-[#b87324] text-white rounded-lg active:scale-90 transition-all shadow-xs"
+                        className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-[#002E6E] hover:bg-[#002252] text-white rounded-lg active:scale-90 transition-all shadow-xs cursor-pointer"
                       >
                         {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{copiedCode ? 'Copied' : 'Copy'}</span>
@@ -1052,49 +1056,49 @@ export default function NetworkScreen({
                     </div>
                   </div>
 
-                  {/* Multi-Tier Commissions Breakdown (borderless) */}
+                  {/* Multi-Tier Commissions Breakdown */}
                   <div className="space-y-2">
-                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                    <h4 className="font-black text-xs text-[#172B75] uppercase tracking-wider px-1">
                       Commissions by Referral Tier
                     </h4>
-                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
+                    <div className="p-3.5 bg-white border border-[#D9E7F5] rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-900 text-xs block">
+                        <span className="font-bold text-[#002E6E] text-xs block">
                           Tier 1 Direct Commissions (10%)
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
+                        <span className="text-[10px] text-[#172B75]/70 font-medium">
                           2 Active Direct Referral Members
                         </span>
                       </div>
-                      <span className="font-mono font-black text-emerald-700 text-sm">
+                      <span className="font-mono font-black text-[#07865B] text-sm">
                         ₹9,800
                       </span>
                     </div>
 
-                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
+                    <div className="p-3.5 bg-white border border-[#D9E7F5] rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-900 text-xs block">
+                        <span className="font-bold text-[#002E6E] text-xs block">
                           Tier 2 Network Commissions (5%)
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
+                        <span className="text-[10px] text-[#172B75]/70 font-medium">
                           4 Indirect Network Members
                         </span>
                       </div>
-                      <span className="font-mono font-black text-emerald-700 text-sm">
+                      <span className="font-mono font-black text-[#07865B] text-sm">
                         ₹3,400
                       </span>
                     </div>
 
-                    <div className="p-3.5 bg-white rounded-xl flex items-center justify-between shadow-2xs">
+                    <div className="p-3.5 bg-white border border-[#D9E7F5] rounded-xl flex items-center justify-between shadow-2xs">
                       <div>
-                        <span className="font-bold text-slate-900 text-xs block">
+                        <span className="font-bold text-[#002E6E] text-xs block">
                           Tier 3 Team Commissions (2%)
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
+                        <span className="text-[10px] text-[#172B75]/70 font-medium">
                           8 Extended Team Members
                         </span>
                       </div>
-                      <span className="font-mono font-black text-emerald-700 text-sm">
+                      <span className="font-mono font-black text-[#07865B] text-sm">
                         ₹1,000
                       </span>
                     </div>
@@ -1102,30 +1106,30 @@ export default function NetworkScreen({
 
                   {/* Recent Reward Activity History */}
                   <div className="space-y-2">
-                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                    <h4 className="font-black text-xs text-[#172B75] uppercase tracking-wider px-1">
                       Recent Referral Income Ledger
                     </h4>
                     <div className="space-y-1.5">
-                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="p-2.5 bg-white border border-[#D9E7F5] rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
                         <div>
-                          <span className="font-bold text-slate-800 block">Direct Rebate: Level 1 Referral</span>
-                          <span className="text-[9.5px] text-slate-500">Today, 14:22 • Level 1 Bonus</span>
+                          <span className="font-bold text-[#172B75] block">Direct Rebate: Level 1 Referral</span>
+                          <span className="text-[9.5px] text-[#172B75]/60">Today, 14:22 • Level 1 Bonus</span>
                         </div>
-                        <span className="font-mono font-black text-emerald-700">+₹1,000</span>
+                        <span className="font-mono font-black text-[#07865B]">+₹1,000</span>
                       </div>
-                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="p-2.5 bg-white border border-[#D9E7F5] rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
                         <div>
-                          <span className="font-bold text-slate-800 block">VIP Milestone Bonus</span>
-                          <span className="text-[9.5px] text-slate-500">Yesterday • VIP 2 Promotion Gift</span>
+                          <span className="font-bold text-[#172B75] block">VIP Milestone Bonus</span>
+                          <span className="text-[9.5px] text-[#172B75]/60">Yesterday • VIP 2 Promotion Gift</span>
                         </div>
-                        <span className="font-mono font-black text-emerald-700">+₹500</span>
+                        <span className="font-mono font-black text-[#07865B]">+₹500</span>
                       </div>
-                      <div className="p-2.5 bg-white/90 rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="p-2.5 bg-white border border-[#D9E7F5] rounded-xl shadow-2xs flex items-center justify-between text-[11px]">
                         <div>
-                          <span className="font-bold text-slate-800 block">Tier 2 Rebate: Level 2 Referral</span>
-                          <span className="text-[9.5px] text-slate-500">2 days ago • Level 2 Bonus</span>
+                          <span className="font-bold text-[#172B75] block">Tier 2 Rebate: Level 2 Referral</span>
+                          <span className="text-[9.5px] text-[#172B75]/60">2 days ago • Level 2 Bonus</span>
                         </div>
-                        <span className="font-mono font-black text-emerald-700">+₹350</span>
+                        <span className="font-mono font-black text-[#07865B]">+₹350</span>
                       </div>
                     </div>
                   </div>
@@ -1133,35 +1137,36 @@ export default function NetworkScreen({
               )}
 
               {/* =========================================================================
-                  4. MY PURCHASES FULL-SCREEN CONTENT (BORDERLESS BOXES)
+              {/* =========================================================================
+                  4. MY PURCHASES FULL-SCREEN CONTENT
                   ========================================================================= */}
               {activeModalTab === 'MY PURCHASES' && (
                 <div className="space-y-4 text-xs">
                   {/* Summary Metric Header */}
-                  <div className="grid grid-cols-3 gap-2 p-3 bg-gradient-to-r from-[#ffecc3] via-[#fae0ab] to-[#fadca0] rounded-2xl shadow-xs text-center text-[#46280b]">
+                  <div className="grid grid-cols-3 gap-2 p-3.5 bg-gradient-to-r from-[#002E6E] via-[#003B8C] to-[#002E6E] rounded-2xl shadow-md border border-[#D9E7F5] text-center text-white">
                     <div className="p-1">
-                      <span className="text-[9px] font-bold text-[#86592a] block">Active Plans</span>
-                      <span className="text-base font-black font-mono">
+                      <span className="text-[9px] font-bold text-[#EAF5FF] block uppercase tracking-wider">Active Plans</span>
+                      <span className="text-base sm:text-lg font-black font-mono text-white">
                         {activeInvestments.length}
                       </span>
                     </div>
-                    <div className="p-1 border-x border-[#dfbe7e]/30">
-                      <span className="text-[9px] font-bold text-[#86592a] block">Daily Return</span>
-                      <span className="text-base font-black font-mono text-emerald-800">
+                    <div className="p-1 border-x border-white/20">
+                      <span className="text-[9px] font-bold text-[#EAF5FF] block uppercase tracking-wider">Daily Return</span>
+                      <span className="text-base sm:text-lg font-black font-mono text-[#FFC928]">
                         +₹{activeInvestments.reduce((acc, i) => acc + i.dailyReturn, 0).toLocaleString('en-IN')}/d
                       </span>
                     </div>
                     <div className="p-1">
-                      <span className="text-[9px] font-bold text-[#86592a] block">Total Accrued</span>
-                      <span className="text-base font-black font-mono">
+                      <span className="text-[9px] font-bold text-[#EAF5FF] block uppercase tracking-wider">Total Accrued</span>
+                      <span className="text-base sm:text-lg font-black font-mono text-white">
                         ₹{activeInvestments.reduce((acc, i) => acc + (i.dailyReturn * i.daysCompleted), 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
 
-                  {/* Active Purchases List (borderless) */}
+                  {/* Active Purchases List */}
                   <div className="space-y-2.5">
-                    <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wider px-1">
+                    <h4 className="font-black text-xs text-[#172B75] uppercase tracking-wider px-1">
                       Your Active Subscribed VIP Plans
                     </h4>
 
@@ -1169,22 +1174,22 @@ export default function NetworkScreen({
                       activeInvestments.map((inv) => (
                         <div
                           key={inv.id}
-                          className="p-3.5 bg-white rounded-2xl shadow-2xs space-y-2 hover:bg-[#fffdf9] transition-all"
+                          className="p-3.5 bg-white border border-[#D9E7F5] hover:border-[#00B9F1]/50 rounded-2xl shadow-2xs space-y-2 hover:bg-[#F2F8FC]/50 transition-all"
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <h5 className="font-black text-slate-900 text-xs sm:text-sm">
+                              <h5 className="font-black text-[#002E6E] text-xs sm:text-sm">
                                 {inv.planName}
                               </h5>
-                              <span className="text-[10px] text-slate-500 font-medium">
+                              <span className="text-[10px] text-[#172B75]/70 font-medium">
                                 Invested: ₹{inv.investedAmount.toLocaleString('en-IN')} • Started {inv.startDate}
                               </span>
                             </div>
                             <div className="text-right">
-                              <span className="font-mono font-black text-[#966308] text-sm block">
+                              <span className="font-mono font-black text-[#07865B] text-sm block">
                                 +₹{inv.dailyReturn}/day
                               </span>
-                              <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                              <span className="text-[8.5px] bg-[#EAF5FF] text-[#07865B] border border-[#07865B]/30 px-2 py-0.5 rounded-full font-bold">
                                 Running
                               </span>
                             </div>
@@ -1192,15 +1197,15 @@ export default function NetworkScreen({
 
                           {/* Progress Bar */}
                           <div className="space-y-1 pt-1">
-                            <div className="flex justify-between text-[9.5px] text-slate-500 font-semibold">
+                            <div className="flex justify-between text-[9.5px] text-[#172B75]/70 font-semibold">
                               <span>Duration Progress</span>
-                              <span className="font-mono font-bold text-[#55361e]">
+                              <span className="font-mono font-bold text-[#002E6E]">
                                 Day {inv.daysCompleted} of {inv.totalDays} Days
                               </span>
                             </div>
-                            <div className="w-full bg-[#f4e2be] h-1.5 rounded-full overflow-hidden">
+                            <div className="w-full bg-[#EAF5FF] border border-[#D9E7F5] h-1.5 rounded-full overflow-hidden">
                               <div
-                                className="bg-gradient-to-r from-[#D0872E] to-[#b87324] h-full rounded-full transition-all"
+                                className="bg-gradient-to-r from-[#002E6E] to-[#00B9F1] h-full rounded-full transition-all"
                                 style={{
                                   width: `${Math.min(100, Math.round((inv.daysCompleted / inv.totalDays) * 100))}%`,
                                 }}
@@ -1210,11 +1215,11 @@ export default function NetworkScreen({
                         </div>
                       ))
                     ) : (
-                      <div className="p-6 text-center bg-white rounded-2xl border border-amber-200/80 shadow-2xs space-y-1">
-                        <p className="text-xs font-bold text-slate-700">
+                      <div className="p-6 text-center bg-white rounded-2xl border border-[#D9E7F5] shadow-2xs space-y-1">
+                        <p className="text-xs font-bold text-[#002E6E]">
                           No active subscribed VIP plans found.
                         </p>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-[#172B75]/70">
                           Browse available plans and subscribe to start earning daily returns!
                         </p>
                       </div>
@@ -1228,9 +1233,9 @@ export default function NetworkScreen({
                         setActiveModalTab(null);
                         onOpenPlans();
                       }}
-                      className="w-full py-3 bg-[#D0872E] hover:bg-[#b87324] text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5"
+                      className="w-full py-3 bg-[#002E6E] hover:bg-[#002252] text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <Sparkles className="w-4 h-4 text-white/90" />
+                      <Sparkles className="w-4 h-4 text-[#FFC928]" />
                       <span>Browse More High-Yield Plans</span>
                     </button>
                   )}
@@ -1253,18 +1258,18 @@ export default function NetworkScreen({
             exit={{ opacity: 0, y: 50 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
           >
-            <div className="bg-gradient-to-b from-[#fffdf9] via-[#fdf8ee] to-[#f7eedc] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-amber-300/60 max-h-[90vh] flex flex-col my-auto text-slate-900">
+            <div className="bg-[#F2F8FC] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-[#D9E7F5] max-h-[90vh] flex flex-col my-auto text-[#172B75]">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#5a3818] via-[#734720] to-[#45280d] text-white p-4 flex items-center justify-between shadow-md">
+              <div className="bg-gradient-to-r from-[#002E6E] via-[#003B8C] to-[#002E6E] text-white p-4 flex items-center justify-between shadow-md">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-amber-400/20 flex items-center justify-center border border-amber-400/40">
-                    <UserCheck className="w-5 h-5 text-amber-300" />
+                  <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                    <UserCheck className="w-5 h-5 text-[#FFC928]" />
                   </div>
                   <div>
-                    <h3 className="font-serif font-black text-sm sm:text-base text-amber-200">
+                    <h3 className="font-sans font-black text-sm sm:text-base text-white">
                       Customer Investment Details
                     </h3>
-                    <p className="text-[10px] text-amber-100/80 font-mono">
+                    <p className="text-[10px] text-[#EAF5FF]/80 font-mono">
                       Firebase Synced Record • ID: {selectedInvestmentDetails.id}
                     </p>
                   </div>
@@ -1280,39 +1285,39 @@ export default function NetworkScreen({
               </div>
 
               {/* Scrollable Content */}
-              <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-slate-800 text-xs">
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-[#172B75] text-xs">
                 {/* Customer Profile Banner */}
-                <div className="bg-white p-4 rounded-2xl shadow-2xs border border-amber-200/80 flex items-center gap-3.5">
+                <div className="bg-white p-4 rounded-2xl shadow-2xs border border-[#D9E7F5] flex items-center gap-3.5">
                   <div className="relative shrink-0">
                     {selectedInvestmentDetails.avatar ? (
                       <img
                         src={selectedInvestmentDetails.avatar}
                         alt={selectedInvestmentDetails.name}
-                        className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-md"
+                        className="w-14 h-14 rounded-full object-cover border-2 border-[#00B9F1] shadow-md"
                       />
                     ) : (
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-amber-700 to-amber-900 text-white font-black text-lg flex items-center justify-center border-2 border-amber-400 shadow-md uppercase">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#002E6E] via-[#003B8C] to-[#00B9F1] text-white font-black text-lg flex items-center justify-center border-2 border-[#00B9F1] shadow-md uppercase">
                         {(selectedInvestmentDetails.name || selectedInvestmentDetails.id).slice(0, 2)}
                       </div>
                     )}
-                    <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white text-[8px] font-bold p-1 rounded-full shadow-xs">
+                    <span className="absolute -bottom-1 -right-1 bg-[#07865B] text-white text-[8px] font-bold p-1 rounded-full shadow-xs">
                       <BadgeCheck className="w-3 h-3" />
                     </span>
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-serif font-black text-sm text-slate-900 truncate">
+                      <h4 className="font-black text-sm text-[#002E6E] truncate">
                         {selectedInvestmentDetails.name}
                       </h4>
-                      <span className="bg-amber-100 text-[#694218] text-[9px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0">
+                      <span className="bg-[#EAF5FF] text-[#002E6E] border border-[#D9E7F5] text-[9px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0">
                         Rank #{selectedInvestmentDetails.rank}
                       </span>
                     </div>
-                    <div className="space-y-0.5 mt-1 text-[11px] text-slate-600 font-medium">
+                    <div className="space-y-0.5 mt-1 text-[11px] text-[#172B75]/80 font-medium">
                       <p>
                         <strong>Customer ID:</strong>{' '}
-                        <span className="font-mono text-slate-900 font-bold">{selectedInvestmentDetails.id}</span>
+                        <span className="font-mono text-[#002E6E] font-bold">{selectedInvestmentDetails.id}</span>
                       </p>
                       <p>
                         <strong>Mobile:</strong> {selectedInvestmentDetails.mobile || '+91 98765 43210'}
@@ -1325,72 +1330,72 @@ export default function NetworkScreen({
                 </div>
 
                 {/* Subscribed Plan Details Card */}
-                <div className="bg-gradient-to-br from-[#fffdf7] to-[#fef8ea] p-4 rounded-2xl shadow-2xs border border-amber-300/80 space-y-3">
-                  <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
+                <div className="bg-white p-4 rounded-2xl shadow-2xs border border-[#D9E7F5] space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#D9E7F5] pb-2">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-600" />
-                      <h4 className="font-serif font-black text-xs sm:text-sm text-[#4b2c0f] uppercase tracking-wide">
+                      <Sparkles className="w-4 h-4 text-[#FFC928]" />
+                      <h4 className="font-sans font-black text-xs sm:text-sm text-[#002E6E] uppercase tracking-wide">
                         Plan Investment Summary
                       </h4>
                     </div>
-                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                    <span className="bg-[#EAF5FF] text-[#07865B] border border-[#07865B]/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                       {selectedInvestmentDetails.status || 'Active Running'}
                     </span>
                   </div>
 
                   {/* 2x2 Key Metrics Grid */}
                   <div className="grid grid-cols-2 gap-2.5">
-                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 font-bold block">Purchased Plan Name</span>
-                      <span className="font-bold text-slate-900 text-xs block truncate mt-0.5">
+                    <div className="bg-[#F2F8FC] p-2.5 rounded-xl border border-[#D9E7F5] shadow-2xs">
+                      <span className="text-[10px] text-[#172B75]/70 font-bold block">Purchased Plan Name</span>
+                      <span className="font-bold text-[#002E6E] text-xs block truncate mt-0.5">
                         {selectedInvestmentDetails.purchasedPlanName}
                       </span>
                     </div>
 
-                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 font-bold block">Invested Amount</span>
-                      <span className="font-mono font-black text-blue-700 text-sm block mt-0.5">
+                    <div className="bg-[#F2F8FC] p-2.5 rounded-xl border border-[#D9E7F5] shadow-2xs">
+                      <span className="text-[10px] text-[#172B75]/70 font-bold block">Invested Amount</span>
+                      <span className="font-mono font-black text-[#002E6E] text-sm block mt-0.5">
                         ₹{selectedInvestmentDetails.planAmount.toLocaleString('en-IN')}
                       </span>
                     </div>
 
-                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 font-bold block">Daily Earnings</span>
-                      <span className="font-mono font-black text-emerald-700 text-sm block mt-0.5">
+                    <div className="bg-[#F2F8FC] p-2.5 rounded-xl border border-[#D9E7F5] shadow-2xs">
+                      <span className="text-[10px] text-[#172B75]/70 font-bold block">Daily Earnings</span>
+                      <span className="font-mono font-black text-[#07865B] text-sm block mt-0.5">
                         +₹{selectedInvestmentDetails.dailyEarnings || Math.round(selectedInvestmentDetails.planAmount * 0.04)}/day
                       </span>
                     </div>
 
-                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/60 shadow-2xs">
-                      <span className="text-[10px] text-slate-500 font-bold block">Total Estimated Return</span>
-                      <span className="font-mono font-black text-[#5a3818] text-sm block mt-0.5">
+                    <div className="bg-[#F2F8FC] p-2.5 rounded-xl border border-[#D9E7F5] shadow-2xs">
+                      <span className="text-[10px] text-[#172B75]/70 font-bold block">Total Estimated Return</span>
+                      <span className="font-mono font-black text-[#002E6E] text-sm block mt-0.5">
                         ₹{selectedInvestmentDetails.totalEarnings.toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
 
                   {/* Plan Timeline & Dates */}
-                  <div className="bg-white p-3 rounded-xl border border-amber-200/60 shadow-2xs space-y-2">
-                    <div className="flex justify-between items-center text-[11px] text-slate-600 font-semibold">
+                  <div className="bg-[#F2F8FC] p-3 rounded-xl border border-[#D9E7F5] shadow-2xs space-y-2">
+                    <div className="flex justify-between items-center text-[11px] text-[#172B75]/80 font-semibold">
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-amber-600" />
+                        <Clock className="w-3.5 h-3.5 text-[#002E6E]" />
                         <span>Investment Duration:</span>
                       </span>
-                      <span className="font-mono font-bold text-slate-900">
+                      <span className="font-mono font-bold text-[#002E6E]">
                         {selectedInvestmentDetails.totalDays || 30} Days Plan
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[10.5px] pt-1 border-t border-slate-100">
+                    <div className="grid grid-cols-2 gap-2 text-[10.5px] pt-1 border-t border-[#D9E7F5]">
                       <div>
-                        <span className="text-slate-500 block">Purchase Start Date:</span>
-                        <span className="font-mono font-bold text-slate-800">
+                        <span className="text-[#172B75]/70 block">Purchase Start Date:</span>
+                        <span className="font-mono font-bold text-[#172B75]">
                           {selectedInvestmentDetails.purchaseDate || '01 Nov 2026'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block">Maturity End Date:</span>
-                        <span className="font-mono font-bold text-emerald-800">
+                        <span className="text-[#172B75]/70 block">Maturity End Date:</span>
+                        <span className="font-mono font-bold text-[#07865B]">
                           {selectedInvestmentDetails.maturityDate || '01 Dec 2026'}
                         </span>
                       </div>
@@ -1399,26 +1404,26 @@ export default function NetworkScreen({
                 </div>
 
                 {/* Transaction & Firebase System Details */}
-                <div className="bg-white p-3.5 rounded-2xl shadow-2xs border border-amber-200/80 space-y-2">
-                  <h4 className="font-serif font-black text-xs text-[#503010] uppercase tracking-wide">
+                <div className="bg-white p-3.5 rounded-2xl shadow-2xs border border-[#D9E7F5] space-y-2">
+                  <h4 className="font-sans font-black text-xs text-[#002E6E] uppercase tracking-wide">
                     Payment & Firestore Metadata
                   </h4>
                   <div className="space-y-1.5 text-[11px]">
                     <div className="flex justify-between py-1 border-b border-slate-100">
-                      <span className="text-slate-500">Transaction ID:</span>
-                      <span className="font-mono font-bold text-slate-800">
+                      <span className="text-[#172B75]/70">Transaction ID:</span>
+                      <span className="font-mono font-bold text-[#002E6E]">
                         {selectedInvestmentDetails.transactionId || 'TXN-88291411'}
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-100">
-                      <span className="text-slate-500">Payment Gateway / Source:</span>
-                      <span className="font-semibold text-slate-800">
+                      <span className="text-[#172B75]/70">Payment Gateway / Source:</span>
+                      <span className="font-semibold text-[#172B75]">
                         {selectedInvestmentDetails.paymentMethod || 'UPI / Bank Transfer'}
                       </span>
                     </div>
                     <div className="flex justify-between py-1">
-                      <span className="text-slate-500">Firebase Storage Collection:</span>
-                      <span className="font-mono font-bold text-emerald-700">
+                      <span className="text-[#172B75]/70">Firebase Storage Collection:</span>
+                      <span className="font-mono font-bold text-[#07865B]">
                         investments / {selectedInvestmentDetails.id}
                       </span>
                     </div>
@@ -1427,10 +1432,10 @@ export default function NetworkScreen({
               </div>
 
               {/* Footer Modal Actions */}
-              <div className="p-4 bg-[#f8eedb] border-t border-amber-300/60 flex items-center justify-end gap-2">
+              <div className="p-4 bg-white border-t border-[#D9E7F5] flex items-center justify-end gap-2">
                 <button
                   onClick={() => setSelectedInvestmentDetails(null)}
-                  className="w-full py-2.5 bg-[#D0872E] hover:bg-[#b87324] text-white font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 bg-[#002E6E] hover:bg-[#002252] text-white font-bold rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>Done / Close Details</span>
                 </button>
