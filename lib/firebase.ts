@@ -1236,56 +1236,30 @@ export async function saveAppSettingsToFirestore(settings: AppSettings): Promise
   }
 }
 
-// 17. VIP Bonuses (Weekly & Monthly Bonus Cards + Claim Persistence)
+// 17. VIP Bonuses (Weekly & Monthly Bonus Cards + Claim Persistence + Auto Expiry)
 export const DEFAULT_VIP_BONUSES: VipBonus[] = [
   {
     id: 'vip_bonus_card_1',
     vipLevel: 1,
-    minInvestAmount: 0,
-    bonusAmount: 6,
+    minInvestAmount: 1000,
+    bonusAmount: 10,
     category: 'week',
-    validityDate: '2027-12-31',
+    durationDays: 7,
+    validityDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    createdAt: new Date().toISOString(),
     claimedBy: [],
-  },
-  {
-    id: 'vip_bonus_card_2',
-    vipLevel: 1,
-    minInvestAmount: 0,
-    bonusAmount: 120,
-    category: 'month',
-    validityDate: '2027-12-31',
-    claimedBy: [],
-  },
-  {
-    id: 'vip_bonus_card_3',
-    vipLevel: 1,
-    minInvestAmount: 0,
-    bonusAmount: 6,
-    category: 'week',
-    validityDate: '2027-12-31',
-    claimedBy: [],
-  },
-  {
-    id: 'vip_bonus_card_4',
-    vipLevel: 1,
-    minInvestAmount: 0,
-    bonusAmount: 120,
-    category: 'month',
-    validityDate: '2027-12-31',
-    claimedBy: [],
+    userProgress: {},
   },
 ];
 
 export async function getVipBonusesFromFirestore(): Promise<VipBonus[]> {
   try {
     const snap = await withTimeout(getDocs(collection(db, 'vip_bonuses')), 3500);
-    if (!snap.empty) {
-      const list = snap.docs.map((d) => ({ ...d.data(), id: d.id } as VipBonus));
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('network_join_pro_vip_bonuses', JSON.stringify(list));
-      }
-      return list;
+    const list = snap.docs.map((d) => ({ ...d.data(), id: d.id } as VipBonus));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('network_join_pro_vip_bonuses', JSON.stringify(list));
     }
+    return list;
   } catch (err) {
     console.warn('Error fetching VIP bonuses from Firestore, using local/defaults:', err);
   }
@@ -1295,19 +1269,19 @@ export async function getVipBonusesFromFirestore(): Promise<VipBonus[]> {
       const local = localStorage.getItem('network_join_pro_vip_bonuses');
       if (local) {
         const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
   }
 
-  return DEFAULT_VIP_BONUSES;
+  return [];
 }
 
 export async function saveVipBonusToFirestore(bonus: VipBonus): Promise<boolean> {
   if (typeof window !== 'undefined') {
     try {
       const local = localStorage.getItem('network_join_pro_vip_bonuses');
-      const current: VipBonus[] = local ? JSON.parse(local) : [...DEFAULT_VIP_BONUSES];
+      const current: VipBonus[] = local ? JSON.parse(local) : [];
       const idx = current.findIndex((b) => b.id === bonus.id);
       if (idx >= 0) current[idx] = bonus;
       else current.push(bonus);
