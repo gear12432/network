@@ -177,12 +177,12 @@ export default function UserVipBonusScreen({
     }
 
     if (!targetMs || isNaN(targetMs)) {
-      return `${durationDays}d validity`;
+      return `${durationDays}d`;
     }
 
     const diffMs = Math.max(0, targetMs - now);
     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    return daysLeft > 0 ? `${daysLeft}d left` : 'Expiring today';
+    return daysLeft > 0 ? `${daysLeft}d left` : 'Today';
   };
 
   const handleClaimBonus = async (bonus: VipBonus, e: React.MouseEvent) => {
@@ -329,402 +329,324 @@ export default function UserVipBonusScreen({
         )}
       </AnimatePresence>
 
-      {/* Responsive Frame: Full-screen on Mobile, Centered Premium Card Frame on Desktop */}
-      <div className="relative w-full h-full sm:h-[94vh] max-w-md sm:max-w-lg mx-auto sm:rounded-[38px] sm:border-4 sm:border-[#00B9F1]/60 sm:shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col justify-between pt-2.5 sm:pt-3.5 overflow-hidden bg-gradient-to-b from-[#00C8FF] via-[#00B9F1] to-[#002E6E]">
-        {/* Inner Light-Blue & White Main Body Sheet */}
+      {/* Responsive Frame: Full-screen on Mobile, Centered Card Frame on Desktop */}
+      <div className="relative w-full h-full sm:h-[94vh] max-w-md sm:max-w-lg mx-auto sm:rounded-[38px] sm:border-4 sm:border-[#00B9F1]/60 sm:shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col justify-between pt-2 sm:pt-3 overflow-hidden bg-gradient-to-b from-[#00C8FF] via-[#00B9F1] to-[#002E6E]">
+        {/* Inner Light-Blue & White Main Screen Sheet */}
         <div
-          className="relative flex-1 w-full rounded-t-[34px] border-t-2 border-x border-white/90 flex flex-col justify-between overflow-hidden shadow-[0_-6px_25px_rgba(0,185,241,0.35)]"
+          className="relative flex-1 w-full rounded-t-[32px] border-t-2 border-x border-white/95 flex flex-col justify-between overflow-hidden shadow-[0_-6px_25px_rgba(0,185,241,0.35)]"
           style={{
             background:
-              'radial-gradient(circle at 50% 32%, #FFFFFF 0%, #F4FAFF 52%, #DDF0FF 100%)',
+              'radial-gradient(circle at 50% 25%, #FFFFFF 0%, #F1F8FF 58%, #DCF0FF 100%)',
           }}
         >
-          {/* Top Section: Back Icon + Screen Name "VIP Bonus" + VIP Level Badge + Cyan Decorative Ornament */}
-          <div className="w-full pt-3.5 sm:pt-4 px-4 flex flex-col items-center shrink-0 relative">
-            {/* Top Bar with Back Button (Top-Left as marked in screenshot) & Screen Title "VIP Bonus" */}
-            <div className="w-full flex items-center justify-between mb-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white active:scale-95 border-2 border-[#91CFFF] text-[#002E6E] shadow-xs transition-all cursor-pointer"
-                title="Back to Home"
-                aria-label="Back to Home"
-              >
-                <ArrowLeft className="w-4.5 h-4.5 stroke-[2.8] text-[#002E6E]" />
-                <span className="text-xs sm:text-sm font-black tracking-tight text-[#002E6E]">
-                  VIP Bonus
-                </span>
-              </button>
+          {/* 1. TOP BAR: Back Icon ("← VIP Bonus") on Left & "Invested: ₹..." on Right */}
+          <div className="w-full pt-3 sm:pt-3.5 px-3.5 sm:px-4 flex items-center justify-between shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F2F8FC] active:scale-95 border border-[#91CFFF] text-[#002E6E] shadow-xs transition-all cursor-pointer"
+              title="Back to Home"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft className="w-4 h-4 stroke-[2.8] text-[#002E6E]" />
+              <span className="text-xs sm:text-sm font-black tracking-tight text-[#002E6E]">
+                VIP Bonus
+              </span>
+            </button>
 
-              <div className="text-[11px] sm:text-xs font-extrabold text-[#172B75] bg-white/80 border border-[#91CFFF] px-3 py-1 rounded-full shadow-2xs">
-                Invested: ₹{userInvested.toLocaleString('en-IN')}
-              </div>
+            <div className="text-[11px] sm:text-xs font-extrabold text-[#172B75] bg-white border border-[#91CFFF] px-3 py-1.5 rounded-full shadow-2xs">
+              Invested: ₹{userInvested.toLocaleString('en-IN')}
             </div>
+          </div>
 
-            {/* 2. TOP VIP LEVEL BADGE */}
-            <div className="relative mt-0.5">
-              <div
-                className="px-7 sm:px-8 py-2 sm:py-2.5 rounded-full border-[3px] border-[#FFC928] flex items-center justify-center gap-3 shadow-[0_6px_16px_rgba(184,121,8,0.45),inset_0_2px_4px_rgba(255,255,255,0.75)]"
-                style={{
-                  background:
-                    'linear-gradient(180deg, #F5B118 0%, #C67D05 48%, #9A5B00 100%)',
-                }}
-              >
-                {/* Glossy Top Highlight */}
-                <div className="absolute inset-x-3 top-1 h-2.5 rounded-full bg-gradient-to-b from-white/55 to-transparent pointer-events-none" />
+          {/* 2. TOP VIP LEVEL BADGE (Dark Navy Pill with Gold Border & Golden Text/Crown as in reference image) */}
+          <div className="w-full flex flex-col items-center shrink-0 mt-1.5 sm:mt-2 mb-1 z-10">
+            <div
+              className="relative px-6 sm:px-7 py-1.5 sm:py-2 rounded-full border-[2.5px] border-[#FFC928] flex items-center justify-center gap-2.5 shadow-[0_5px_14px_rgba(0,46,110,0.35),0_0_0_2px_rgba(255,201,40,0.25)]"
+              style={{
+                background:
+                  'linear-gradient(180deg, #072A6C 0%, #031947 55%, #021030 100%)',
+              }}
+            >
+              {/* Glossy Top Highlight */}
+              <div className="absolute inset-x-3 top-0.5 h-2 rounded-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
 
-                {/* 3D Golden Crown SVG */}
-                <svg
-                  viewBox="0 0 64 52"
-                  className="w-7 h-6 sm:w-8 sm:h-7 drop-shadow-[0_2px_3px_rgba(0,0,0,0.45)] shrink-0"
-                >
-                  <defs>
-                    <linearGradient id="vipCrownGold" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#FFF394" />
-                      <stop offset="45%" stopColor="#FFC928" />
-                      <stop offset="100%" stopColor="#C87A00" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M8 40 L4 14 L20 26 L32 8 L44 26 L60 14 L56 40 Z"
-                    fill="url(#vipCrownGold)"
-                    stroke="#7A4400"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <rect
-                    x="8"
-                    y="41"
-                    width="48"
-                    height="6"
-                    rx="3"
-                    fill="url(#vipCrownGold)"
-                    stroke="#7A4400"
-                    strokeWidth="1.8"
-                  />
-                  <circle cx="4" cy="11" r="3.5" fill="#FFF394" stroke="#7A4400" strokeWidth="1.4" />
-                  <circle cx="32" cy="5" r="4" fill="#FFF394" stroke="#7A4400" strokeWidth="1.4" />
-                  <circle cx="60" cy="11" r="3.5" fill="#FFF394" stroke="#7A4400" strokeWidth="1.4" />
-                </svg>
-
-                {/* Exact Bright Green (#00FF00) Extra-Bold Text */}
-                <span
-                  className="font-black text-xl sm:text-2xl tracking-wider leading-none"
-                  style={{
-                    color: '#00FF00',
-                    textShadow:
-                      '0 2px 3px rgba(0, 0, 0, 0.55), 0 0 8px rgba(0, 255, 0, 0.35)',
-                  }}
-                >
-                  VIP {userVipLevel}
-                </span>
-              </div>
-            </div>
-
-            {/* 3. TOP DECORATIVE ORNAMENT (Symmetrical Cyan & Sky-Blue Flourish) */}
-            <div className="w-full max-w-[340px] mt-1.5 flex items-center justify-center">
+              {/* 3D Golden Crown SVG */}
               <svg
-                viewBox="0 0 500 110"
-                className="w-full h-12 sm:h-14 drop-shadow-[0_4px_6px_rgba(0,168,243,0.28)]"
-                fill="none"
+                viewBox="0 0 64 52"
+                className="w-6 h-5 sm:w-7 sm:h-6 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] shrink-0"
               >
                 <defs>
-                  <linearGradient id="topCyanOrnament" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#00C6FF" />
-                    <stop offset="50%" stopColor="#0099F7" />
-                    <stop offset="100%" stopColor="#00C6FF" />
+                  <linearGradient id="vipCrownGoldBox" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF394" />
+                    <stop offset="50%" stopColor="#FFC928" />
+                    <stop offset="100%" stopColor="#C87A00" />
                   </linearGradient>
                 </defs>
                 <path
-                  d="M250 88 C230 62, 195 18, 225 14 C244 12, 250 34, 250 46 C250 34, 256 12, 275 14 C305 18, 270 62, 250 88 Z"
-                  stroke="url(#topCyanOrnament)"
-                  strokeWidth="10"
-                  strokeLinecap="round"
+                  d="M8 40 L4 14 L20 26 L32 8 L44 26 L60 14 L56 40 Z"
+                  fill="url(#vipCrownGoldBox)"
+                  stroke="#8A4F00"
+                  strokeWidth="1.8"
                   strokeLinejoin="round"
                 />
-                <path
-                  d="M250 78 C205 42, 135 42, 92 66 C56 85, 22 76, 22 48 C22 24, 52 18, 62 36 C70 50, 52 64, 40 56"
-                  stroke="url(#topCyanOrnament)"
-                  strokeWidth="10"
-                  strokeLinecap="round"
+                <rect
+                  x="8"
+                  y="41"
+                  width="48"
+                  height="6"
+                  rx="3"
+                  fill="url(#vipCrownGoldBox)"
+                  stroke="#8A4F00"
+                  strokeWidth="1.6"
                 />
-                <path
-                  d="M236 62 C188 86, 132 76, 95 50"
-                  stroke="url(#topCyanOrnament)"
-                  strokeWidth="8.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M250 78 C295 42, 365 42, 408 66 C444 85, 478 76, 478 48 C478 24, 448 18, 438 36 C430 50, 448 64, 460 56"
-                  stroke="url(#topCyanOrnament)"
-                  strokeWidth="10"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M264 62 C312 86, 368 76, 405 50"
-                  stroke="url(#topCyanOrnament)"
-                  strokeWidth="8.5"
-                  strokeLinecap="round"
-                />
+                <circle cx="4" cy="11" r="3.5" fill="#FFF394" />
+                <circle cx="32" cy="5" r="4" fill="#FFF394" />
+                <circle cx="60" cy="11" r="3.5" fill="#FFF394" />
               </svg>
+
+              {/* Golden VIP Level Text */}
+              <span
+                className="font-black text-lg sm:text-xl tracking-wider leading-none"
+                style={{
+                  background: 'linear-gradient(180deg, #FFF394 0%, #FFC928 55%, #DF9208 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.65))',
+                }}
+              >
+                VIP {userVipLevel}
+              </span>
             </div>
           </div>
 
-          {/* 4. DYNAMIC ADMIN-CONFIGURED BONUS CLAIM CARDS */}
-          <div className="w-full px-3.5 sm:px-5 flex-1 overflow-y-auto flex flex-col justify-center gap-3 py-2">
-            {eligibleBonuses.length === 0 ? (
-              <div className="bg-white/90 border-2 border-[#91CFFF] rounded-[22px] p-6 text-center shadow-sm space-y-2 my-auto">
-                <p className="font-black text-[#002E6E] text-base sm:text-lg">
-                  No Active VIP Bonus Unlocked Yet
-                </p>
-                <p className="text-xs sm:text-sm text-[#172B75]/75 font-medium leading-relaxed">
-                  {bonuses.length > 0
-                    ? `Complete customer investment of ₹${Math.min(
-                        ...bonuses.map((b) => Number(b.minInvestAmount) || 0)
-                      ).toLocaleString('en-IN')} (VIP ${
-                        bonuses[0]?.vipLevel || 1
-                      }) to unlock your Weekly / Monthly VIP Bonus!`
-                    : 'New Weekly & Monthly VIP Bonuses configured by Admin will appear here automatically.'}
-                </p>
+          {/* 3. FRAMED MAIN BONUS BOX (Matches uploaded screenshot 20261110_144324_9a3fb1f8.jpg) */}
+          <div className="w-full px-3.5 sm:px-5 flex-1 flex flex-col justify-center min-h-0 my-1">
+            <div
+              className="relative w-full flex-1 max-h-[450px] rounded-[24px] border-[1.8px] border-[#0D2B6B] px-3 sm:px-4 py-2.5 flex flex-col justify-between overflow-hidden shadow-[0_10px_28px_rgba(0,68,170,0.16),inset_0_0_18px_rgba(255,255,255,0.9)]"
+              style={{
+                background:
+                  'linear-gradient(180deg, #F7FBFF 0%, #FFFFFF 38%, #EDF6FF 78%, #E0F0FF 100%)',
+              }}
+            >
+              {/* Subtle Wave Highlight Inside the Box */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-28 pointer-events-none opacity-55"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at 70% 100%, rgba(145, 207, 255, 0.45) 0%, transparent 70%)',
+                }}
+              />
+
+              {/* Top 3D Blue/Cyan Symmetrical Decorative Flourish Inside Box */}
+              <div className="w-full flex items-center justify-center shrink-0 -mt-1">
+                <svg
+                  viewBox="0 0 500 95"
+                  className="w-full h-11 sm:h-12 drop-shadow-[0_3px_5px_rgba(0,110,210,0.28)]"
+                  fill="none"
+                >
+                  <defs>
+                    <linearGradient id="boxTopOrnamentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#00D2FF" />
+                      <stop offset="35%" stopColor="#0052B4" />
+                      <stop offset="50%" stopColor="#002E6E" />
+                      <stop offset="65%" stopColor="#0052B4" />
+                      <stop offset="100%" stopColor="#00D2FF" />
+                    </linearGradient>
+                  </defs>
+                  {/* Center Diamond & Loop */}
+                  <path
+                    d="M250 82 L261 64 L250 48 L239 64 Z"
+                    stroke="url(#boxTopOrnamentGrad)"
+                    strokeWidth="6.5"
+                    fill="#E6F5FF"
+                  />
+                  {/* Left Symmetrical Scroll */}
+                  <path
+                    d="M250 58 C205 20, 140 20, 95 48 C58 70, 18 62, 20 34 C22 14, 48 12, 58 28 C64 40, 50 52, 38 44"
+                    stroke="url(#boxTopOrnamentGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M236 46 C188 70, 134 60, 94 34"
+                    stroke="#00B9F1"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                  />
+                  {/* Right Symmetrical Scroll */}
+                  <path
+                    d="M250 58 C295 20, 360 20, 405 48 C442 70, 482 62, 480 34 C478 14, 452 12, 442 28 C436 40, 450 52, 462 44"
+                    stroke="url(#boxTopOrnamentGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M264 46 C312 70, 366 60, 406 34"
+                    stroke="#00B9F1"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
-            ) : (
-              eligibleBonuses.map((bonus, idx) => {
-                const isMonthly =
-                  bonus.category === 'month' || bonus.category === 'vipLevelOffer';
-                const title =
-                  bonus.category === 'vipLevelOffer'
-                    ? `VIP ${bonus.vipLevel} Bonus`
-                    : isMonthly
-                    ? 'Monthly Bonus'
-                    : 'Weekly Bonus';
 
-                const isClaimed =
-                  (bonus.claimedBy || []).includes(userId) ||
-                  Boolean(bonus.userProgress?.[userId]?.claimedAt);
-                const isProcessing = claimingId === bonus.id;
-                const remainingText = getRemainingDaysText(bonus);
+              {/* Compact Small-Height Bonus Cards List Inside the Box */}
+              <div className="relative z-10 w-full flex-1 overflow-y-auto flex flex-col justify-center gap-2 sm:gap-2.5 py-1 px-0.5">
+                {eligibleBonuses.length === 0 ? (
+                  <div className="bg-white/95 border border-[#91CFFF] rounded-2xl p-4 text-center shadow-2xs space-y-1.5 my-auto">
+                    <p className="font-black text-[#002E6E] text-sm sm:text-base">
+                      No Active VIP Bonus Unlocked Yet
+                    </p>
+                    <p className="text-[11px] sm:text-xs text-[#172B75]/75 font-medium leading-relaxed">
+                      {bonuses.length > 0
+                        ? `Complete customer investment of ₹${Math.min(
+                            ...bonuses.map((b) => Number(b.minInvestAmount) || 0)
+                          ).toLocaleString('en-IN')} (VIP ${
+                            bonuses[0]?.vipLevel || 1
+                          }) to unlock your Weekly / Monthly Bonus!`
+                        : 'Admin-configured Weekly & Monthly VIP Bonuses will appear inside this box.'}
+                    </p>
+                  </div>
+                ) : (
+                  eligibleBonuses.map((bonus, idx) => {
+                    const isMonthly =
+                      bonus.category === 'month' || bonus.category === 'vipLevelOffer';
+                    const title =
+                      bonus.category === 'vipLevelOffer'
+                        ? `VIP ${bonus.vipLevel} Bonus`
+                        : isMonthly
+                        ? 'monthly bonus'
+                        : 'weekly bonus';
 
-                return (
-                  <div
-                    key={bonus.id || idx}
-                    className="w-full min-h-[74px] sm:min-h-[80px] bg-[#FFFFFF] border-2 border-[#91CFFF] rounded-[22px] px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-[0_6px_16px_rgba(0,140,255,0.12),inset_0_0_0_1.5px_rgba(225,243,255,0.9)] transition-all shrink-0"
-                  >
-                    {/* Left: 3D Icon + Title & Validity Info */}
-                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                      <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-[#EAF6FF] to-[#D8EEFF] flex items-center justify-center shrink-0 relative">
-                        {!isMonthly ? (
-                          /* 3D Blue Gift Box with Golden Ribbon & Sparkles */
-                          <svg
-                            viewBox="0 0 64 64"
-                            className="w-11 h-11 sm:w-12 sm:h-12 drop-shadow-xs"
+                    const isClaimed =
+                      (bonus.claimedBy || []).includes(userId) ||
+                      Boolean(bonus.userProgress?.[userId]?.claimedAt);
+                    const isProcessing = claimingId === bonus.id;
+                    const remainingText = getRemainingDaysText(bonus);
+
+                    return (
+                      <div
+                        key={bonus.id || idx}
+                        className="w-full h-[46px] sm:h-[50px] bg-gradient-to-r from-[#FFFFFF] via-[#F9FCFF] to-[#FFFFFF] border-[1.5px] border-[#9AC8F5] rounded-[14px] px-3 sm:px-3.5 flex items-center justify-between shadow-[0_3px_8px_rgba(0,110,215,0.1),inset_0_1px_0_rgba(255,255,255,0.95)] transition-all shrink-0"
+                      >
+                        {/* Left: Compact Bonus Title + 7-Day Validity Tag */}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-extrabold text-[#12265E] text-[13px] sm:text-[15px] tracking-tight capitalize truncate">
+                            {title}
+                          </span>
+                          <span
+                            className="text-[9px] sm:text-[10px] font-bold text-[#0052B4] bg-[#E8F4FF] border border-[#91CFFF]/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shrink-0"
+                            title="Auto-deletes after validity ends"
                           >
-                            <defs>
-                              <linearGradient
-                                id={`giftBoxBlue_${idx}`}
-                                x1="0%"
-                                y1="0%"
-                                x2="100%"
-                                y2="100%"
-                              >
-                                <stop offset="0%" stopColor="#2B95FF" />
-                                <stop offset="55%" stopColor="#0066E6" />
-                                <stop offset="100%" stopColor="#003DA6" />
-                              </linearGradient>
-                              <linearGradient
-                                id={`giftRibbonGold_${idx}`}
-                                x1="0%"
-                                y1="0%"
-                                x2="0%"
-                                y2="100%"
-                              >
-                                <stop offset="0%" stopColor="#FFF078" />
-                                <stop offset="50%" stopColor="#FFC928" />
-                                <stop offset="100%" stopColor="#C97A00" />
-                              </linearGradient>
-                            </defs>
-                            <path
-                              d="M8 18 L10 14 L12 18 L16 20 L12 22 L10 26 L8 22 L4 20 Z"
-                              fill="#FFC928"
-                            />
-                            <path
-                              d="M54 14 L55.5 11 L57 14 L60 15.5 L57 17 L55.5 20 L54 17 L51 15.5 Z"
-                              fill="#FFC928"
-                            />
-                            <path
-                              d="M55 42 L56.5 39 L58 42 L61 43.5 L58 45 L56.5 48 L55 45 L52 43.5 Z"
-                              fill="#FFC928"
-                            />
-                            <circle cx="8" cy="44" r="2" fill="#FFC928" />
-                            <rect
-                              x="14"
-                              y="28"
-                              width="36"
-                              height="26"
-                              rx="4"
-                              fill={`url(#giftBoxBlue_${idx})`}
-                              stroke="#002E6E"
-                              strokeWidth="1.2"
-                            />
-                            <rect
-                              x="11"
-                              y="20"
-                              width="42"
-                              height="9"
-                              rx="3"
-                              fill={`url(#giftBoxBlue_${idx})`}
-                              stroke="#002E6E"
-                              strokeWidth="1.2"
-                            />
-                            <rect
-                              x="28"
-                              y="20"
-                              width="8"
-                              height="34"
-                              fill={`url(#giftRibbonGold_${idx})`}
-                            />
-                            <rect
-                              x="14"
-                              y="36"
-                              width="36"
-                              height="6"
-                              fill={`url(#giftRibbonGold_${idx})`}
-                            />
-                            <path
-                              d="M32 20 C22 10, 14 14, 18 20 C21 23, 28 21, 32 20 Z"
-                              fill={`url(#giftRibbonGold_${idx})`}
-                              stroke="#9C5A00"
-                              strokeWidth="1"
-                            />
-                            <path
-                              d="M32 20 C42 10, 50 14, 46 20 C43 23, 36 21, 32 20 Z"
-                              fill={`url(#giftRibbonGold_${idx})`}
-                              stroke="#9C5A00"
-                              strokeWidth="1"
-                            />
-                            <circle
-                              cx="32"
-                              cy="19.5"
-                              r="3.5"
-                              fill="#FFE066"
-                              stroke="#9C5A00"
-                              strokeWidth="1"
-                            />
-                          </svg>
-                        ) : (
-                          /* 3D Blue Calendar with Lower-Right Clock Icon */
-                          <svg
-                            viewBox="0 0 64 64"
-                            className="w-11 h-11 sm:w-12 sm:h-12 drop-shadow-xs"
-                          >
-                            <defs>
-                              <linearGradient
-                                id={`calHeaderBlue_${idx}`}
-                                x1="0%"
-                                y1="0%"
-                                x2="100%"
-                                y2="100%"
-                              >
-                                <stop offset="0%" stopColor="#2B95FF" />
-                                <stop offset="100%" stopColor="#0055CC" />
-                              </linearGradient>
-                            </defs>
-                            <rect
-                              x="10"
-                              y="14"
-                              width="38"
-                              height="36"
-                              rx="7"
-                              fill="#FFFFFF"
-                              stroke="#0066E6"
-                              strokeWidth="2.4"
-                            />
-                            <path
-                              d="M10 21 C10 16.5 13.5 14 17 14 L41 14 C44.5 14 48 16.5 48 21 L48 25 L10 25 Z"
-                              fill={`url(#calHeaderBlue_${idx})`}
-                            />
-                            <rect x="18" y="9" width="4.5" height="9" rx="2.2" fill="#0044AA" />
-                            <rect x="35" y="9" width="4.5" height="9" rx="2.2" fill="#0044AA" />
-                            <rect x="16" y="30" width="5" height="4.5" rx="1" fill="#1E78FF" />
-                            <rect x="24" y="30" width="5" height="4.5" rx="1" fill="#1E78FF" />
-                            <rect x="32" y="30" width="5" height="4.5" rx="1" fill="#1E78FF" />
-                            <rect x="16" y="38" width="5" height="4.5" rx="1" fill="#1E78FF" />
-                            <rect x="24" y="38" width="5" height="4.5" rx="1" fill="#1E78FF" />
-                            <circle
-                              cx="44"
-                              cy="44"
-                              r="11"
-                              fill="#E8F4FF"
-                              stroke="#0055CC"
-                              strokeWidth="2.8"
-                            />
-                            <path
-                              d="M44 38.5 L44 44 L48 46"
-                              stroke="#002E6E"
-                              strokeWidth="2.4"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
-                      </div>
-
-                      {/* Center-Left: Bonus Title & 7-Day Validity Badge */}
-                      <div className="min-w-0">
-                        <span className="font-extrabold text-[#172B75] text-sm sm:text-base tracking-tight block truncate">
-                          {title}
-                        </span>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <span className="text-[10px] font-bold text-[#002E6E]/75 bg-[#EAF6FF] border border-[#91CFFF] px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
                             <Clock className="w-2.5 h-2.5 text-[#00B9F1]" />
                             {remainingText}
                           </span>
-                          {bonus.minInvestAmount > 0 && (
-                            <span className="text-[10px] font-semibold text-slate-500">
-                              Min ₹{bonus.minInvestAmount.toLocaleString('en-IN')}
-                            </span>
-                          )}
+                        </div>
+
+                        {/* Right: Bold Golden Amount + Glossy Dark Navy Claim Button */}
+                        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                          <span
+                            className="font-black text-base sm:text-lg tracking-tight"
+                            style={{
+                              color: '#B87908',
+                              textShadow: '0 1px 1px rgba(255, 201, 40, 0.2)',
+                            }}
+                          >
+                            ₹{bonus.bonusAmount}
+                          </span>
+
+                          <button
+                            type="button"
+                            disabled={isClaimed || isProcessing}
+                            onClick={(e) => handleClaimBonus(bonus, e)}
+                            className={`min-w-[74px] sm:min-w-[82px] h-[31px] sm:h-[34px] px-3.5 rounded-full font-extrabold text-xs sm:text-sm text-white flex items-center justify-center transition-all border ${
+                              isClaimed
+                                ? 'bg-[#8FA3B8] border-[#B0C2D4] opacity-60 blur-[0.6px] cursor-not-allowed shadow-none select-none'
+                                : 'bg-gradient-to-b from-[#073A8C] via-[#032461] to-[#021740] hover:brightness-110 active:scale-95 border-[#0099F7] shadow-[0_2px_7px_rgba(0,46,110,0.4),inset_0_1px_2px_rgba(0,210,255,0.45)] cursor-pointer'
+                            }`}
+                          >
+                            {isProcessing ? '...' : isClaimed ? 'Claimed' : 'Claim'}
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    );
+                  })
+                )}
+              </div>
 
-                    {/* Right Side: Golden Amount + Dark Navy Claim Button (Blurs when claimed) */}
-                    <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-                      <span
-                        className="font-black text-xl sm:text-2xl tracking-tight"
-                        style={{
-                          color: '#B87908',
-                          textShadow: '0 1px 1px rgba(255, 201, 40, 0.25)',
-                        }}
-                      >
-                        ₹{bonus.bonusAmount}
-                      </span>
-
-                      <button
-                        type="button"
-                        disabled={isClaimed || isProcessing}
-                        onClick={(e) => handleClaimBonus(bonus, e)}
-                        className={`min-w-[84px] sm:min-w-[94px] py-2 sm:py-2.5 px-4 sm:px-5 rounded-full font-extrabold text-sm sm:text-base text-white transition-all border ${
-                          isClaimed
-                            ? 'bg-[#8FA3B8] border-[#B0C2D4] opacity-60 blur-[0.6px] cursor-not-allowed shadow-none select-none'
-                            : 'bg-gradient-to-b from-[#004196] to-[#002255] hover:brightness-110 active:scale-95 border-[#0055CC] shadow-[0_4px_10px_rgba(0,46,110,0.35),inset_0_1px_2px_rgba(255,255,255,0.35)] cursor-pointer'
-                        }`}
-                      >
-                        {isProcessing ? '...' : isClaimed ? 'Claimed' : 'Claim'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+              {/* Bottom 3D Blue/Navy Symmetrical Decorative Flourish Inside Box */}
+              <div className="w-full flex items-center justify-center shrink-0 -mb-1">
+                <svg
+                  viewBox="0 0 500 95"
+                  className="w-full h-11 sm:h-12 drop-shadow-[0_3px_5px_rgba(0,68,160,0.28)]"
+                  fill="none"
+                >
+                  <defs>
+                    <linearGradient id="boxBottomOrnamentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#00C6FF" />
+                      <stop offset="30%" stopColor="#0048A8" />
+                      <stop offset="50%" stopColor="#00235B" />
+                      <stop offset="70%" stopColor="#0048A8" />
+                      <stop offset="100%" stopColor="#00C6FF" />
+                    </linearGradient>
+                  </defs>
+                  {/* Center Peak & Double Loop */}
+                  <path
+                    d="M250 14 L263 34 L250 52 L237 34 Z"
+                    stroke="url(#boxBottomOrnamentGrad)"
+                    strokeWidth="6.5"
+                    fill="#E6F5FF"
+                  />
+                  <path
+                    d="M250 52 C234 78, 204 88, 214 66 C220 54, 236 58, 240 70"
+                    stroke="url(#boxBottomOrnamentGrad)"
+                    strokeWidth="8.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M250 52 C266 78, 296 88, 286 66 C280 54, 264 58, 260 70"
+                    stroke="url(#boxBottomOrnamentGrad)"
+                    strokeWidth="8.5"
+                    strokeLinecap="round"
+                  />
+                  {/* Left Symmetrical Scroll */}
+                  <path
+                    d="M237 36 C192 68, 136 68, 92 44 C54 22, 18 30, 20 58 C22 78, 48 82, 58 64 C64 52, 50 42, 38 48"
+                    stroke="url(#boxBottomOrnamentGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M226 48 C182 26, 130 34, 92 58"
+                    stroke="#00B9F1"
+                    strokeWidth="5.5"
+                    strokeLinecap="round"
+                  />
+                  {/* Right Symmetrical Scroll */}
+                  <path
+                    d="M263 36 C308 68, 364 68, 408 44 C446 22, 482 30, 480 58 C478 78, 452 82, 442 64 C436 52, 450 42, 462 48"
+                    stroke="url(#boxBottomOrnamentGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M274 48 C318 26, 370 34, 408 58"
+                    stroke="#00B9F1"
+                    strokeWidth="5.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
 
-          {/* 6. BOTTOM DECORATIVE ORNAMENT + 7. CURVED NAVY & CYAN FOOTER */}
+          {/* 4. LOWER NAVY ORNAMENT + CURVED NAVY & CYAN WAVE FOOTER */}
           <div className="w-full flex flex-col items-center shrink-0 mt-auto">
-            {/* Deep Navy Symmetrical Decorative Flourish */}
-            <div className="w-full max-w-[340px] px-4 mb-0.5 flex items-center justify-center">
+            {/* Smaller Deep Navy Symmetrical Flourish Below the Main Box */}
+            <div className="w-full max-w-[270px] px-4 mb-0.5 flex items-center justify-center">
               <svg
-                viewBox="0 0 500 105"
-                className="w-full h-11 sm:h-13 drop-shadow-[0_3px_4px_rgba(0,46,110,0.2)]"
+                viewBox="0 0 500 95"
+                className="w-full h-8 sm:h-9 drop-shadow-[0_2px_3px_rgba(0,46,110,0.18)]"
                 fill="none"
               >
                 <path
@@ -734,46 +656,34 @@ export default function UserVipBonusScreen({
                   fill="#F2F8FC"
                 />
                 <path
-                  d="M250 50 C235 76, 204 94, 214 70 C220 56, 236 62, 240 74"
+                  d="M250 50 C235 76, 204 90, 214 68 C220 56, 236 62, 240 72"
                   stroke="#002E6E"
                   strokeWidth="9.5"
                   strokeLinecap="round"
                 />
                 <path
-                  d="M250 50 C265 76, 296 94, 286 70 C280 56, 264 62, 260 74"
+                  d="M250 50 C265 76, 296 90, 286 68 C280 56, 264 62, 260 72"
                   stroke="#002E6E"
                   strokeWidth="9.5"
                   strokeLinecap="round"
                 />
                 <path
-                  d="M238 34 C192 64, 134 64, 92 42 C54 22, 20 30, 22 58 C24 80, 52 84, 62 66 C68 54, 54 42, 42 48"
+                  d="M238 34 C192 64, 134 64, 92 42 C54 22, 20 30, 22 58 C24 78, 52 82, 62 64 C68 54, 54 42, 42 48"
                   stroke="#002E6E"
                   strokeWidth="10"
                   strokeLinecap="round"
                 />
                 <path
-                  d="M226 48 C180 24, 128 32, 92 56"
-                  stroke="#002E6E"
-                  strokeWidth="8.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M262 34 C308 64, 366 64, 408 42 C446 22, 480 30, 478 58 C476 80, 448 84, 438 66 C432 54, 446 42, 458 48"
+                  d="M262 34 C308 64, 366 64, 408 42 C446 22, 480 30, 478 58 C476 78, 448 82, 438 64 C432 54, 446 42, 458 48"
                   stroke="#002E6E"
                   strokeWidth="10"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M274 48 C320 24, 372 32, 408 56"
-                  stroke="#002E6E"
-                  strokeWidth="8.5"
                   strokeLinecap="round"
                 />
               </svg>
             </div>
 
-            {/* 7. Bottom Curved Wave Footer (#002E6E with #00B9F1 Upper Accent Border) */}
-            <div className="relative w-full h-16 sm:h-20 overflow-hidden">
+            {/* Bottom Curved Wave Footer (#002E6E with #00B9F1 Upper Accent Border) */}
+            <div className="relative w-full h-12 sm:h-14 overflow-hidden">
               <svg
                 viewBox="0 0 500 120"
                 preserveAspectRatio="none"
